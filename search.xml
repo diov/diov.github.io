@@ -98,14 +98,14 @@
     <entry>
       <title><![CDATA[Git基础命令]]></title>
       <url>http://diov.github.io/2016/01/10/Git%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/</url>
-      <content type="html"><![CDATA[<h1 id="Git_Try__u7B14_u8BB0"><a href="#Git_Try__u7B14_u8BB0" class="headerlink" title="Git Try 笔记"></a>Git Try 笔记</h1><p>Code School上<a href="https://try.github.io/l" target="_blank" rel="external">Git Try</a>的学习笔记。</p>
+      <content type="html"><![CDATA[<h1 id="Git_Try__u7B14_u8BB0"><a href="#Git_Try__u7B14_u8BB0" class="headerlink" title="Git Try 笔记"></a>Git Try 笔记</h1><p>Code School上<a href="https://try.github.io/" target="_blank" rel="external">Git Try</a>的学习笔记。</p>
 <p>之前直接在Android Studio上使用git插件的时候，因为不了解git的命令和运作，搞出了不少岔子。最惨的时直接删了两个repository…</p>
 <p>用上Linux Mint后慢慢的对Command Line熟悉起来，想着把git再好好研究一下。本文的名称大多沿用<a href="http://www.ruanyifeng.com/blog" target="_blank" rel="external">阮一峰博客</a>的命名</p>
 <hr>
 <ul>
 <li>初始化一个<code>Git</code>代码库</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git init&#10;&#10;Initialized empty Git repository in /.git/&#10;&#10;Success!</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git init&#10;&#10;Initialized empty Git repository in /.git/&#10;&#10;Success!</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>仓库(Repository)就是Git初始化后，用来进行版本控制的文件夹</p>
 </blockquote>
@@ -113,7 +113,7 @@
 <ul>
 <li>获取本地<code>Git</code>代码库的状态</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git statu&#10;&#10;# On branch master&#10;#&#10;# Initial commit&#10;#&#10;nothing to commit (create/copy files and use &#34;git add&#34; to track)</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git statu&#10;&#10;# On branch master&#10;#&#10;# Initial commit&#10;#&#10;nothing to commit (create/copy files and use &#34;git add&#34; to track)</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>显示Git分支、提交的内容</p>
 <p>当仓库中的文件发生改变时，通常会有以下状态</p>
@@ -128,7 +128,7 @@
 <ul>
 <li>将文件添加到本地<code>Git</code>缓存区中</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git add xxx.txt&#10;git add &#8216;*.txt&#8217;&#10;git add -A&#10;&#10;Nice job, you&#39;ve added xxx.txt to the Staging Area</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git add xxx.txt&#10;$ git add &#8216;*.txt&#8217;&#10;$ git add -A&#10;&#10;Nice job, you&#39;ve added xxx.txt to the Staging Area</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>通过add命令将文件保存到临时区域()。支持通配符及全部上传</p>
 <p>Staging Area:缓存区，在我们通过<code>commit</code>将文件提交到<code>Git</code>上之前临时保存</p>
@@ -137,7 +137,7 @@
 <ul>
 <li>将缓存区的文件提交到<code>Git</code></li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git commit -m &#8216;xxx&#8217;&#10;&#10;[master (root-commit) 2e8cda3] Add cute octocat&#10; 1 file changed, 1 insertion(+)&#10; create mode 100644 octocat.txt&#10;&#10;Success!</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git commit -m &#8216;xxx&#8217;&#10;&#10;[master (root-commit) 2e8cda3] Add cute octocat&#10; 1 file changed, 1 insertion(+)&#10; create mode 100644 octocat.txt&#10;&#10;Success!</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p><code>commit</code>:是仓库状态的一个存档，通过<code>commit</code>可以查看提交的所有log<br><code>-m ‘xxx&#39;</code>：每次提交的备注</p>
 </blockquote>
@@ -145,7 +145,7 @@
 <ul>
 <li>查看提交记录</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git log&#10;git log --summary</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git log&#10;$ git log --summary</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>可以通过<code>--summary</code>查看详细的记录(包括提交作者、时间、备注及每个更改的文件信息)</p>
 </blockquote>
@@ -153,7 +153,7 @@
 <ul>
 <li>增加一个远程<code>Git</code>仓库</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote add origin https://github.com/try-git/try_git.git</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git remote add origin https://github.com/try-git/try_git.git</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>一般远程仓库命名为”origin”，后面是远程仓库的地址</p>
 </blockquote>
@@ -161,7 +161,7 @@
 <ul>
 <li>将本地仓库推送到远程仓库</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push -u origin master</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git push -u origin master</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>origin是远程仓库的命名，分支默认是master<br><code>-u</code>表示Git会记住Git状态，下次只需要通过<code>git push</code>就可以进行推送</p>
 </blockquote>
@@ -169,7 +169,7 @@
 <ul>
 <li>从远程<code>Git</code>仓库同步</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git pull origin master</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git pull origin master</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>将远程仓库同步代码，与本地合并<br><code>git stash</code>：当同步文件时，可能不想将本地的更改覆盖。可以通过stash命令将本地的更改隐藏<br>在同步完成后，再调用<code>git stash apply</code>将本地更改应用到仓库</p>
 </blockquote>
@@ -177,7 +177,7 @@
 <ul>
 <li>比较缓存区与仓库的代码差异</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git diff HEAD</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git diff HEAD</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>HEAD：HEAD是记录不同<code>commit</code>位置的标示，默认的HEAD是最近一次提交的<code>commit</code><br>所以通过HEAD可以快速地确定所在版本，而不需要对比SHA值<br>通过<code>diff</code>命令，可以显示文件之间的冲突</p>
 </blockquote>
@@ -185,7 +185,7 @@
 <ul>
 <li>重置缓存区的文件</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git reset xxx.txt</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git reset xxx.txt</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>将缓存区的文件重置到上一次<code>commit</code></p>
 </blockquote>
@@ -193,7 +193,7 @@
 <ul>
 <li>将缓存区的文件恢复到工作区</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -- xxx.txt</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git checkout -- xxx.txt</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>通过<code>reset</code>命令重置后，缓存区的文件仍然存在。通过<code>checkout</code>命令将其恢复到工作区</p>
 </blockquote>
@@ -201,7 +201,7 @@
 <ul>
 <li>创建本地分支</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch clean_up</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git branch clean_up</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p><code>branch</code>命令可以在版本控制中创建一个分支。<br>分支是并发开发的基础，在分支上开发后可以再合并到主分支上。</p>
 </blockquote>
@@ -209,7 +209,7 @@
 <ul>
 <li>查看分支</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch&#10;&#10; clean_up&#27;&#10;* &#27;master&#27;</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git branch&#10;&#10; clean_up&#27;&#10;* &#27;master&#27;</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>通过<code>branch</code>命令可以查看本地的分支及当前所在的分支</p>
 </blockquote>
@@ -217,7 +217,7 @@
 <ul>
 <li>切换分支</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout &#60;branch&#62;</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git checkout &#60;branch&#62;</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p> 可以通过git checkout -b <branch>命令同时实现创建+切换分支的操作</branch></p>
 </blockquote>
@@ -225,7 +225,7 @@
 <ul>
 <li>清空所有仓库</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rm &#39;*.txt&#39;&#10;git rm -r &#60;fold_name&#62;</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git rm &#39;*.txt&#39;&#10;$ git rm -r &#60;fold_name&#62;</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>这里的命令与Linux命令行相同，支持通配符和递归删除文件夹<br>如果没有通过命令行，直接删除文件的话，还是需要把删除的文件通过<code>git rm</code>命令在<code>Git</code>中删除的。<br>可以在<code>git commit</code>命令中使用<code>-a</code>来自动移除已被删除的文件。例如：`git commit -am <message>‘</message></p>
 </blockquote>
@@ -233,7 +233,7 @@
 <ul>
 <li>合并分支</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout master&#10;git merge clean_up</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git checkout master&#10;$ git merge clean_up</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>合并分支首选需要切换会朱分支，再通过<code>merge</code>命令合并分支</p>
 </blockquote>
@@ -241,7 +241,7 @@
 <ul>
 <li>删除分支</li>
 </ul>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -d clean_up</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git branch -d clean_up</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>在<code>branch</code>命令后加入<code>-d</code>表明删除(delete)<br>如果尚未合并，<code>-d</code>命令不会起作用。可以添加<code>-d-f</code>强制删除(force)，或者<code>-D</code></p>
 </blockquote>
