@@ -2,6 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://diov.github.io/2016/01/10/Git%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/</loc>
+    <lastmod>2016-01-26T09:35:57.180Z</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://diov.github.io/2016/01/01/hello/</loc>
+    <lastmod>2016-01-26T07:56:23.290Z</lastmod>
+  </url>
+  
+  <url>
     <loc>http://diov.github.io/archive/index.html</loc>
     <lastmod>2016-01-24T15:18:22.896Z</lastmod>
   </url>
@@ -29,11 +39,6 @@
   <url>
     <loc>http://diov.github.io/categories/index.html</loc>
     <lastmod>2016-01-24T11:35:57.537Z</lastmod>
-  </url>
-  
-  <url>
-    <loc>http://diov.github.io/2016/01/24/hello/</loc>
-    <lastmod>2016-01-24T11:28:07.447Z</lastmod>
   </url>
   
 </urlset>
