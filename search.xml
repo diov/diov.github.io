@@ -155,7 +155,7 @@
 </ul>
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git remote add origin https://github.com/try-git/try_git.git</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>一般远程仓库命名为”origin”，后面是远程仓库的地址</p>
+<p>创建一个远程仓库，地址为github上提供的地址。并且将该远程仓库命名为origin</p>
 </blockquote>
 <hr>
 <ul>
