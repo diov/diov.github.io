@@ -18,7 +18,7 @@
 <meta property="og:url" content="http://diov.github.io/2016/01/17/Android-触摸事件分发源码/index.html">
 <meta property="og:site_name" content="README.MD">
 <meta property="og:description" content="对于View中触摸事件分发的源码分析">
-<meta property="og:updated_time" content="2016-01-29T14:12:32.713Z">
+<meta property="og:updated_time" content="2016-02-12T01:48:25.673Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 触摸事件分发源码">
 <meta name="twitter:description" content="对于View中触摸事件分发的源码分析">
@@ -94,7 +94,8 @@
 </header>
 	<div class="article-content">
 		
-		<h2 id="ViewGroup_u4E8B_u4EF6_u7684_u5206_u53D1_u62E6_u622A_u548C_u5904_u7406"><a href="#ViewGroup_u4E8B_u4EF6_u7684_u5206_u53D1_u62E6_u622A_u548C_u5904_u7406" class="headerlink" title="ViewGroup事件的分发拦截和处理"></a>ViewGroup事件的分发拦截和处理</h2><p>触摸事件一般是从Activity开始分发，但是这里我们就跳过Activity，直接从根布局也就是ViewGroup开始了。</p>
+		<p>参考：<a href="http://trinea.github.io/download/pdf/android/PRE_andevcon_mastering-the-android-touch-system.pdf" target="_blank" rel="external">Mastering    the    Android Touch    System</a></p>
+<h2 id="ViewGroup_u4E8B_u4EF6_u7684_u5206_u53D1_u62E6_u622A_u548C_u5904_u7406"><a href="#ViewGroup_u4E8B_u4EF6_u7684_u5206_u53D1_u62E6_u622A_u548C_u5904_u7406" class="headerlink" title="ViewGroup事件的分发拦截和处理"></a>ViewGroup事件的分发拦截和处理</h2><p>触摸事件一般是从Activity开始分发，但是这里我们就跳过Activity，直接从根布局也就是ViewGroup开始了。</p>
 <h3 id="u4E8B_u4EF6_u5206_u53D1_28dispatchTouchEvent_29"><a href="#u4E8B_u4EF6_u5206_u53D1_28dispatchTouchEvent_29" class="headerlink" title="事件分发(dispatchTouchEvent)"></a>事件分发(dispatchTouchEvent)</h3><ul>
 <li><h4 id="u6E90_u7801"><a href="#u6E90_u7801" class="headerlink" title="源码"></a>源码</h4></li>
 </ul>
@@ -256,7 +257,7 @@
 		  
 		
 		  
-			<li><a href="/categories/Code/" title="Code">Code<sup>2</sup></a></li>
+			<li><a href="/categories/Code/" title="Code">Code<sup>3</sup></a></li>
 		  
 		
 		</ul>
@@ -269,7 +270,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+				<li><a href="/tags/Android/" title="Android">Android<sup>3</sup></a></li>
 			
 		
 			
