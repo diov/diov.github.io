@@ -4,7 +4,7 @@
   <subtitle><![CDATA[Live fast. Die young. Be wild And Have fun.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://diov.github.io/"/>
-  <updated>2016-02-12T16:07:28.228Z</updated>
+  <updated>2016-02-12T16:07:29.048Z</updated>
   <id>http://diov.github.io/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="http://diov.github.io/2016/02/12/%5B%E8%AF%91%5D%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%90%AF%E5%8A%A8%E7%94%BB%E9%9D%A2/"/>
     <id>http://diov.github.io/2016/02/12/[译]正确的启动画面/</id>
     <published>2016-02-12T14:55:02.000Z</published>
-    <updated>2016-02-12T16:07:28.228Z</updated>
+    <updated>2016-02-12T16:07:29.048Z</updated>
     <content type="html"><![CDATA[<p>原文：<a href="https://www.bignerdranch.com/blog/splash-screens-the-right-way/(" target="_blank" rel="external">Splash Screens the Right Way – bignerdranch.com</a></p>
 <hr>
 <p>启动界面只是用来浪费时间的，对吧？作为一个Android开发人员，当我看到一个引导界面时，我就知道有些可怜的码农又得在代码中添加一个3秒的延迟消息了。然后，在使用这个应用之前，我就只能跟个傻逼一样盯着画面3秒钟。而每次启动应用的时候，都必须经受这种折磨！</p>
