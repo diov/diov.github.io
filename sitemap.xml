@@ -2,53 +2,80 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://diov.github.io/2016/02/12/%5B%E8%AF%91%5D%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%90%AF%E5%8A%A8%E7%94%BB%E9%9D%A2/</loc>
-    <lastmod>2016-02-12T16:07:29.048Z</lastmod>
+    <loc>http://diov.github.io/2016/02/12/%5BT%5DSplash_Screens-the%20Right_Way/</loc>
+    
+    <lastmod>2016-02-19T08:25:06.205Z</lastmod>
+    
   </url>
   
   <url>
-    <loc>http://diov.github.io/2016/01/17/Android-%E8%A7%A6%E6%91%B8%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%BA%90%E7%A0%81/</loc>
-    <lastmod>2016-02-12T01:48:25.673Z</lastmod>
+    <loc>http://diov.github.io/2016/01/17/Analisis_of_Touchevent_in_Android/</loc>
+    
+    <lastmod>2016-02-19T08:25:05.473Z</lastmod>
+    
   </url>
   
   <url>
-    <loc>http://diov.github.io/2016/01/28/KillPay%E5%BC%80%E5%8F%91%E5%BF%83%E5%BE%97/</loc>
-    <lastmod>2016-01-29T14:19:21.255Z</lastmod>
+    <loc>http://diov.github.io/2016/02/15/From_XML_to_View/</loc>
+    
+    <lastmod>2016-02-19T08:25:04.417Z</lastmod>
+    
   </url>
   
   <url>
-    <loc>http://diov.github.io/2016/01/10/Git%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/</loc>
-    <lastmod>2016-01-26T12:07:19.952Z</lastmod>
+    <loc>http://diov.github.io/2016/01/10/Git_basic_command/</loc>
+    
+    <lastmod>2016-02-19T08:25:03.437Z</lastmod>
+    
   </url>
   
   <url>
     <loc>http://diov.github.io/2016/01/01/hello/</loc>
-    <lastmod>2016-01-26T07:56:23.290Z</lastmod>
+    
+    <lastmod>2016-02-19T08:25:02.149Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://diov.github.io/2016/01/28/KillPay_Dev_Experience/</loc>
+    
+    <lastmod>2016-02-19T08:24:59.449Z</lastmod>
+    
   </url>
   
   <url>
     <loc>http://diov.github.io/archive/index.html</loc>
+    
     <lastmod>2016-01-24T15:18:22.896Z</lastmod>
+    
   </url>
   
   <url>
     <loc>http://diov.github.io/tags/index.html</loc>
+    
     <lastmod>2016-01-24T13:22:05.005Z</lastmod>
+    
   </url>
   
   <url>
     <loc>http://diov.github.io/about/index.html</loc>
+    
     <lastmod>2016-01-24T13:21:47.057Z</lastmod>
+    
   </url>
   
   <url>
     <loc>http://diov.github.io//404.html</loc>
+    
     <lastmod>2016-01-24T13:04:20.108Z</lastmod>
+    
   </url>
   
   <url>
     <loc>http://diov.github.io/categories/index.html</loc>
+    
     <lastmod>2016-01-24T11:35:57.537Z</lastmod>
+    
   </url>
   
 </urlset>
