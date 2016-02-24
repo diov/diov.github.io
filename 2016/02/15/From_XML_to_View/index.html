@@ -40,6 +40,16 @@
   
 
 
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8190074";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
 
 </head>
 
@@ -109,7 +119,7 @@
 	  		
 
 	  <p>通常，我们会将应用中需要展示的界面内容都写在XML文件中，通过<code>Activity</code>的<code>setContentView()</code>方法设置。<br>当我们希望动态的添加一个没有被加载的xml布局文件，比如在<code>ViewPager</code>或者是<code>ListView</code>中，就需要使用到<code>View.inflate()</code>方法或者是<code>LayoutInflater</code>这个类。</p>
-<h2 id=""><a href="#" class="headerlink" title=" "></a><a id="more"></a> </h2><h1 id="获取LayoutInflater实例"><a href="#获取LayoutInflater实例" class="headerlink" title="获取LayoutInflater实例"></a>获取LayoutInflater实例</h1><p>先来看一下<code>View.inflate()</code>方法的实现：</p>
+<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><h1 id="获取LayoutInflater实例"><a href="#获取LayoutInflater实例" class="headerlink" title="获取LayoutInflater实例"></a>获取LayoutInflater实例</h1><p>先来看一下<code>View.inflate()</code>方法的实现：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> View <span class="title">inflate</span><span class="params">(Context context, @LayoutRes <span class="keyword">int</span> resource, ViewGroup root)</span> </span>&#123;</span><br><span class="line">    LayoutInflater factory = LayoutInflater.from(context);</span><br><span class="line">    <span class="keyword">return</span> factory.inflate(resource, root);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>实际上是封装了<code>LayoutInflater</code>的<code>from(Context context)</code>方法，并通过获取的<code>LayoutInflater</code>实例来返回<code>View</code>对象</p>
 <p>那么如何能获取到<code>LayoutInflater</code>对象的实例呢？通常有三种方式：</p>
@@ -216,7 +226,7 @@
 	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
     <ul id="tags" class="tag_box list-unstyled collapse in">	  
 	    
-  <li><a href="/tags/Android-源码分析/">Android 源码分析<span>2</span></a></li>
+  <li><a href="/tags/源码分析/">源码分析<span>2</span></a></li>
     </ul>
 	</div>
 		
@@ -236,7 +246,7 @@
 </div><!-- row -->
 
 <script type="text/javascript">
-  var duoshuoQuery = { short_name: 'diov' };
+  var duoshuoQuery = { short_name: 'diov87' };
   (function() {
     var ds = document.createElement('script');
     ds.type = 'text/javascript';
