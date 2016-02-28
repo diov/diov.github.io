@@ -4,6 +4,104 @@
   
     
     <entry>
+      <title><![CDATA[从ListView的嵌套来理解onMeasure方法]]></title>
+      <url>http://diov.github.io/2016/02/28/konwledge-about-onMeasure-from-ListView-height-problem/</url>
+      <content type="html"><![CDATA[<p>在Google提供的控件中，有一系列支持触摸滚动的原生控件：ScrollView、ListView、GridView。尽管Google并不推荐我们将这些可滚动的控件进行嵌套使用，但是难免会有业务要求。这时通常会遇到两种问题：</p>
+<ol>
+<li>当设置内层的控件的高度为match_parent或者wrap_content时，高度不正常</li>
+<li>触摸事件冲突<br>对于触摸事件的冲突可以参考我之前对于View中触摸事件的分发的分析来进行解决<a href="http://diov.github.io/2016/01/17/Analisis_of_Touchevent_in_Android/">ANDROID 触摸事件分发源码</a>。这里我们来分析一下为何会出现高度不正常。</li>
+</ol>
+<a id="more"></a>
+<h1 id="先来解决问题"><a href="#先来解决问题" class="headerlink" title="先来解决问题"></a>先来解决问题</h1><p>先来看看如何解决ScrollView嵌套ListView的高度问题吧。</p>
+<p>现在常用的有两种方法：</p>
+<ol>
+<li>在ListView设置Adapter之后，获取每一个View，测量每一个View的高度从而得到ListView总的高度，再手动设置</li>
+<li>重写ListView的<code>onMeasure</code>方法</li>
+</ol>
+<p>第一种方法我们这里暂且不谈，其实就是通过<code>ListAdapter.getView()</code>获取相应的View对象再进行测量。相对比较简单，可以去网上自行查找</p>
+<p>这里我们来看看第二种方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="annotation">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> expandSpec = MeasureSpec.makeMeasureSpec(Integer.Max &gt;&gt; <span class="number">2</span>,</span><br><span class="line">            , MeasureSpec.AT_MOST);</span><br><span class="line">    <span class="keyword">super</span>.onMeasure(widthMeasureSpec, expandSpec);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过重写<code>onMeasure()</code>方法后就可以让ListView的高度恢复正常了</p>
+<h1 id="onMeasure-源码分析"><a href="#onMeasure-源码分析" class="headerlink" title="onMeasure 源码分析"></a>onMeasure 源码分析</h1><p>每个View的绘制过程都会经历<code>measure()</code>-&gt;<code>layout()</code>-&gt;<code>draw()</code>这样一个流程，在<code>measure()</code>方法中我们对View的宽高进行测量</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span><br><span class="line"> * The actual measurement work of a view is performed in onMeasure(int, int), called by this method.</span><br><span class="line"> * Therefore, only onMeasure(int, int) can and must be overridden by subclasses.  </span><br><span class="line"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">measure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 省略</span></span><br><span class="line">    onMeasure(widthMeasureSpec, heightMeasureSpec);</span><br><span class="line">    <span class="comment">// 省略</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到<code>measure()</code>方法是一个final方法，表明子类无法去重写该方法的。在其中调用了<code>onMeasure()</code>方法，在这个方法中完成实际的测量工作，</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line">    setMeasuredDimension(getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec),</span><br><span class="line">            getDefaultSize(getSuggestedMinimumHeight(), heightMeasureSpec));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在<code>onMeasure()</code>方法中会调用<code>setMeasuredDimension()</code>，从方法名就可以看出来这是将测量后的宽高值设置给当前的View的方法</p>
+<blockquote>
+<p>此外ViewGroup的测量过程是<code>measureChildren()</code>-&gt;<code>measureChild()</code>-&gt;<code>child.measure()</code>，依次向下遍历，将所有的子控件进行测量。感兴趣的可以自行查看ViewGroup的源码</p>
+</blockquote>
+<h1 id="MeasureSpec"><a href="#MeasureSpec" class="headerlink" title="MeasureSpec"></a>MeasureSpec</h1><p>在<code>onMeasure(int widthMeasureSpec, int heightMeasureSpec)</code>中我们对View的宽高进行了测量，那么究竟是如何进行测量的呢？从两个参数名可以看出来，肯定是与测量宽高有关的两个int值。</p>
+<p>这里就涉及到View的一个静态内部类 MeasureSpec 了，先来看一看源码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MeasureSpec</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MODE_SHIFT = <span class="number">30</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MODE_MASK  = <span class="number">0x3</span> &lt;&lt; MODE_SHIFT;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// MeasureSpec的三种模式</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> UNSPECIFIED = <span class="number">0</span> &lt;&lt; MODE_SHIFT; <span class="comment">// 想要多大就多大</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> EXACTLY     = <span class="number">1</span> &lt;&lt; MODE_SHIFT; <span class="comment">// 精确大小</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> AT_MOST     = <span class="number">2</span> &lt;&lt; MODE_SHIFT; <span class="comment">// 确定最大值</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 通过Mode和Sie去生成MeasureSpec对象</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">makeMeasureSpec</span><span class="params">(<span class="keyword">int</span> size, <span class="keyword">int</span> mode)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (sUseBrokenMakeMeasureSpec) &#123;</span><br><span class="line">            <span class="keyword">return</span> size + mode;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> (size &amp; ~MODE_MASK) | (mode &amp; MODE_MASK);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">makeSafeMeasureSpec</span><span class="params">(<span class="keyword">int</span> size, <span class="keyword">int</span> mode)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (sUseZeroUnspecifiedMeasureSpec &amp;&amp; mode == UNSPECIFIED) &#123;&lt;!</span><br><span class="line">        <span class="keyword">return</span> makeMeasureSpec(size, mode);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取Mode</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">getMode</span><span class="params">(<span class="keyword">int</span> measureSpec)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (measureSpec &amp; MODE_MASK);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取Size</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">getSize</span><span class="params">(<span class="keyword">int</span> measureSpec)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (measureSpec &amp; ~MODE_MASK);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">adjust</span><span class="params">(<span class="keyword">int</span> measureSpec, <span class="keyword">int</span> delta)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> mode = getMode(measureSpec);</span><br><span class="line">        <span class="keyword">int</span> size = getSize(measureSpec);</span><br><span class="line">        <span class="keyword">if</span> (mode == UNSPECIFIED) &#123;</span><br><span class="line">            <span class="comment">// No need to adjust size for UNSPECIFIED mode.</span></span><br><span class="line">            <span class="keyword">return</span> makeMeasureSpec(size, UNSPECIFIED);</span><br><span class="line">        &#125;</span><br><span class="line">        size += delta;</span><br><span class="line">        <span class="keyword">if</span> (size &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            Log.e(VIEW_LOG_TAG, <span class="string">"MeasureSpec.adjust: new size would be negative! ("</span> + size +</span><br><span class="line">                    <span class="string">") spec: "</span> + toString(measureSpec) + <span class="string">" delta: "</span> + delta);</span><br><span class="line">            size = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> makeMeasureSpec(size, mode);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">toString</span><span class="params">(<span class="keyword">int</span> measureSpec)</span> </span>&#123;</span><br><span class="line">        <span class="comment">/*</span><br><span class="line">         * 省略</span><br><span class="line">         */</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>MeasureSpec 代表了测量的标准，实际上是一个32位的二进制的值，其中30～31位代表了测量的模式：UNSPECIFIED(0x00)、EXACTLY(0x01)和AT_MOST(0x02)，而0~29位封装了测量的大小</p>
+<p>此外，在MeasureSpec的<code>makeMeasureSpec()</code>方法中，通过传入代表模式和大小的值，通过位运算我们就可以得到指定的MeasureSpec对象了</p>
+<p>那么每个View在调用<code>onMeasure(int widthMeasureSpec, int heightMeasureSpec)</code>时，方法中的参数时哪里的来的呢？我们已经知道了，触摸事件的分发是由根节点的ViewGroup依次向下传递，其实View的测量也是这样由根节点依次测量子控件（也就是上面提到的ViewGroup的测量过程），而作为参数传递的MeasureSpec就是由父控件传来的</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">父控件属性</th>
+<th style="text-align:center">子控件属性</th>
+<th style="text-align:center">子控件的MeasureSpec</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">EXACTLY+size</td>
+<td style="text-align:center">dp</td>
+<td style="text-align:center">EXACTLY+dp</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center">match_parent</td>
+<td style="text-align:center">EXACTLY+size</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center">wrap_content</td>
+<td style="text-align:center">AT_MOST+size</td>
+</tr>
+<tr>
+<td style="text-align:center">AT_MOST+size</td>
+<td style="text-align:center">dp</td>
+<td style="text-align:center">EXACTLY+dp</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center">match_parent</td>
+<td style="text-align:center">AT_MOST+size</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center">wrap_content</td>
+<td style="text-align:center">AT_MOST+size</td>
+</tr>
+<tr>
+<td style="text-align:center">UNSPECIFIED+size</td>
+<td style="text-align:center">dp</td>
+<td style="text-align:center">EXACTLY+dp</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center">match_parent</td>
+<td style="text-align:center">UPSPECIFIED+0</td>
+</tr>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center">wrap_content</td>
+<td style="text-align:center">UPSPECIFIED+0</td>
+</tr>
+</tbody>
+</table>
+<p>所以最终的MeasureSpec是由父控件的测量时得到的MeasureSpec与当前View的属性来决定的。这也是我们之前在<a href="http://diov.github.io/2016/02/15/From_XML_to_View/">LayoutInflater填充XML布局文件时</a>留下的问题，为什么必须要通过父控件才能使当前View的LayoutParams生效，原因也在这里了。</p>
+<h1 id="解决高度的原理"><a href="#解决高度的原理" class="headerlink" title="解决高度的原理"></a>解决高度的原理</h1><p>回过头来再看看我们一开始解决ListView高度的解决方式，在重写的<code>onMeasure()</code>方法中，我们通过<code>MeasureSpec.makeMeasureSpec()</code>方法，手动的生成了一个AT_MOST+size的 MeasureSpec。这样就避免了系统由于两层可滚动的控件嵌套导致的测量错误。当然，这里的size使用的是<code>Integer.MAX &gt;&gt; 2</code>，获得的值是远远大于屏幕的高度的，所以最终显示的高度还是只有屏幕高度这样</p>
+<p>如果我们使用Debug工具在<code>onMeasure()</code>中获取父控件传递过来的MeasureSpec对象，会发现其实这时候的heightMeasureSpec的值是0，也就是MODE为UNSPECIFIED，size为0。既然是这样为什么还是可以显示ListView中一个element的高度呢？</p>
+<p>原来在ListView的<code>onMeasure()</code>方法中，对最低的高度进行了计算：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (heightMode == MeasureSpec.UNSPECIFIED) &#123;</span><br><span class="line">    heightSize = mListPadding.top + mListPadding.bottom + childHeight +</span><br><span class="line">            getVerticalFadingEdgeLength() * <span class="number">2</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在不设置padding的情况下，默认得到的高度正好就是一个element的高度。这就是我们不重写默认显示的情况了</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[从XML到View]]></title>
       <url>http://diov.github.io/2016/02/15/From_XML_to_View/</url>
       <content type="html"><![CDATA[<p>通常，我们会将应用中需要展示的界面内容都写在XML文件中，通过<code>Activity</code>的<code>setContentView()</code>方法设置。<br>当我们希望动态的添加一个没有被加载的xml布局文件，比如在<code>ViewPager</code>或者是<code>ListView</code>中，就需要使用到<code>View.inflate()</code>方法或者是<code>LayoutInflater</code>这个类。</p>
