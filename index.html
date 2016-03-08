@@ -115,6 +115,34 @@ var _hmt = _hmt || [];
 <div class="row">
 	<div class="col-md-8">
 		<h3 class="title">
+			<a href="/2016/03/08/setContentView-findViewById/" title="从源码角度(android-23)来分析Activity.setContentView()和findViewById()">setContentView和findViewById的源码解析</a>
+		</h3>
+		</div>
+	<div class="col-md-4">
+		<div class="date">post @ 2016-03-08  </div>
+		</div>
+	</div>
+	
+
+
+			<div class="entry">
+  <div class="row">
+	
+	
+		<p>最近在面试的时候有碰到这样一个问题，就是“View.inflate()和View.findViewById()哪个更耗时，为什么”。通过之前对于<a href="http://diov.github.io/2016/02/15/From_XML_to_View/">View.inflate()源码的分析</a>，可以知道在将布局文件转化为View对象的时候需要通过io读取文件+遍历解析XML文件+生成每一个View对象，而findViewById()只是遍历View树来获取对应的View对象。所以很明显应该是View.inflate()更为耗时。</p>
+<p>那么，findViewById()究竟是如何通过id来获取对应的View对象的呢？我们今天从<code>Activity.setContentView()</code>和<code>Activity.findViewById()</code>的源码谈起</p>
+	
+	</div>
+  <a type="button" href="/2016/03/08/setContentView-findViewById/#more" class="btn btn-default more">阅读此文</a>
+</div>
+
+		
+			
+	
+	<!-- display as entry -->
+<div class="row">
+	<div class="col-md-8">
+		<h3 class="title">
 			<a href="/2016/03/02/Consum-Behavior-to-response-CoordinatorLayout-scroll/" title="自定义一个响应CoordinatorLayout滑动的Behavior">自定义CoordinatorLayout.Behavior</a>
 		</h3>
 		</div>
@@ -143,7 +171,7 @@ var _hmt = _hmt || [];
 <div class="row">
 	<div class="col-md-8">
 		<h3 class="title">
-			<a href="/2016/02/28/knowledge-about-onMeasure-from-ListView-height-problem/" title="从源码角度来分析onMeasure">从ListView的嵌套来理解onMeasure方法</a>
+			<a href="/2016/02/28/knowledge-about-onMeasure-from-ListView-height-problem/" title="从源码角度(android-23)来分析View的测量过程(onMeasure)">从ListView的嵌套来理解onMeasure方法</a>
 		</h3>
 		</div>
 	<div class="col-md-4">
@@ -256,7 +284,7 @@ var _hmt = _hmt || [];
 <div class="row">
 	<div class="col-md-8">
 		<h3 class="title">
-			<a href="/2016/01/17/Analisis_of_Touchevent_in_Android/" title="对于View中触摸事件分发的源码分析">Android 触摸事件分发源码</a>
+			<a href="/2016/01/17/Analisis_of_Touchevent_in_Android/" title="对于View中触摸事件分发的源码(android-23)分析">Android 触摸事件分发源码</a>
 		</h3>
 		</div>
 	<div class="col-md-4">
@@ -373,9 +401,9 @@ var _hmt = _hmt || [];
 		<h4>分类</h4>
 		<ul class="tag_box inline list-unstyled">
 		
-			<li><a href="/categories/CVS/">CVS<span>1</span></a></li>
+			<li><a href="/categories/Android/">Android<span>7</span></a></li>
 		
-			<li><a href="/categories/Code/">Code<span>6</span></a></li>
+			<li><a href="/categories/CVS/">CVS<span>1</span></a></li>
 		
 		</ul>
 	</div>
@@ -386,13 +414,15 @@ var _hmt = _hmt || [];
 		<h4>标签云</h4>
 		<ul class="tag_box inline list-unstyled">		
 		
-			<li><a href="/tags/Git/">Git<span>1</span></a></li>
-		
 			<li><a href="/tags/MD控件/">MD控件<span>1</span></a></li>
 		
-			<li><a href="/tags/Android/">Android<span>2</span></a></li>
+			<li><a href="/tags/源码分析/">源码分析<span>4</span></a></li>
 		
-			<li><a href="/tags/源码分析/">源码分析<span>3</span></a></li>
+			<li><a href="/tags/个人项目/">个人项目<span>1</span></a></li>
+		
+			<li><a href="/tags/Translator/">Translator<span>1</span></a></li>
+		
+			<li><a href="/tags/Git/">Git<span>1</span></a></li>
 		
 		 
 		</ul>

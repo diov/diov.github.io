@@ -2,37 +2,51 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://diov.github.io/2016/02/28/knowledge-about-onMeasure-from-ListView-height-problem/</loc>
+    <loc>http://diov.github.io/2016/03/08/setContentView-findViewById/</loc>
     
-    <lastmod>2016-03-02T15:23:05.553Z</lastmod>
+    <lastmod>2016-03-08T07:47:15.557Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://diov.github.io/2016/03/02/Consum-Behavior-to-response-CoordinatorLayout-scroll/</loc>
+    <loc>http://diov.github.io/2016/01/28/KillPay_Dev_Experience/</loc>
     
-    <lastmod>2016-03-02T15:21:30.649Z</lastmod>
+    <lastmod>2016-03-08T07:47:12.901Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://diov.github.io/2016/02/28/knowledge-about-onMeasure-from-ListView-height-problem/</loc>
+    
+    <lastmod>2016-03-08T07:47:11.365Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://diov.github.io/2016/02/15/From_XML_to_View/</loc>
     
-    <lastmod>2016-02-19T08:33:52.411Z</lastmod>
+    <lastmod>2016-03-08T07:46:49.505Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://diov.github.io/2016/01/17/Analisis_of_Touchevent_in_Android/</loc>
+    <loc>http://diov.github.io/2016/03/02/Consum-Behavior-to-response-CoordinatorLayout-scroll/</loc>
     
-    <lastmod>2016-02-19T08:33:43.567Z</lastmod>
+    <lastmod>2016-03-08T07:46:45.481Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://diov.github.io/2016/02/12/%5BT%5DSplash_Screens-the%20Right_Way/</loc>
     
-    <lastmod>2016-02-19T08:25:06.205Z</lastmod>
+    <lastmod>2016-03-08T07:46:35.201Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://diov.github.io/2016/01/17/Analisis_of_Touchevent_in_Android/</loc>
+    
+    <lastmod>2016-03-08T07:46:34.133Z</lastmod>
     
   </url>
   
@@ -47,13 +61,6 @@
     <loc>http://diov.github.io/2016/01/01/hello/</loc>
     
     <lastmod>2016-02-19T08:25:02.149Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://diov.github.io/2016/01/28/KillPay_Dev_Experience/</loc>
-    
-    <lastmod>2016-02-19T08:24:59.449Z</lastmod>
     
   </url>
   
