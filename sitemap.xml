@@ -2,6 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://diov.github.io/2016/03/20/A-Brief-Analysis-on-AIDL-of-Binder/</loc>
+    
+    <lastmod>2016-03-20T07:41:26.638Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://diov.github.io/2016/03/02/Consum-Behavior-to-response-CoordinatorLayout-scroll/</loc>
+    
+    <lastmod>2016-03-08T15:54:09.930Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://diov.github.io/2016/03/08/setContentView-findViewById/</loc>
     
     <lastmod>2016-03-08T07:47:15.557Z</lastmod>
@@ -26,13 +40,6 @@
     <loc>http://diov.github.io/2016/02/15/From_XML_to_View/</loc>
     
     <lastmod>2016-03-08T07:46:49.505Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://diov.github.io/2016/03/02/Consum-Behavior-to-response-CoordinatorLayout-scroll/</loc>
-    
-    <lastmod>2016-03-08T07:46:45.481Z</lastmod>
     
   </url>
   
