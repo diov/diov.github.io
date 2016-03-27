@@ -1,0 +1,300 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  
+  <title>在TextView中自定义HTML样式 | README.MD</title>
+  <meta name="author" content="Dio_V">
+  
+  <meta name="description" content="通过对Html.fromHtml的源码分析，自定义Html标签的样式">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="在TextView中自定义HTML样式"/>
+  <meta property="og:site_name" content="README.MD"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+
+  <!-- analytics -->
+  
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8190074";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+</head>
+
+ <body>  
+  <nav id="main-nav" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+	  <a class="navbar-brand" href="/">README.MD</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class=""></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class=""></i>About
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/atom.xml" title="Subscribe me.">
+			  <i class=""></i>RSS
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+  	<div class="content">
+    	 
+
+
+	
+		<div class="page-header">
+			<h1> 在TextView中自定义HTML样式</h1>
+		</div>
+	
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  
+		 <div class="alert alert-success description">
+			<i class="fa fa-info-circle"></i> 通过对Html.fromHtml的源码分析，自定义Html标签的样式
+		 </div> <!-- alert -->
+	  		
+
+	  <p>通常，当我们需要在TextView中显示服务器端返回的Html内容时，就会用到<code>Html.fromHtml(String source)</code>这个方法。Google在源码中默认的为我们提供了对一些Html标签的支持。<br>但是如果我们想要对已有的标签进行自定义展示，或者是有些标签还没有得到支持，那应该怎么做呢？</p>
+<a id="more"></a>
+<hr>
+<h1 id="Html源码分析"><a href="#Html源码分析" class="headerlink" title="Html源码分析"></a>Html源码分析</h1><p>我们知道，使用<code>Html.fromHtml(String source)</code>这个方法时，我们需要将带有Html标签的文本作为参数传递过来。那么在Html这个类中必然会有对不同的标签进行判断，并添加样式的方法。通过查找，主要是由两个方法来完成的</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleStartTag</span><span class="params">(String tag, Attributes attributes)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"br"</span>)) &#123;</span><br><span class="line">        <span class="comment">// We don't need to handle this. TagSoup will ensure that there's a &lt;/br&gt; for each &lt;br&gt;</span></span><br><span class="line">        <span class="comment">// so we can safely emite the linebreaks when we handle the close tag.</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"p"</span>)) &#123;</span><br><span class="line">        handleP(mSpannableStringBuilder);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"div"</span>)) &#123;</span><br><span class="line">        handleP(mSpannableStringBuilder);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"strong"</span>)) &#123;</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Bold());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"b"</span>)) &#123;</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Bold());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"em"</span>)) &#123;</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Italic());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"cite"</span>)) &#123;</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Italic());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"dfn"</span>)) &#123;</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Italic());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"i"</span>)) &#123;</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Italic());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"big"</span>)) &#123;</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Big());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"small"</span>)) &#123;</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Small());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"font"</span>)) &#123;</span><br><span class="line">        startFont(mSpannableStringBuilder, attributes);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"blockquote"</span>)) &#123;</span><br><span class="line">        handleP(mSpannableStringBuilder);</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Blockquote());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"tt"</span>)) &#123;</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Monospace());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"a"</span>)) &#123;</span><br><span class="line">        startA(mSpannableStringBuilder, attributes);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"u"</span>)) &#123;</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Underline());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"sup"</span>)) &#123;</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Super());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"sub"</span>)) &#123;</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Sub());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.length() == <span class="number">2</span> &amp;&amp;</span><br><span class="line">               Character.toLowerCase(tag.charAt(<span class="number">0</span>)) == <span class="string">'h'</span> &amp;&amp;</span><br><span class="line">               tag.charAt(<span class="number">1</span>) &gt;= <span class="string">'1'</span> &amp;&amp; tag.charAt(<span class="number">1</span>) &lt;= <span class="string">'6'</span>) &#123;</span><br><span class="line">        handleP(mSpannableStringBuilder);</span><br><span class="line">        start(mSpannableStringBuilder, <span class="keyword">new</span> Header(tag.charAt(<span class="number">1</span>) - <span class="string">'1'</span>));</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"img"</span>)) &#123;</span><br><span class="line">        startImg(mSpannableStringBuilder, attributes, mImageGetter);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mTagHandler != <span class="keyword">null</span>) &#123;</span><br><span class="line">        mTagHandler.handleTag(<span class="keyword">true</span>, tag, mSpannableStringBuilder, mReader);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleEndTag</span><span class="params">(String tag)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"br"</span>)) &#123;</span><br><span class="line">        handleBr(mSpannableStringBuilder);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"p"</span>)) &#123;</span><br><span class="line">        handleP(mSpannableStringBuilder);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"div"</span>)) &#123;</span><br><span class="line">        handleP(mSpannableStringBuilder);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"strong"</span>)) &#123;</span><br><span class="line">        end(mSpannableStringBuilder, Bold.class, <span class="keyword">new</span> StyleSpan(Typeface.BOLD));</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"b"</span>)) &#123;</span><br><span class="line">        end(mSpannableStringBuilder, Bold.class, <span class="keyword">new</span> StyleSpan(Typeface.BOLD));</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"em"</span>)) &#123;</span><br><span class="line">        end(mSpannableStringBuilder, Italic.class, <span class="keyword">new</span> StyleSpan(Typeface.ITALIC));</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"cite"</span>)) &#123;</span><br><span class="line">        end(mSpannableStringBuilder, Italic.class, <span class="keyword">new</span> StyleSpan(Typeface.ITALIC));</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"dfn"</span>)) &#123;</span><br><span class="line">        end(mSpannableStringBuilder, Italic.class, <span class="keyword">new</span> StyleSpan(Typeface.ITALIC));</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"i"</span>)) &#123;</span><br><span class="line">        end(mSpannableStringBuilder, Italic.class, <span class="keyword">new</span> StyleSpan(Typeface.ITALIC));</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"big"</span>)) &#123;</span><br><span class="line">        end(mSpannableStringBuilder, Big.class, <span class="keyword">new</span> RelativeSizeSpan(<span class="number">1.25f</span>));</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"small"</span>)) &#123;</span><br><span class="line">        end(mSpannableStringBuilder, Small.class, <span class="keyword">new</span> RelativeSizeSpan(<span class="number">0.8f</span>));</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"font"</span>)) &#123;</span><br><span class="line">        endFont(mSpannableStringBuilder);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"blockquote"</span>)) &#123;</span><br><span class="line">        handleP(mSpannableStringBuilder);</span><br><span class="line">        end(mSpannableStringBuilder, Blockquote.class, <span class="keyword">new</span> QuoteSpan());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"tt"</span>)) &#123;</span><br><span class="line">        end(mSpannableStringBuilder, Monospace.class,</span><br><span class="line">                <span class="keyword">new</span> TypefaceSpan(<span class="string">"monospace"</span>));</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"a"</span>)) &#123;</span><br><span class="line">        endA(mSpannableStringBuilder);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"u"</span>)) &#123;</span><br><span class="line">        end(mSpannableStringBuilder, Underline.class, <span class="keyword">new</span> UnderlineSpan());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"sup"</span>)) &#123;</span><br><span class="line">        end(mSpannableStringBuilder, Super.class, <span class="keyword">new</span> SuperscriptSpan());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.equalsIgnoreCase(<span class="string">"sub"</span>)) &#123;</span><br><span class="line">        end(mSpannableStringBuilder, Sub.class, <span class="keyword">new</span> SubscriptSpan());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (tag.length() == <span class="number">2</span> &amp;&amp;</span><br><span class="line">            Character.toLowerCase(tag.charAt(<span class="number">0</span>)) == <span class="string">'h'</span> &amp;&amp;</span><br><span class="line">            tag.charAt(<span class="number">1</span>) &gt;= <span class="string">'1'</span> &amp;&amp; tag.charAt(<span class="number">1</span>) &lt;= <span class="string">'6'</span>) &#123;</span><br><span class="line">        handleP(mSpannableStringBuilder);</span><br><span class="line">        endHeader(mSpannableStringBuilder);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mTagHandler != <span class="keyword">null</span>) &#123;</span><br><span class="line">        mTagHandler.handleTag(<span class="keyword">false</span>, tag, mSpannableStringBuilder, mReader);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因为Html标签总是成对出现，所以有<code>handleStartTag</code>和<code>HandleEndTag</code>两个方法。<br>其实在这两个方法中，都是对一些标签进行了判断，在调用<code>start(SpannableStringBuilder text, Class kind, Object repl)</code>和<code>end(SpannableStringBuilder text, Class kind, Object repl)</code>这两个方法。   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">(SpannableStringBuilder text, Object mark)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> len = text.length();</span><br><span class="line">    text.setSpan(mark, len, len, Spannable.SPAN_MARK_MARK);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">end</span><span class="params">(SpannableStringBuilder text, Class kind,</span><br><span class="line">                        Object repl)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> len = text.length();</span><br><span class="line">    Object obj = getLast(text, kind);</span><br><span class="line">    <span class="keyword">int</span> where = text.getSpanStart(obj);</span><br><span class="line"></span><br><span class="line">    text.removeSpan(obj);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (where != len) &#123;</span><br><span class="line">        text.setSpan(repl, where, len, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这两个方法中，最核心的代码就是<code>SpannableStringBuilder.setSpan(Object what, int start, int end, int flags)</code>。</p>
+<blockquote>
+<p>Mark the specified range of text with the specified object. The flags determine how the span will behave when text is inserted at the start or end of the span’s range.</p>
+</blockquote>
+<p>通过查阅文档，我们可以知道这个方法是将text中指定的区域添加上样式，flag参数决定在指定范围前后插入文本时是否采用同样的样式</p>
+<h1 id="解决问题"><a href="#解决问题" class="headerlink" title="解决问题"></a>解决问题</h1><p>现在我们知道了<code>Html.fromHtml</code>是如何来实现对Html标签的解析并且添加上样式。那么如何来解决我们最开始提出的问题呢？</p>
+<ul>
+<li>例： 搜索指定字段，服务器返回的搜索结果中，将字段添加<em>标签返回。此时使用<code>Html.from</code>默认的样式是斜体，而我们需要给字段添加背景为黄色的高亮。</em></li>
+</ul>
+<blockquote>
+<p> ‘em’ 标签告诉浏览器把其中的文本表示为强调的内容。对于所有浏览器来说，这意味着要把这段文字用斜体来显示。<br>除强调之外，当引入新的术语或在引用特定类型的术语或概念时作为固定样式的时候，也可以考虑使用 ‘em’ 标签。</p>
+</blockquote>
+<h2 id="替换样式"><a href="#替换样式" class="headerlink" title="替换样式"></a>替换样式</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Spannable source = (Spannable) Html.fromHtml(content);</span><br><span class="line">  <span class="keyword">final</span> StyleSpan[] styleSpans = source.getSpans(<span class="number">0</span>, source.length(), StyleSpan.class);</span><br><span class="line">  <span class="keyword">if</span> (styleSpans != <span class="keyword">null</span> &amp;&amp; styleSpans.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">for</span> (StyleSpan styleSpan : styleSpans) &#123;</span><br><span class="line">          <span class="keyword">if</span> (Typeface.ITALIC == styleSpan.getStyle()) &#123;</span><br><span class="line">              source.setSpan(<span class="keyword">new</span> BackgroundColorSpan(Color.YELLOW), source.getSpanStart(styleSpan),</span><br><span class="line">                      source.getSpanEnd(styleSpan), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);</span><br><span class="line">              source.removeSpan(styleSpan);</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>通过<code>setSpan</code>和<code>removeSpan</code>，我们将原有的<code>StyleSpan(Typeface.ITALIC)</code>移除，转而替换为<code>BackgroundColorSpan</code>。</p>
+<h2 id="自定义TagHandler"><a href="#自定义TagHandler" class="headerlink" title="自定义TagHandler"></a>自定义TagHandler</h2><p>使用重载的<code>Html.fromHtml(String source, ImageGetter imageGetter, TagHandler tagHandler)</code>方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyTagHandler</span> <span class="keyword">implements</span> <span class="title">TagHandler</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> sIndex = <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">private</span>  <span class="keyword">int</span> eIndex=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Context mContext;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MxgsaTagHandler</span><span class="params">(Context context)</span></span>&#123;</span><br><span class="line">        mContext=context;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleTag</span><span class="params">(<span class="keyword">boolean</span> opening, String tag, Editable output, XMLReader xmlReader)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (tag.toLowerCase().equals(<span class="string">"eem"</span>)) &#123;</span><br><span class="line">            <span class="keyword">if</span> (opening) &#123;</span><br><span class="line">                sIndex=output.length();</span><br><span class="line">            &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                eIndex=output.length();</span><br><span class="line">                output.setSpan(<span class="keyword">new</span> BackgroundColorSpan(Color.YELLOW), source.getSpanStart(styleSpan),</span><br><span class="line">                        source.getSpanEnd(styleSpan), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用自定义的TagHandler时需要注意的一点是，因为<code>Html.fromHtml</code>会先调用默认的逻辑来添加样式，此时是不会调用到我们自己实现的TagHandler中的逻辑的。这时候我们只能先将初始文本通过正则表达式进行替换。<br>所以当<code>Html</code>类中没有进行处理的Html标签，再考虑使用自定义TagHandler会是一个更好的选择。</p>
+	  
+	</div>
+
+	<div>
+  	<center>
+	<div class="pagination">
+
+    
+    
+    <a type="button" class="btn btn-default disabled"><i class="fa fa-arrow-circle-o-left"></i>上一页</a>
+    
+
+    <a href="/" type="button" class="btn btn-default"><i class="fa fa-home"></i>Home</a>
+    
+    <a href="/2016/03/20/A-Brief-Analysis-on-AIDL-of-Binder/" type="button" class="btn btn-default ">下一页<i
+                class="fa fa-arrow-circle-o-right"></i></a>
+    
+
+    
+</div>
+
+    </center>
+	</div>
+	
+	<!-- comment -->
+	
+<section id="comment">
+    <h2 class="title">留言</h2>
+
+    
+    <div class="ds-thread" data-thread-key="2016/03/27/consum-Html-pattern/" data-title="在TextView中自定义HTML样式"
+         data-url="http://diov.github.io/2016/03/27/consum-Html-pattern/"></div>
+    
+</section>
+
+
+	</div> <!-- col-md-9/col-md-12 -->
+		
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2016-03-27 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    <li><a href="/categories/Android/">Android<span>9</span></a></li>
+  </li>
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/坑/">坑<span>1</span></a></li>
+    </ul>
+	</div>
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
+	   <div id="toc" class="toc collapse in">
+		   <span class="toc-title">Contents</span>
+			<ol class="toc-article"><li class="toc-article-item toc-article-level-1"><a class="toc-article-link" href="#Html源码分析"><span class="toc-article-text">Html源码分析</span></a></li><li class="toc-article-item toc-article-level-1"><a class="toc-article-link" href="#解决问题"><span class="toc-article-text">解决问题</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#替换样式"><span class="toc-article-text">替换样式</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#自定义TagHandler"><span class="toc-article-text">自定义TagHandler</span></a></li></ol></li></ol>
+		</div>
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+	</div>
+		
+
+</div><!-- row -->
+
+<script type="text/javascript">
+  var duoshuoQuery = { short_name: 'diov87' };
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';
+    ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+
+
+
+	</div>
+  </div>
+  <div class="container-narrow">
+  <footer> <p>
+  &copy; 2016 Dio_V
+  
+      with help from <a href="http://hexo.io/" target="_blank">Hexo</a>,<a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind</a>,<a href="http://getbootstrap.com/" target="_blank">Twitter Bootstrap</a> and <a href="http://getbootstrap.com/" target="_blank">BOOTSTRA.386</a>. 
+     <br> Theme by <a href="http://github.com/wzpan/hexo-theme-freemind/">Freemind.386</a>.    
+</p>
+ </footer>
+</div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>⬆︎TOP</span>
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+   <script type="text/javascript">      
+     var search_path = "search.xml";
+	 if (search_path.length == 0) {
+	 	search_path = "search.xml";
+	 }
+	 var path = "/" + search_path;
+     searchFunc(path, 'local-search-input', 'local-search-result');
+   </script>
+
+</body>
+   </html>
