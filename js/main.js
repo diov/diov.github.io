@@ -1,1 +1,111 @@
-$(document).ready(function(){$(window).scroll(function(){var scrollt=document.documentElement.scrollTop+document.body.scrollTop;if(scrollt>200){$("#gotop").fadeIn(400);if($(window).width()>=1200){$(".navbar").stop().fadeTo(400,0.2);}}else{$("#gotop").fadeOut(400);if($(window).width()>=1200){$(".navbar").stop().fadeTo(400,1);}}});$("#gotop").click(function(){$("html,body").animate({scrollTop:"0px"},200);});$(".navbar").mouseenter(function(){$(".navbar").fadeTo(100,1);});$(".navbar").mouseleave(function(){var scrollt=document.documentElement.scrollTop+document.body.scrollTop;if(scrollt>200){$(".navbar").fadeTo(100,0.2);}});replaceMeta();$(window).resize(function(){replaceMeta();});});replaceMeta=function(){if($(window).width()<980){if($("#side_meta #post_meta").length>0){$("#post_meta").appendTo("#top_meta");}if($("#sidebar #site_search").length>0){$("#site_search").appendTo("#top_search");$("#site_search #st-search-input").css("width","95%");}}else{if($("#top_meta #post_meta").length>0){$("#post_meta").appendTo("#side_meta");}if($("#top_search #site_search").length>0){$("#site_search").prependTo("#sidebar");$("#site_search #st-search-input").css("width","85%");}}};
+// Dean Attali / Beautiful Jekyll 2016
+
+var main = {
+
+  bigImgEl : null,
+  numImgs : null,
+
+  init : function() {
+    // Shorten the navbar after scrolling a little bit down
+    $(window).scroll(function() {
+        if ($(".navbar").offset().top > 50) {
+            $(".navbar").addClass("top-nav-short");
+        } else {
+            $(".navbar").removeClass("top-nav-short");
+        }
+    });
+    
+    // On mobile, hide the avatar when expanding the navbar menu
+    $('#main-navbar').on('show.bs.collapse', function () {
+      $(".navbar").addClass("top-nav-expanded");
+    });
+    $('#main-navbar').on('hidden.bs.collapse', function () {
+      $(".navbar").removeClass("top-nav-expanded");
+    });
+  
+    // On mobile, when clicking on a multi-level navbar menu, show the child links
+    $('#main-navbar').on("click", ".navlinks-parent", function(e) {
+      var target = e.target;
+      $.each($(".navlinks-parent"), function(key, value) {
+        if (value == target) {
+          $(value).parent().toggleClass("show-children");
+        } else {
+          $(value).parent().removeClass("show-children");
+        }
+      });
+    });
+    
+    // show the big header image  
+    main.initImgs();
+  },
+  
+  initImgs : function() {
+    // If the page was large images to randomly select from, choose an image
+    if ($("#header-big-imgs").length > 0) {
+      main.bigImgEl = $("#header-big-imgs");
+      main.numImgs = main.bigImgEl.attr("data-num-img");
+
+          // 2fc73a3a967e97599c9763d05e564189
+    // set an initial image
+    var imgInfo = main.getImgInfo();
+    var src = imgInfo.src;
+    var desc = imgInfo.desc;
+      main.setImg(src, desc);
+    
+    // For better UX, prefetch the next image so that it will already be loaded when we want to show it
+      var getNextImg = function() {
+      var imgInfo = main.getImgInfo();
+      var src = imgInfo.src;
+      var desc = imgInfo.desc;      
+      
+    var prefetchImg = new Image();
+      prefetchImg.src = src;
+    // if I want to do something once the image is ready: `prefetchImg.onload = function(){}`
+    
+      setTimeout(function(){
+                  var img = $("<div></div>").addClass("big-img-transition").css("background-image", 'url(' + src + ')');
+        $(".intro-header.big-img").prepend(img);
+        setTimeout(function(){ img.css("opacity", "1"); }, 50);
+      
+      // after the animation of fading in the new image is done, prefetch the next one
+        //img.one("transitioned webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(){
+      setTimeout(function() {
+        main.setImg(src, desc);
+      img.remove();
+        getNextImg();
+      }, 1000); 
+        //});   
+      }, 6000);
+      };
+    
+    // If there are multiple images, cycle through them
+    if (main.numImgs > 1) {
+        getNextImg();
+    }
+    }
+  },
+  
+  getImgInfo : function() {
+    var randNum = Math.floor((Math.random() * main.numImgs) + 1);
+    var src = main.bigImgEl.attr("data-img-src-" + randNum);
+  var desc = main.bigImgEl.attr("data-img-desc-" + randNum);
+  
+  return {
+    src : src,
+    desc : desc
+  }
+  },
+  
+  setImg : function(src, desc) {
+  $(".intro-header.big-img").css("background-image", 'url(' + src + ')');
+  if (typeof desc !== typeof undefined && desc !== false) {
+    $(".img-desc").text(desc).show();
+  } else {
+    $(".img-desc").hide();  
+  }
+  }
+};
+
+// 2fc73a3a967e97599c9763d05e564189
+
+document.addEventListener('DOMContentLoaded', main.init);
