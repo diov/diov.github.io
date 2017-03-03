@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>从AIDL浅析Binder机制</title>
+  <meta name="description" content="通过AIDL的使用，来简单分析一下Android中Binder的IPC机制">
+  <meta name="author" content="Dio_V"/>
+  <meta name="generator" content="Hugo 0.19" />
+  <link href='https://diov.github.io//img/favicon.ico' rel='icon' type='image/x-icon'/>
+
+  <link rel="alternate" href="https://diov.github.io/index.xml" type="application/rss+xml" title="Meow">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="https://diov.github.io//css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://diov.github.io//css/main.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+  <link rel="stylesheet" href="https://diov.github.io//css/pygment_highlights.css" />
+  <link rel="stylesheet" href="https://diov.github.io/css/highlight.min.css">
+  
+  
+  <meta property="og:title" content="从AIDL浅析Binder机制" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="/2016/03/20/%E4%BB%8Eaidl%E6%B5%85%E6%9E%90binder%E6%9C%BA%E5%88%B6" />
+  <meta property="og:image" content="/img/avatar-icon.png" />
+  
+</head>
+
+
+  <body>
+
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="https://diov.github.io/">Meow</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+          <li>
+          <a title="Blog" href="../../../../">Blog</a>
+  	      </li>
+  	    
+      
+        
+          <li>
+          <a title="About" href="../../../../page/about/">About</a>
+  	      </li>
+  	    
+      
+      </ul>
+    </div>
+
+	<div class="avatar-container">
+	  <div class="avatar-img-border">
+      
+          <a title="Meow" href="https://diov.github.io/">
+              <img class="avatar-img" src="https://diov.github.io//img/avatar-icon.png" alt="Meow" />
+          </a>
+      
+	  </div>
+	</div>
+
+  </div>
+</nav>
+
+
+    <div role="main" class="container main-content">
+
+      
+
+
+
+  
+
+  <header class="header-section ">
+  
+  <div class="intro-header no-img">
+      <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-heading">
+          <h1>从AIDL浅析Binder机制</h1>
+      
+      
+      
+      <span class="post-meta">Posted on March 20, 2016</span>
+      
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  </header>
+
+	  
+      
+        <div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <article role="main" class="blog-post">
+          
+
+<p>AIDL(Android Interface Defination Language),Android接口定义语言。是Google专门为Android中跨进程调用服务所设计的一种接口语言。<br />
+其本质是Android中特有的一种IPC机制：Binder机制。通过对AIDL的分析我们也可以对Binder机制有所了解</p>
+
+<!-- more -->
+
+<h1 id="aidl的使用">AIDL的使用</h1>
+
+<p>首先让我们简单回顾一下AIDL是如何使用的。下面的操作基于Android Studio。</p>
+
+<ul>
+<li>创建AIDL文件<br />
+在Project视图下，在/src/main/下创建与java同级的aidl文件夹，并在该文件夹下创建包名(例:com.example.diov.testaidl),在该文件夹下创建AIDL文件</li>
+</ul>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kn">package</span> <span class="nn">com.example.diov.testaidl</span><span class="o">;</span>
+
+<span class="kd">interface</span> <span class="nc">TestAidl</span> <span class="o">{</span>
+    <span class="kt">void</span> <span class="nf">add</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+
+<p>在这个接口文件中定义Service需要实现的方法。</p>
+
+<ul>
+<li>实现AIDL中的方法<br />
+创建完AIDL文件后，通过Gradle编译。编译成功后可以在/generated/source/debug/{packagename}/下找到生成的TestAidl.java文件。<br />
+然后我们回到Service中，实现AIDL接口中定义的方法</li>
+</ul>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">IRemoteService</span> <span class="kd">extends</span> <span class="n">Service</span><span class="o">{</span>
+
+  <span class="c1">// 绑定服务时将IBinder对象返回出去</span>
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">IBinder</span> <span class="nf">onBind</span><span class="o">(</span><span class="n">Intent</span> <span class="n">intent</span><span class="o">){</span>
+    <span class="k">return</span> <span class="n">iBinder</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">private</span> <span class="n">IBinder</span> <span class="n">iBinder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TestAidl</span><span class="o">.</span><span class="na">Stub</span><span class="o">(){</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">add</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">,</span> <span class="kt">int</span> <span class="n">j</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">RemoteException</span> <span class="o">{</span>
+      <span class="c1">// 具体实现</span>
+      <span class="k">return</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+<ul>
+<li>调用AIDL<br />
+在Client里按照第一步，把相同的AIDL文件创建出来。<br />
+绑定Service需要调用<code>bindService(Intent intent, ServiceConnection conn, int flag)</code>方法。<br />
+这里主要是实现ServiceConnection接口，在这个接口的回调方法中就可以得到对应的服务所提供IBinder对象了<br /></li>
+</ul>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">private</span> <span class="n">TestAidl</span> <span class="n">aidl</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">ServiceConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ServiceConnection</span><span class="o">{</span>
+  <span class="c1">// 绑定成功时回调</span>
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onServiceConnected</span><span class="o">(</span><span class="n">ComponentName</span> <span class="n">name</span><span class="o">,</span> <span class="n">IBinder</span> <span class="n">service</span><span class="o">){</span>
+    <span class="c1">// 获取到了远程服务</span>
+    <span class="n">aidl</span> <span class="o">=</span> <span class="n">TestAidl</span><span class="o">.</span><span class="na">Stub</span><span class="o">.</span><span class="na">asInterface</span><span class="o">(</span><span class="n">service</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="c1">// 解除绑定时回调</span>
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onServiceDisconnected</span><span class="o">(</span><span class="n">ComponentName</span> <span class="n">name</span><span class="o">){</span>
+    <span class="n">aidl</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+<p>获取到IBinder对象后，就可以实现IPC，调用远程服务了。</p>
+
+<h1 id="aidl的实现原理">AIDL的实现原理</h1>
+
+<p>现在来看看AS自动帮我们生成的TestAdil.java这个文件</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kn">package</span> <span class="nn">com.example.diov.testaidl</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">TestAidl</span> <span class="kd">extends</span> <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">IInterface</span> <span class="o">{</span>
+    <span class="cm">/**</span>
+<span class="cm">     * 存根类，实现了Binder和TestAidl接口(IInterface接口)</span>
+<span class="cm">     */</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">Stub</span> <span class="kd">extends</span> <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Binder</span> <span class="kd">implements</span> <span class="n">com</span><span class="o">.</span><span class="na">example</span><span class="o">.</span><span class="na">dio_v</span><span class="o">.</span><span class="na">materialdemo</span><span class="o">.</span><span class="na">TestAidl</span> <span class="o">{</span>
+        <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">DESCRIPTOR</span> <span class="o">=</span> <span class="s">&quot;com.example.dio_v.materialdemo.TestAidl&quot;</span><span class="o">;</span>
+
+        <span class="kd">public</span> <span class="nf">Stub</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">this</span><span class="o">.</span><span class="na">attachInterface</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">DESCRIPTOR</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="cm">/**</span>
+<span class="cm">         * 将IBinder对象转换成com.example.diov.testaidl.TestAidl接口,</span>
+<span class="cm">         * 如果需要的话生成一个代理.</span>
+<span class="cm">         */</span>
+        <span class="kd">public</span> <span class="kd">static</span> <span class="n">com</span><span class="o">.</span><span class="na">example</span><span class="o">.</span><span class="na">dio_v</span><span class="o">.</span><span class="na">materialdemo</span><span class="o">.</span><span class="na">TestAidl</span> <span class="nf">asInterface</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">IBinder</span> <span class="n">obj</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">((</span><span class="n">obj</span> <span class="o">==</span> <span class="kc">null</span><span class="o">))</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">IInterface</span> <span class="n">iin</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="na">queryLocalInterface</span><span class="o">(</span><span class="n">DESCRIPTOR</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(((</span><span class="n">iin</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">iin</span> <span class="k">instanceof</span> <span class="n">com</span><span class="o">.</span><span class="na">example</span><span class="o">.</span><span class="na">dio_v</span><span class="o">.</span><span class="na">materialdemo</span><span class="o">.</span><span class="na">TestAidl</span><span class="o">)))</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="o">((</span><span class="n">com</span><span class="o">.</span><span class="na">example</span><span class="o">.</span><span class="na">dio_v</span><span class="o">.</span><span class="na">materialdemo</span><span class="o">.</span><span class="na">TestAidl</span><span class="o">)</span> <span class="n">iin</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">com</span><span class="o">.</span><span class="na">example</span><span class="o">.</span><span class="na">dio_v</span><span class="o">.</span><span class="na">materialdemo</span><span class="o">.</span><span class="na">TestAidl</span><span class="o">.</span><span class="na">Stub</span><span class="o">.</span><span class="na">Proxy</span><span class="o">(</span><span class="n">obj</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">IBinder</span> <span class="nf">asBinder</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="c1">// 当Client调用Service时，获取代理类发送过来的数据</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">onTransact</span><span class="o">(</span><span class="kt">int</span> <span class="n">code</span><span class="o">,</span> <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Parcel</span> <span class="n">data</span><span class="o">,</span> <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Parcel</span> <span class="n">reply</span><span class="o">,</span> <span class="kt">int</span> <span class="n">flags</span><span class="o">)</span> <span class="kd">throws</span>
+                <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">RemoteException</span> <span class="o">{</span>
+            <span class="k">switch</span> <span class="o">(</span><span class="n">code</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">case</span> <span class="n">INTERFACE_TRANSACTION</span><span class="o">:</span> <span class="o">{</span>
+                    <span class="n">reply</span><span class="o">.</span><span class="na">writeString</span><span class="o">(</span><span class="n">DESCRIPTOR</span><span class="o">);</span>
+                    <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+                <span class="o">}</span>
+                <span class="k">case</span> <span class="n">TRANSACTION_add</span><span class="o">:</span> <span class="o">{</span>
+                    <span class="n">data</span><span class="o">.</span><span class="na">enforceInterface</span><span class="o">(</span><span class="n">DESCRIPTOR</span><span class="o">);</span>
+                    <span class="kt">int</span> <span class="n">_arg0</span><span class="o">;</span>
+                    <span class="n">_arg0</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="na">readInt</span><span class="o">();</span>
+                    <span class="kt">int</span> <span class="n">_arg1</span><span class="o">;</span>
+                    <span class="n">_arg1</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="na">readInt</span><span class="o">();</span>
+
+                    <span class="c1">// 通过子类来实现方法中具体的操作，并将结果通过reply对象返回出去</span>
+                    <span class="kt">int</span> <span class="n">_result</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">_arg0</span><span class="o">,</span> <span class="n">_arg1</span><span class="o">);</span>
+                    <span class="n">reply</span><span class="o">.</span><span class="na">writeNoException</span><span class="o">();</span>
+                    <span class="n">reply</span><span class="o">.</span><span class="na">writeInt</span><span class="o">(</span><span class="n">_result</span><span class="o">);</span>
+                    <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+            <span class="k">return</span> <span class="kd">super</span><span class="o">.</span><span class="na">onTransact</span><span class="o">(</span><span class="n">code</span><span class="o">,</span> <span class="n">data</span><span class="o">,</span> <span class="n">reply</span><span class="o">,</span> <span class="n">flags</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="c1">// 代理类，实现了TestAidl接口(IInterface接口)</span>
+        <span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Proxy</span> <span class="kd">implements</span> <span class="n">com</span><span class="o">.</span><span class="na">example</span><span class="o">.</span><span class="na">dio_v</span><span class="o">.</span><span class="na">materialdemo</span><span class="o">.</span><span class="na">TestAidl</span> <span class="o">{</span>
+            <span class="kd">private</span> <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">IBinder</span> <span class="n">mRemote</span><span class="o">;</span>
+
+            <span class="n">Proxy</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">IBinder</span> <span class="n">remote</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">mRemote</span> <span class="o">=</span> <span class="n">remote</span><span class="o">;</span>
+            <span class="o">}</span>
+
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">IBinder</span> <span class="nf">asBinder</span><span class="o">()</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="n">mRemote</span><span class="o">;</span>
+            <span class="o">}</span>
+
+            <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="nf">getInterfaceDescriptor</span><span class="o">()</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="n">DESCRIPTOR</span><span class="o">;</span>
+            <span class="o">}</span>
+
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">int</span> <span class="nf">add</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">,</span> <span class="kt">int</span> <span class="n">j</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">RemoteException</span> <span class="o">{</span>
+                <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Parcel</span> <span class="n">_data</span> <span class="o">=</span> <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Parcel</span><span class="o">.</span><span class="na">obtain</span><span class="o">();</span>
+                <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Parcel</span> <span class="n">_reply</span> <span class="o">=</span> <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">Parcel</span><span class="o">.</span><span class="na">obtain</span><span class="o">();</span>
+                <span class="kt">int</span> <span class="n">_result</span><span class="o">;</span>
+                <span class="k">try</span> <span class="o">{</span>
+                    <span class="c1">// 通过序列化将参数发送</span>
+                    <span class="n">_data</span><span class="o">.</span><span class="na">writeInterfaceToken</span><span class="o">(</span><span class="n">DESCRIPTOR</span><span class="o">);</span>
+                    <span class="n">_data</span><span class="o">.</span><span class="na">writeInt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+                    <span class="n">_data</span><span class="o">.</span><span class="na">writeInt</span><span class="o">(</span><span class="n">j</span><span class="o">);</span>
+
+                    <span class="c1">// 通过Framework将序列化后的参数发送给IBinder对象</span>
+                    <span class="n">mRemote</span><span class="o">.</span><span class="na">transact</span><span class="o">(</span><span class="n">Stub</span><span class="o">.</span><span class="na">TRANSACTION_add</span><span class="o">,</span> <span class="n">_data</span><span class="o">,</span> <span class="n">_reply</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
+                    <span class="n">_reply</span><span class="o">.</span><span class="na">readException</span><span class="o">();</span>
+
+                    <span class="c1">// 通过返回的reply将Service返回的结果解析出来</span>
+                    <span class="n">_result</span> <span class="o">=</span> <span class="n">_reply</span><span class="o">.</span><span class="na">readInt</span><span class="o">();</span>
+                <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+                    <span class="n">_reply</span><span class="o">.</span><span class="na">recycle</span><span class="o">();</span>
+                    <span class="n">_data</span><span class="o">.</span><span class="na">recycle</span><span class="o">();</span>
+                <span class="o">}</span>
+                <span class="k">return</span> <span class="n">_result</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+        <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">TRANSACTION_add</span> <span class="o">=</span> <span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">IBinder</span><span class="o">.</span><span class="na">FIRST_CALL_TRANSACTION</span> <span class="o">+</span> <span class="mi">0</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 接口中的方法</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">add</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">,</span> <span class="kt">int</span> <span class="n">j</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">android</span><span class="o">.</span><span class="na">os</span><span class="o">.</span><span class="na">RemoteException</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+
+<ol>
+<li>在Client中绑定Service，会通过<code>TestAdil.Stub.asInterface()</code>方法去转换返回的IBinder对象(Stub继承的Binder类是IBinder接口的实现类),得到的是一个Proxy类对象<br /></li>
+<li>Proxy类将参数序列化之后，通过Framework将参数发送给<code>Service.onBind()</code>返回的IBinder对象<br /></li>
+<li>Service中返回的IBinder对象(Stub对象)，通过具体实现来完成对参数的操作，并且将返回值封装在一个Parcel对象中<br /></li>
+<li>Framework层将封装后的Parcel对象再返回给Proxy对象<br /></li>
+<li>Proxy对象从Parcel对象中获取返回值<br /></li>
+</ol>
+
+<h1 id="binder机制">Binder机制</h1>
+
+<p>其实在Binder机制中存在一个重要的角色，ServiceManager，他是Service和Client中IPC交互的重要一环。ServiceManager负责在Framework层将参数传递、返回Proxy对象等等</p>
+
+<p>而在Client，并不是真正持有了Service中的对象，而是通过ServiceManager，借助Proxy对象来完成跨进程通信。所以说Binder机制使用的其实就是/代理模式/。</p>
+
+<p>对于Binder机制，我也还只是对概念有初步的了解。想要深入了解Binder机制，还需要继续学习。</p>
+
+<hr />
+
+<blockquote>
+<p>资料推荐：
+  1. <a href="http://blog.csdn.net/universus/article/details/6211589">Binder设计与实现</a>
+  2. <a href="http://blog.csdn.net/luoshengyang/article/details/6618363">Android进程间通信（IPC）机制Binder简要介绍和学习计划</a></p>
+</blockquote>
+
+      </article>
+
+      <ul class="pager blog-pager">
+        
+        <li class="previous">
+          <a href="https://diov.github.io/2016/03/08/setcontentview%E5%92%8Cfindviewbyid%E7%9A%84%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90" data-toggle="tooltip" data-placement="top" title="setContentView和findViewById的源码解析">&larr; Previous Post</a>
+        </li>
+        
+        
+        <li class="next">
+          <a href="https://diov.github.io/2016/03/27/%E5%9C%A8textview%E4%B8%AD%E8%87%AA%E5%AE%9A%E4%B9%89html%E6%A0%B7%E5%BC%8F" data-toggle="tooltip" data-placement="top" title="在TextView中自定义HTML样式">Next Post &rarr;</a>
+        </li>
+        
+      </ul>
+
+      
+      <div class="disqus-comments">
+        <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'diovgithubio';
+    var disqus_identifier = 'https:\/\/diov.github.io\/2016\/03\/20\/%E4%BB%8Eaidl%E6%B5%85%E6%9E%90binder%E6%9C%BA%E5%88%B6';
+    var disqus_title = '从AIDL浅析Binder机制';
+    var disqus_url = 'https:\/\/diov.github.io\/2016\/03\/20\/%E4%BB%8Eaidl%E6%B5%85%E6%9E%90binder%E6%9C%BA%E5%88%B6';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </div>
+      
+
+    </div>
+  </div>
+</div>
+
+      
+
+    </div>
+
+    <footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+          <li>
+            <a href="https://github.com/diov" title="GitHub">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+		      
+          <li>
+            <a href="mailto:diov87@outlook.com" title="Email me">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+	    	  
+          
+          
+
+    		  <li>
+      			<a href="https://diov.github.io/index.xml" title="RSS">
+      			  <span class="fa-stack fa-lg">
+        				<i class="fa fa-circle fa-stack-2x"></i>
+        				<i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+      			  </span>
+      			</a>
+    		  </li>		
+
+        </ul>
+        <p class="credits copyright text-muted">
+    	  Dio_V
+    	  &nbsp;&bull;&nbsp;
+    	  2017
+    		  
+    	  
+    	  &nbsp;&bull;&nbsp;
+    	  <a href="https://diov.github.io/">Meow</a>
+    	  
+  	    </p>
+  	    
+    	<p class="credits theme-by text-muted">
+          <a href="http://gohugo.io">Hugo v0.19</a> powered &nbsp;&bull;&nbsp; Theme by <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a> adapted to <a href="https://github.com/1138-4EB/beautifulhugo">Beautiful Hugo</a>
+          
+    	</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://diov.github.io//js/jquery-1.11.2.min.js"></script>
+<script src="https://diov.github.io//js/bootstrap.min.js"></script>
+<script src="https://diov.github.io//js/main.js"></script>
+<script src="https://diov.github.io/js/highlight.min.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+  </body>
+</html>
