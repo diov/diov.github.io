@@ -8,8 +8,108 @@
     <language>zh-hans</language>
     <managingEditor>diov87@outlook.com (Dio_V)</managingEditor>
     <webMaster>diov87@outlook.com (Dio_V)</webMaster>
-    <lastBuildDate>Mon, 27 Feb 2017 15:06:19 +0800</lastBuildDate>
+    <lastBuildDate>Fri, 10 Mar 2017 15:06:19 +0800</lastBuildDate>
     <atom:link href="https://diov.github.io/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>利用 StrictMode 和 MAT 解决内存泄漏</title>
+      <link>https://diov.github.io/2017/03/10/%E5%88%A9%E7%94%A8-strictmode-%E5%92%8C-mat-%E8%A7%A3%E5%86%B3%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F</link>
+      <pubDate>Fri, 10 Mar 2017 15:06:19 +0800</pubDate>
+      <author>diov87@outlook.com (Dio_V)</author>
+      <guid>https://diov.github.io/2017/03/10/%E5%88%A9%E7%94%A8-strictmode-%E5%92%8C-mat-%E8%A7%A3%E5%86%B3%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F</guid>
+      <description>
+
+&lt;p&gt;前一阵子正好碰到了 App 里出现内存泄漏，记录一下完整的流程。&lt;/p&gt;
+
+&lt;h2 id=&#34;起因&#34;&gt;起因&lt;/h2&gt;
+
+&lt;p&gt;在运行时检测 App 的内存泄漏有多种方式：比如手动的在 Android Studio 中调用 GC,然后观察内存抖动的情况；比如在 App 中加入 leakcanary 这样的 lib，当发生内存泄漏时直接输出 Heap Dump。不过我一直不希望在 App 中引入过多的 lib，所以我是通过 StrictMode 来监测 App 有没有发生内存泄漏。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;StrictMode 是 Android 2.3 之后加入的一个类，用以检测程序中是否有违例情况发生的开发者工具。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;在自定义的 Application 中的 &lt;code&gt;onCreate()&lt;/code&gt; 方法中初始化 StrictMode 就可以了&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;onCreate&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+    &lt;span class=&#34;kd&#34;&gt;super&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;onCreate&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+
+    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;BuildConfig&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;DEBUG&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+        &lt;span class=&#34;err&#34;&gt;&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 设置线程策略和 VM策略&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;StrictMode&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;setThreadPolicy&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;StrictMode&lt;/span&gt;
+                                        &lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;ThreadPolicy&lt;/span&gt;
+                                        &lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;Builder&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt;
+                                        &lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;detectAll&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt;
+                                        &lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;penaltyLog&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt;
+                                        &lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;build&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;());&lt;/span&gt;
+        &lt;span class=&#34;n&#34;&gt;StrictMode&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;setVmPolicy&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;StrictMode&lt;/span&gt;
+                                    &lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;VmPolicy&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;
+                                    &lt;span class=&#34;n&#34;&gt;Builder&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;().&lt;/span&gt;
+                                    &lt;span class=&#34;n&#34;&gt;detectAll&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;().&lt;/span&gt;
+                                    &lt;span class=&#34;n&#34;&gt;penaltyLog&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;().&lt;/span&gt;
+                                    &lt;span class=&#34;n&#34;&gt;build&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;());&lt;/span&gt;
+    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;之后如果有内存泄漏、未关闭 closable 对象或在主线程中监测到耗时操作时，StrictMode 就会通过 log 输出来提醒我们。&lt;/p&gt;
+
+&lt;h2 id=&#34;利用-android-studio-获取-java-heap&#34;&gt;利用 Android Studio 获取 Java Heap&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://o9xs75p7d.bkt.clouddn.com/2017-03-10-084831.jpg&#34; alt=&#34;发生内存泄漏的 log&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;之后，当某次发生内存泄漏时，StrictMode 就通过 log 提示我们。此处是我的 App 所遇到的情况，也就是存在多个 Activity 实例，并且无法释放。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://o9xs75p7d.bkt.clouddn.com/2017-03-10-085229.jpg&#34; alt=&#34;获取 Java Heap&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;此时可以通过 Android Studio 自带的 Monitor 来获取此时应用的堆信息。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;点击&lt;code&gt;Initate GC&lt;/code&gt;按钮，强制 GC&lt;/li&gt;
+&lt;li&gt;点击&lt;code&gt;Dump Java Heap&lt;/code&gt;按钮，生成 Heap 文件(*.hprof)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;通常获取 Heap 文件之后会直接打开 *.hprof 文件，不过我们也可以在 Android Studio 左侧的&lt;code&gt;Captures&lt;/code&gt;标签找到已经生成的 Heap 文件。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://o9xs75p7d.bkt.clouddn.com/2017-03-10-090110.jpg&#34; alt=&#34;通过 Android Studio 分析 Memory Leak&#34; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;打开 Heap 文件之后，首先打开右侧的&lt;code&gt;Analyzer Tasks&lt;/code&gt;标签&lt;/li&gt;
+&lt;li&gt;点击&lt;code&gt;perform action&lt;/code&gt;按钮&lt;/li&gt;
+&lt;li&gt;在&lt;code&gt;Analysis Results&lt;/code&gt;里就可以看到具体有哪些 Acitvity 导致了内存泄漏&lt;/li&gt;
+&lt;li&gt;在&lt;code&gt;Reference Tree&lt;/code&gt;里可以看到持有这个 Activity 引用的对象&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;如果是简单的情况的话，这里就可以排查出到底是那个引用导致的 Activity 无法释放，从而导致了内存泄漏。但是如果情况复杂一些的话，就需要用到 MAT 来分析了&lt;/p&gt;
+
+&lt;h2 id=&#34;利用-mat-分析-heap-文件&#34;&gt;利用 MAT 分析 Heap 文件&lt;/h2&gt;
+
+&lt;p&gt;MAT 全称&amp;rdquo;Eclipse Memory Analyzer&amp;rdquo;,是一个强大 JAVA 堆转储文件分析工具，也就是分析 *.hprof 文件的工具。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://o9xs75p7d.bkt.clouddn.com/2017-03-10-091145.jpg&#34; alt=&#34;转化为标准格式的文件&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在使用 MAT 之前，我们需要先将 Android Studio 生成的 Heap 文件转换为标准格式。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://o9xs75p7d.bkt.clouddn.com/2017-03-10-092346.jpg&#34; alt=&#34;筛选出泄漏对象&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;用 MAT 打开 Heap 文件之后点击生成 Histogram，可以列出内存中的对象及其个数、大小&lt;/p&gt;
+
+&lt;p&gt;由于我们已经通过 Android Studio我们已经知道泄漏的对象的类名。所以可以直接筛选出泄漏的对象。右键&lt;code&gt;Merge Shortest Paths to GC Roots&lt;/code&gt; -&amp;gt; &lt;code&gt;exclude all phantom/weak/soft etc. references&lt;/code&gt;。排除掉所有的虚/软/弱引用之后，就可以知道到底是那些对象持有泄漏的 Activity 的强引用从而导致内存泄漏了。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://o9xs75p7d.bkt.clouddn.com/2017-03-10-092955.jpg&#34; alt=&#34;查明泄漏原因&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这里可以看到是 Glide 引起的，此时就可以通过代码中 Glide 相关的代码来排查。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;此处的例子，是一个匿名内部类&lt;code&gt;BitmapTransformation&lt;/code&gt;持有了 Activity 的引用，而 Glide 是全局配置的。所以 Activity 对象无法释放，从而导致了内存泄漏&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&#34;排查以外&#34;&gt;排查以外&lt;/h2&gt;
+
+&lt;p&gt;内存泄漏通常是由于我们代码的不规范所导致的。比如长引用持有对象而不释放啊，closable 对象未及时关闭啊，或者一些非静态类持有对象啊。&lt;/p&gt;
+
+&lt;p&gt;除了在内存泄漏发生之后，及时的通过工具来排查原因，修改代码之外，最重要的还是要规范自己的代码，提高代码质量。当然，不忽略任何一个 &lt;code&gt;lint&lt;/code&gt; 提示的警告大概是最方便快捷的方式了吧！&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>从 Hexo 到 Hugo</title>
