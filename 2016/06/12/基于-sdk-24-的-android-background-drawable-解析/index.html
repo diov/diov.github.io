@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>基于 SDK-24 的 Android Background-Drawable 解析</title>
+  <meta name="description" content="Android中给 View 设置 Background 的流程解析">
+  <meta name="author" content="Dio_V"/>
+  <meta name="generator" content="Hugo 0.19" />
+  <link href='https://diov.github.io//img/favicon.ico' rel='icon' type='image/x-icon'/>
+
+  <link rel="alternate" href="https://diov.github.io/index.xml" type="application/rss+xml" title="Meow">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="https://diov.github.io//css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://diov.github.io//css/main.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+  <link rel="stylesheet" href="https://diov.github.io//css/pygment_highlights.css" />
+  <link rel="stylesheet" href="https://diov.github.io/css/highlight.min.css">
+  
+  
+  <meta property="og:title" content="基于 SDK-24 的 Android Background-Drawable 解析" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="/2016/06/12/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90" />
+  <meta property="og:image" content="/img/avatar-icon.png" />
+  
+</head>
+
+
+  <body>
+
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="https://diov.github.io/">Meow</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+          <li>
+          <a title="Blog" href="../../../../">Blog</a>
+  	      </li>
+  	    
+      
+        
+          <li>
+          <a title="About" href="../../../../page/about/">About</a>
+  	      </li>
+  	    
+      
+      </ul>
+    </div>
+
+	<div class="avatar-container">
+	  <div class="avatar-img-border">
+      
+          <a title="Meow" href="https://diov.github.io/">
+              <img class="avatar-img" src="https://diov.github.io//img/avatar-icon.png" alt="Meow" />
+          </a>
+      
+	  </div>
+	</div>
+
+  </div>
+</nav>
+
+
+    <div role="main" class="container main-content">
+
+      
+
+
+
+  
+
+  <header class="header-section ">
+  
+  <div class="intro-header no-img">
+      <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-heading">
+          <h1>基于 SDK-24 的 Android Background-Drawable 解析</h1>
+      
+      
+      
+      <span class="post-meta">Posted on June 12, 2016</span>
+      
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  </header>
+
+	  
+      
+        <div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <article role="main" class="blog-post">
+          
+
+<p>View 的 <code>background</code> 属性相信每一个 Android 开发都是非常了解的，但是好像对于 View 如何加载 background 资源的解析还是比较少的。</p>
+
+<p>另外，最近项目里面加了很多圆角按钮，写 xml 写的实在不愉快，就打算以代码的形式来实现一个自定义的圆角按钮，这其中也涉及到不少 background 的知识点。正好在这里做一个梳理。</p>
+
+<!-- more -->
+
+<h2 id="解析-xml-文件中的-background-属性">解析 XML 文件中的 background 属性</h2>
+
+<p>给 View 设置 background 通常有两种方式，一个是在 xml 中设置<code>android:background</code>，另一种是直接通过代码调用<code>setBackground()</code>。这里我们先了解 xml 这种方式。</p>
+
+<p>看过我之前的<a href="https://diov.github.io/2016/02/15/%E4%BB%8Exml%E5%88%B0view/">从 XML 到 view</a>的应该都知道，在系统通过 xml 文件来实例化出 View 对象的时候，需要调用到带有两个参数的构造函数，起最终调用的是带有四个参数的构造函数。</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="c1">// 删除不关心的代码，仅保留 Background 相关</span>
+<span class="kd">public</span> <span class="nf">View</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="nd">@Nullable</span> <span class="n">AttributeSet</span> <span class="n">attrs</span><span class="o">,</span> <span class="kt">int</span> <span class="n">defStyleAttr</span><span class="o">,</span> <span class="kt">int</span> <span class="n">defStyleRes</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+
+    <span class="kd">final</span> <span class="n">TypedArray</span> <span class="n">a</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">obtainStyledAttributes</span><span class="o">(</span>
+            <span class="n">attrs</span><span class="o">,</span> <span class="n">com</span><span class="o">.</span><span class="na">android</span><span class="o">.</span><span class="na">internal</span><span class="o">.</span><span class="na">R</span><span class="o">.</span><span class="na">styleable</span><span class="o">.</span><span class="na">View</span><span class="o">,</span> <span class="n">defStyleAttr</span><span class="o">,</span> <span class="n">defStyleRes</span><span class="o">);</span>
+
+    <span class="n">Drawable</span> <span class="n">background</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+
+    <span class="c1">// ...</span>
+
+    <span class="kd">final</span> <span class="kt">int</span> <span class="n">N</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="na">getIndexCount</span><span class="o">();</span>
+    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">attr</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="na">getIndex</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+        <span class="k">switch</span> <span class="o">(</span><span class="n">attr</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">case</span> <span class="n">com</span><span class="o">.</span><span class="na">android</span><span class="o">.</span><span class="na">internal</span><span class="o">.</span><span class="na">R</span><span class="o">.</span><span class="na">styleable</span><span class="o">.</span><span class="na">View_background</span><span class="o">:</span>
+                <span class="n">background</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="na">getDrawable</span><span class="o">(</span><span class="n">attr</span><span class="o">);</span>
+                <span class="k">break</span><span class="o">;</span>
+            <span class="c1">// ...</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">// ...</span>
+
+    <span class="k">if</span> <span class="o">(</span><span class="n">background</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">setBackground</span><span class="o">(</span><span class="n">background</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="c1">// ...</span>
+</code></pre></div>
+
+<p>我们知道 Background 实际上是一个 Drawable 对象，所以只需要关注 Drawable 相关的代码就可以了。构造函数通过 TypedArray 获取到写在 xml 文件里头的<code>android:background</code>字段，然后通过<code>a.getDrawable(attr)</code>这个方法返回了 Drawable 对象。</p>
+
+<h2 id="分析-typedarray">分析 TypedArray</h2>
+
+<p>跳入到 TypydArray 的源码中：</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="n">Drawable</span> <span class="nf">getDrawable</span><span class="o">(</span><span class="nd">@StyleableRes</span> <span class="kt">int</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">mRecycled</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="s">&quot;Cannot make calls to a recycled instance!&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">final</span> <span class="n">TypedValue</span> <span class="n">value</span> <span class="o">=</span> <span class="n">mValue</span><span class="o">;</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">getValueAt</span><span class="o">(</span><span class="n">index</span><span class="o">*</span><span class="n">AssetManager</span><span class="o">.</span><span class="na">STYLE_NUM_ENTRIES</span><span class="o">,</span> <span class="n">value</span><span class="o">))</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">type</span> <span class="o">==</span> <span class="n">TypedValue</span><span class="o">.</span><span class="na">TYPE_ATTRIBUTE</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="n">UnsupportedOperationException</span><span class="o">(</span>
+                    <span class="s">&quot;Failed to resolve attribute at index &quot;</span> <span class="o">+</span> <span class="n">index</span> <span class="o">+</span> <span class="s">&quot;: &quot;</span> <span class="o">+</span> <span class="n">value</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">mResources</span><span class="o">.</span><span class="na">loadDrawable</span><span class="o">(</span><span class="n">value</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">resourceId</span><span class="o">,</span> <span class="n">mTheme</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+
+<p>调用的是<code>mResources.loadDrawable(value, value.resourceId, mTheme)</code>。此处的mResources 是一个<code>Resources</code>对象。通过查看 Resources 的源码得知，实际调用的是 ResourcesImpl 这个类的<code>loadDrawable()</code>方法。继续跳入：</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="n">Drawable</span> <span class="nf">loadDrawable</span><span class="o">(</span><span class="n">Resources</span> <span class="n">wrapper</span><span class="o">,</span> <span class="n">TypedValue</span> <span class="n">value</span><span class="o">,</span> <span class="kt">int</span> <span class="n">id</span><span class="o">,</span> <span class="n">Resources</span><span class="o">.</span><span class="na">Theme</span> <span class="n">theme</span><span class="o">,</span>
+            <span class="kt">boolean</span> <span class="n">useCache</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">NotFoundException</span> <span class="o">{</span>
+    <span class="k">try</span> <span class="o">{</span>
+        <span class="c1">// ...</span>
+
+        <span class="kd">final</span> <span class="kt">boolean</span> <span class="n">isColorDrawable</span><span class="o">;</span>
+        <span class="kd">final</span> <span class="n">DrawableCache</span> <span class="n">caches</span><span class="o">;</span>
+        <span class="kd">final</span> <span class="kt">long</span> <span class="n">key</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">type</span> <span class="o">&gt;=</span> <span class="n">TypedValue</span><span class="o">.</span><span class="na">TYPE_FIRST_COLOR_INT</span>
+                <span class="o">&amp;&amp;</span> <span class="n">value</span><span class="o">.</span><span class="na">type</span> <span class="o">&lt;=</span> <span class="n">TypedValue</span><span class="o">.</span><span class="na">TYPE_LAST_COLOR_INT</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">isColorDrawable</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+            <span class="n">caches</span> <span class="o">=</span> <span class="n">mColorDrawableCache</span><span class="o">;</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="na">data</span><span class="o">;</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">isColorDrawable</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+            <span class="n">caches</span> <span class="o">=</span> <span class="n">mDrawableCache</span><span class="o">;</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="o">(((</span><span class="kt">long</span><span class="o">)</span> <span class="n">value</span><span class="o">.</span><span class="na">assetCookie</span><span class="o">)</span> <span class="o">&lt;&lt;</span> <span class="mi">32</span><span class="o">)</span> <span class="o">|</span> <span class="n">value</span><span class="o">.</span><span class="na">data</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="c1">// ...</span>
+
+        <span class="n">Drawable</span> <span class="n">dr</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">cs</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">dr</span> <span class="o">=</span> <span class="n">cs</span><span class="o">.</span><span class="na">newDrawable</span><span class="o">(</span><span class="n">wrapper</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">isColorDrawable</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">dr</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ColorDrawable</span><span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">data</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">dr</span> <span class="o">=</span> <span class="n">loadDrawableForCookie</span><span class="o">(</span><span class="n">wrapper</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="n">id</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="c1">// ...</span>
+
+        <span class="k">return</span> <span class="n">dr</span><span class="o">;</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// ...</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+<p>这里涉及到不少缓存 Drawable 的代码，系统会优先加载缓存中的 Drawable 对象，有兴趣的可以自行查看。这里我只保留了一些关键的代码。</p>
+
+<p>在 XML 文件中我们可以直接设置为十六进制的颜色信息（比如<code>#ff0000</code>），如果包含的值是这种类型的话，会创建一个<code>ColorDrawable</code>对象。否则则是调用<code>loadDrawableForCookie(wrapper, value, id, null)</code>方法：</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">private</span> <span class="n">Drawable</span> <span class="nf">loadDrawableForCookie</span><span class="o">(</span><span class="n">Resources</span> <span class="n">wrapper</span><span class="o">,</span> <span class="n">TypedValue</span> <span class="n">value</span><span class="o">,</span> <span class="kt">int</span> <span class="n">id</span><span class="o">,</span>
+            <span class="n">Resources</span><span class="o">.</span><span class="na">Theme</span> <span class="n">theme</span><span class="o">)</span> <span class="o">{</span>
+
+    <span class="c1">// ...</span>
+
+    <span class="kd">final</span> <span class="n">Drawable</span> <span class="n">dr</span><span class="o">;</span>
+
+    <span class="c1">// ...</span>
+    <span class="k">try</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">file</span><span class="o">.</span><span class="na">endsWith</span><span class="o">(</span><span class="s">&quot;.xml&quot;</span><span class="o">))</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">XmlResourceParser</span> <span class="n">rp</span> <span class="o">=</span> <span class="n">loadXmlResourceParser</span><span class="o">(</span>
+                    <span class="n">file</span><span class="o">,</span> <span class="n">id</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">assetCookie</span><span class="o">,</span> <span class="s">&quot;drawable&quot;</span><span class="o">);</span>
+            <span class="n">dr</span> <span class="o">=</span> <span class="n">Drawable</span><span class="o">.</span><span class="na">createFromXml</span><span class="o">(</span><span class="n">wrapper</span><span class="o">,</span> <span class="n">rp</span><span class="o">,</span> <span class="n">theme</span><span class="o">);</span>
+            <span class="n">rp</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">InputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="n">mAssets</span><span class="o">.</span><span class="na">openNonAsset</span><span class="o">(</span>
+                    <span class="n">value</span><span class="o">.</span><span class="na">assetCookie</span><span class="o">,</span> <span class="n">file</span><span class="o">,</span> <span class="n">AssetManager</span><span class="o">.</span><span class="na">ACCESS_STREAMING</span><span class="o">);</span>
+            <span class="n">dr</span> <span class="o">=</span> <span class="n">Drawable</span><span class="o">.</span><span class="na">createFromResourceStream</span><span class="o">(</span><span class="n">wrapper</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="n">is</span><span class="o">,</span> <span class="n">file</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+            <span class="n">is</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// ...</span>
+    <span class="o">}</span>
+    <span class="c1">// ...</span>
+
+    <span class="k">return</span> <span class="n">dr</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+
+<p>OK，这里我们发现，就像是生成 View 对象一样，依然需要<code>XmlResourceParser</code>来分析 XML 文件。</p>
+
+<h2 id="xml-解析">XML 解析</h2>
+
+<p>此处的代码在<code>Drawable</code>里：</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">static</span> <span class="n">Drawable</span> <span class="nf">createFromXml</span><span class="o">(</span><span class="n">Resources</span> <span class="n">r</span><span class="o">,</span> <span class="n">XmlPullParser</span> <span class="n">parser</span><span class="o">,</span> <span class="n">Theme</span> <span class="n">theme</span><span class="o">)</span>
+            <span class="kd">throws</span> <span class="n">XmlPullParserException</span><span class="o">,</span> <span class="n">IOException</span> <span class="o">{</span>
+    <span class="n">AttributeSet</span> <span class="n">attrs</span> <span class="o">=</span> <span class="n">Xml</span><span class="o">.</span><span class="na">asAttributeSet</span><span class="o">(</span><span class="n">parser</span><span class="o">);</span>
+
+    <span class="kt">int</span> <span class="n">type</span><span class="o">;</span>
+    <span class="c1">//noinspection StatementWithEmptyBody</span>
+    <span class="k">while</span> <span class="o">((</span><span class="n">type</span><span class="o">=</span><span class="n">parser</span><span class="o">.</span><span class="na">next</span><span class="o">())</span> <span class="o">!=</span> <span class="n">XmlPullParser</span><span class="o">.</span><span class="na">START_TAG</span>
+            <span class="o">&amp;&amp;</span> <span class="n">type</span> <span class="o">!=</span> <span class="n">XmlPullParser</span><span class="o">.</span><span class="na">END_DOCUMENT</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// Empty loop.</span>
+    <span class="o">}</span>
+
+    <span class="c1">// ...</span>
+
+    <span class="n">Drawable</span> <span class="n">drawable</span> <span class="o">=</span> <span class="n">createFromXmlInner</span><span class="o">(</span><span class="n">r</span><span class="o">,</span> <span class="n">parser</span><span class="o">,</span> <span class="n">attrs</span><span class="o">,</span> <span class="n">theme</span><span class="o">);</span>
+
+    <span class="c1">// ...</span>
+
+    <span class="k">return</span> <span class="n">drawable</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+
+<p>调用了<code>createFromXmlInner(r, parser, attrs, theme)</code>方法：</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">static</span> <span class="n">Drawable</span> <span class="nf">createFromXmlInner</span><span class="o">(</span><span class="n">Resources</span> <span class="n">r</span><span class="o">,</span> <span class="n">XmlPullParser</span> <span class="n">parser</span><span class="o">,</span> <span class="n">AttributeSet</span> <span class="n">attrs</span><span class="o">,</span>
+            <span class="n">Theme</span> <span class="n">theme</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">XmlPullParserException</span><span class="o">,</span> <span class="n">IOException</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="na">getDrawableInflater</span><span class="o">().</span><span class="na">inflateFromXml</span><span class="o">(</span><span class="n">parser</span><span class="o">.</span><span class="na">getName</span><span class="o">(),</span> <span class="n">parser</span><span class="o">,</span> <span class="n">attrs</span><span class="o">,</span> <span class="n">theme</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+
+<p>如果回到<code>Resources</code>查看一下<code>getDrawableInflater()</code>方法，我们就会知道，这个方法返回的是<code>DrawableInflater</code>对象。这是一个被标识为_@hide_的类，进入到这个类中：</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="n">Drawable</span> <span class="nf">inflateFromXml</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="n">String</span> <span class="n">name</span><span class="o">,</span> <span class="nd">@NonNull</span> <span class="n">XmlPullParser</span> <span class="n">parser</span><span class="o">,</span>
+            <span class="nd">@NonNull</span> <span class="n">AttributeSet</span> <span class="n">attrs</span><span class="o">,</span> <span class="nd">@Nullable</span> <span class="n">Theme</span> <span class="n">theme</span><span class="o">)</span>
+            <span class="kd">throws</span> <span class="n">XmlPullParserException</span><span class="o">,</span> <span class="n">IOException</span> <span class="o">{</span>
+    <span class="c1">// Inner classes must be referenced as Outer$Inner, but XML tag names</span>
+    <span class="c1">// can&#39;t contain $, so the &lt;drawable&gt; tag allows developers to specify</span>
+    <span class="c1">// the class in an attribute. We&#39;ll still run it through inflateFromTag</span>
+    <span class="c1">// to stay consistent with how LayoutInflater works.</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">name</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">&quot;drawable&quot;</span><span class="o">))</span> <span class="o">{</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="na">getAttributeValue</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="s">&quot;class&quot;</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">name</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="n">InflateException</span><span class="o">(</span><span class="s">&quot;&lt;drawable&gt; tag must specify class attribute&quot;</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="n">Drawable</span> <span class="n">drawable</span> <span class="o">=</span> <span class="n">inflateFromTag</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">drawable</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">drawable</span> <span class="o">=</span> <span class="n">inflateFromClass</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="n">drawable</span><span class="o">.</span><span class="na">inflate</span><span class="o">(</span><span class="n">mRes</span><span class="o">,</span> <span class="n">parser</span><span class="o">,</span> <span class="n">attrs</span><span class="o">,</span> <span class="n">theme</span><span class="o">);</span>
+    <span class="k">return</span> <span class="n">drawable</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+
+<p>这个方法里的重点是<code>inflateFromTag()</code>。此处涉及到<code>inflateFromClass()</code>的判断我还不是特别明白，如果有哪位 dalao 愿意的话可以指点指点。</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">private</span> <span class="n">Drawable</span> <span class="nf">inflateFromTag</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="n">String</span> <span class="n">name</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">switch</span> <span class="o">(</span><span class="n">name</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">case</span> <span class="s">&quot;selector&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">StateListDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;animated-selector&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">AnimatedStateListDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;level-list&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">LevelListDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;layer-list&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">LayerDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;transition&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">TransitionDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;ripple&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">RippleDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;color&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">ColorDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;shape&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">GradientDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;vector&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">VectorDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;animated-vector&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">AnimatedVectorDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;scale&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">ScaleDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;clip&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">ClipDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;rotate&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">RotateDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;animated-rotate&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">AnimatedRotateDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;animation-list&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">AnimationDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;inset&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">InsetDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;bitmap&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">BitmapDrawable</span><span class="o">();</span>
+        <span class="k">case</span> <span class="s">&quot;nine-patch&quot;</span><span class="o">:</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="n">NinePatchDrawable</span><span class="o">();</span>
+        <span class="k">default</span><span class="o">:</span>
+            <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+<p><code>inflateFromTag()</code>方法判断标签的名字，然后生成对应的 Drawable 的子类对象。</p>
+
+<h2 id="小结">小结</h2>
+
+<p>至此，我们也大致了解了 Background-Drawable 的加载流程：</p>
+
+<ol>
+<li>通过<code>View</code>的构造函数，获取<code>android:background</code>属性的值</li>
+<li><code>Resourses</code>加载<code>background</code>中定义的 XML 文件</li>
+<li>以<code>XmlResourceParser</code>解析 XML 文件，针对特定的 tag 生成指定的<code>Drawable</code>对象</li>
+</ol>
+
+<p>但是仅仅是<code>inflateFromTag(name)</code> 还是只生成了指定的Drawable，那这些 Drawable 自己的属性是怎么生成的呢？我会在下一篇来解析</p>
+
+      </article>
+
+      <ul class="pager blog-pager">
+        
+        <li class="previous">
+          <a href="https://diov.github.io/2016/03/27/%E5%9C%A8textview%E4%B8%AD%E8%87%AA%E5%AE%9A%E4%B9%89html%E6%A0%B7%E5%BC%8F" data-toggle="tooltip" data-placement="top" title="在TextView中自定义HTML样式">&larr; Previous Post</a>
+        </li>
+        
+        
+        <li class="next">
+          <a href="https://diov.github.io/2017/02/27/%E4%BB%8E-hexo-%E5%88%B0-hugo" data-toggle="tooltip" data-placement="top" title="从 Hexo 到 Hugo">Next Post &rarr;</a>
+        </li>
+        
+      </ul>
+
+      
+      <div class="disqus-comments">
+        <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'diovgithubio';
+    var disqus_identifier = 'https:\/\/diov.github.io\/2016\/06\/12\/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90';
+    var disqus_title = '基于 SDK-24 的 Android Background-Drawable 解析';
+    var disqus_url = 'https:\/\/diov.github.io\/2016\/06\/12\/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </div>
+      
+
+    </div>
+  </div>
+</div>
+
+      
+
+    </div>
+
+    <footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+          <li>
+            <a href="https://github.com/diov" title="GitHub">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+		      
+          <li>
+            <a href="mailto:diov87@outlook.com" title="Email me">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+	    	  
+          
+          
+
+    		  <li>
+      			<a href="https://diov.github.io/index.xml" title="RSS">
+      			  <span class="fa-stack fa-lg">
+        				<i class="fa fa-circle fa-stack-2x"></i>
+        				<i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+      			  </span>
+      			</a>
+    		  </li>		
+
+        </ul>
+        <p class="credits copyright text-muted">
+    	  Dio_V
+    	  &nbsp;&bull;&nbsp;
+    	  2017
+    		  
+    	  
+    	  &nbsp;&bull;&nbsp;
+    	  <a href="https://diov.github.io/">Meow</a>
+    	  
+  	    </p>
+  	    
+    	<p class="credits theme-by text-muted">
+          <a href="http://gohugo.io">Hugo v0.19</a> powered &nbsp;&bull;&nbsp; Theme by <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a> adapted to <a href="https://github.com/1138-4EB/beautifulhugo">Beautiful Hugo</a>
+          
+    	</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://diov.github.io//js/jquery-1.11.2.min.js"></script>
+<script src="https://diov.github.io//js/bootstrap.min.js"></script>
+<script src="https://diov.github.io//js/main.js"></script>
+<script src="https://diov.github.io/js/highlight.min.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+  </body>
+</html>
