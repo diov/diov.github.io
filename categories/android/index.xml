@@ -158,6 +158,7 @@
     &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
 
     &lt;span class=&#34;c1&#34;&gt;// ...&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;我们知道 Background 实际上是一个 Drawable 对象，所以只需要关注 Drawable 相关的代码就可以了。构造函数通过 TypedArray 获取到写在 xml 文件里头的&lt;code&gt;android:background&lt;/code&gt;字段，然后通过&lt;code&gt;a.getDrawable(attr)&lt;/code&gt;这个方法返回了 Drawable 对象。&lt;/p&gt;
