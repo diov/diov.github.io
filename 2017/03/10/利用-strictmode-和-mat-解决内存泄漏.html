@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>利用 StrictMode 和 MAT 解决内存泄漏</title>
+  <meta name="description" content="通过 MAT 解决内存泄漏的实例">
+  <meta name="author" content="Dio_V"/>
+  <meta name="generator" content="Hugo 0.19" />
+  <link href='https://diov.github.io//img/favicon.ico' rel='icon' type='image/x-icon'/>
+
+  <link rel="alternate" href="https://diov.github.io/index.xml" type="application/rss+xml" title="Meow">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="https://diov.github.io//css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://diov.github.io//css/main.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+  <link rel="stylesheet" href="https://diov.github.io//css/pygment_highlights.css" />
+  <link rel="stylesheet" href="https://diov.github.io/css/highlight.min.css">
+  
+  
+  <meta property="og:title" content="利用 StrictMode 和 MAT 解决内存泄漏" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="/2017/03/10/%E5%88%A9%E7%94%A8-strictmode-%E5%92%8C-mat-%E8%A7%A3%E5%86%B3%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F" />
+  <meta property="og:image" content="/img/avatar-icon.png" />
+  
+</head>
+
+
+  <body>
+
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="https://diov.github.io/">Meow</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+          <li>
+          <a title="Blog" href="../../../">Blog</a>
+  	      </li>
+  	    
+      
+        
+          <li>
+          <a title="About" href="../../../page/about/">About</a>
+  	      </li>
+  	    
+      
+      </ul>
+    </div>
+
+	<div class="avatar-container">
+	  <div class="avatar-img-border">
+      
+          <a title="Meow" href="https://diov.github.io/">
+              <img class="avatar-img" src="https://diov.github.io//img/avatar-icon.png" alt="Meow" />
+          </a>
+      
+	  </div>
+	</div>
+
+  </div>
+</nav>
+
+
+    <div role="main" class="container main-content">
+
+      
+
+
+
+  
+
+  <header class="header-section ">
+  
+  <div class="intro-header no-img">
+      <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-heading">
+          <h1>利用 StrictMode 和 MAT 解决内存泄漏</h1>
+      
+      
+      
+      <span class="post-meta">Posted on March 10, 2017</span>
+      
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  </header>
+
+	  
+      
+        <div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <article role="main" class="blog-post">
+          
+
+<p>前一阵子正好碰到了 App 里出现内存泄漏，记录一下完整的流程。</p>
+
+<h2 id="起因">起因</h2>
+
+<p>在运行时检测 App 的内存泄漏有多种方式：比如手动的在 Android Studio 中调用 GC,然后观察内存抖动的情况；比如在 App 中加入 leakcanary 这样的 lib，当发生内存泄漏时直接输出 Heap Dump。不过我一直不希望在 App 中引入过多的 lib，所以我是通过 StrictMode 来监测 App 有没有发生内存泄漏。</p>
+
+<blockquote>
+<p>StrictMode 是 Android 2.3 之后加入的一个类，用以检测程序中是否有违例情况发生的开发者工具。</p>
+</blockquote>
+
+<p>在自定义的 Application 中的 <code>onCreate()</code> 方法中初始化 StrictMode 就可以了</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">();</span>
+
+    <span class="k">if</span> <span class="o">(</span><span class="n">BuildConfig</span><span class="o">.</span><span class="na">DEBUG</span><span class="o">)</span> <span class="o">{</span>
+        <span class="err"></span><span class="c1">// 设置线程策略和 VM策略</span>
+        <span class="n">StrictMode</span><span class="o">.</span><span class="na">setThreadPolicy</span><span class="o">(</span><span class="k">new</span> <span class="n">StrictMode</span>
+                                        <span class="o">.</span><span class="na">ThreadPolicy</span>
+                                        <span class="o">.</span><span class="na">Builder</span><span class="o">()</span>
+                                        <span class="o">.</span><span class="na">detectAll</span><span class="o">()</span>
+                                        <span class="o">.</span><span class="na">penaltyLog</span><span class="o">()</span>
+                                        <span class="o">.</span><span class="na">build</span><span class="o">());</span>
+        <span class="n">StrictMode</span><span class="o">.</span><span class="na">setVmPolicy</span><span class="o">(</span><span class="k">new</span> <span class="n">StrictMode</span>
+                                    <span class="o">.</span><span class="na">VmPolicy</span><span class="o">.</span>
+                                    <span class="n">Builder</span><span class="o">().</span>
+                                    <span class="n">detectAll</span><span class="o">().</span>
+                                    <span class="n">penaltyLog</span><span class="o">().</span>
+                                    <span class="n">build</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+<p>之后如果有内存泄漏、未关闭 closable 对象或在主线程中监测到耗时操作时，StrictMode 就会通过 log 输出来提醒我们。</p>
+
+<h2 id="利用-android-studio-获取-java-heap">利用 Android Studio 获取 Java Heap</h2>
+
+<p><img src="http://o9xs75p7d.bkt.clouddn.com/2017-03-10-084831.jpg" alt="发生内存泄漏的 log" /></p>
+
+<p>之后，当某次发生内存泄漏时，StrictMode 就通过 log 提示我们。此处是我的 App 所遇到的情况，也就是存在多个 Activity 实例，并且无法释放。</p>
+
+<p><img src="http://o9xs75p7d.bkt.clouddn.com/2017-03-10-085229.jpg" alt="获取 Java Heap" /></p>
+
+<p>此时可以通过 Android Studio 自带的 Monitor 来获取此时应用的堆信息。</p>
+
+<ol>
+<li>点击<code>Initate GC</code>按钮，强制 GC</li>
+<li>点击<code>Dump Java Heap</code>按钮，生成 Heap 文件(*.hprof)</li>
+</ol>
+
+<p>通常获取 Heap 文件之后会直接打开 *.hprof 文件，不过我们也可以在 Android Studio 左侧的<code>Captures</code>标签找到已经生成的 Heap 文件。</p>
+
+<p><img src="http://o9xs75p7d.bkt.clouddn.com/2017-03-10-090110.jpg" alt="通过 Android Studio 分析 Memory Leak" /></p>
+
+<ol>
+<li>打开 Heap 文件之后，首先打开右侧的<code>Analyzer Tasks</code>标签</li>
+<li>点击<code>perform action</code>按钮</li>
+<li>在<code>Analysis Results</code>里就可以看到具体有哪些 Acitvity 导致了内存泄漏</li>
+<li>在<code>Reference Tree</code>里可以看到持有这个 Activity 引用的对象</li>
+</ol>
+
+<p>如果是简单的情况的话，这里就可以排查出到底是那个引用导致的 Activity 无法释放，从而导致了内存泄漏。但是如果情况复杂一些的话，就需要用到 MAT 来分析了</p>
+
+<h2 id="利用-mat-分析-heap-文件">利用 MAT 分析 Heap 文件</h2>
+
+<p>MAT 全称&rdquo;Eclipse Memory Analyzer&rdquo;,是一个强大 JAVA 堆转储文件分析工具，也就是分析 *.hprof 文件的工具。</p>
+
+<p><img src="http://o9xs75p7d.bkt.clouddn.com/2017-03-10-091145.jpg" alt="转化为标准格式的文件" /></p>
+
+<p>在使用 MAT 之前，我们需要先将 Android Studio 生成的 Heap 文件转换为标准格式。</p>
+
+<p><img src="http://o9xs75p7d.bkt.clouddn.com/2017-03-10-092346.jpg" alt="筛选出泄漏对象" /></p>
+
+<p>用 MAT 打开 Heap 文件之后点击生成 Histogram，可以列出内存中的对象及其个数、大小</p>
+
+<p>由于我们已经通过 Android Studio我们已经知道泄漏的对象的类名。所以可以直接筛选出泄漏的对象。右键<code>Merge Shortest Paths to GC Roots</code> -&gt; <code>exclude all phantom/weak/soft etc. references</code>。排除掉所有的虚/软/弱引用之后，就可以知道到底是那些对象持有泄漏的 Activity 的强引用从而导致内存泄漏了。</p>
+
+<p><img src="http://o9xs75p7d.bkt.clouddn.com/2017-03-10-092955.jpg" alt="查明泄漏原因" /></p>
+
+<p>这里可以看到是 Glide 引起的，此时就可以通过代码中 Glide 相关的代码来排查。</p>
+
+<blockquote>
+<p>此处的例子，是一个匿名内部类<code>BitmapTransformation</code>持有了 Activity 的引用，而 Glide 是全局配置的。所以 Activity 对象无法释放，从而导致了内存泄漏</p>
+</blockquote>
+
+<h2 id="排查以外">排查以外</h2>
+
+<p>内存泄漏通常是由于我们代码的不规范所导致的。比如长引用持有对象而不释放啊，closable 对象未及时关闭啊，或者一些非静态类持有对象啊。</p>
+
+<p>除了在内存泄漏发生之后，及时的通过工具来排查原因，修改代码之外，最重要的还是要规范自己的代码，提高代码质量。当然，不忽略任何一个 <code>lint</code> 提示的警告大概是最方便快捷的方式了吧！</p>
+
+      </article>
+
+      <ul class="pager blog-pager">
+        
+        <li class="previous">
+          <a href="https://diov.github.io/2017/02/27/%E4%BB%8E-hexo-%E5%88%B0-hugo" data-toggle="tooltip" data-placement="top" title="从 Hexo 到 Hugo">&larr; Previous Post</a>
+        </li>
+        
+        
+      </ul>
+
+      
+      <div class="disqus-comments">
+        <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'diovgithubio';
+    var disqus_identifier = 'https:\/\/diov.github.io\/2017\/03\/10\/%E5%88%A9%E7%94%A8-strictmode-%E5%92%8C-mat-%E8%A7%A3%E5%86%B3%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F';
+    var disqus_title = '利用 StrictMode 和 MAT 解决内存泄漏';
+    var disqus_url = 'https:\/\/diov.github.io\/2017\/03\/10\/%E5%88%A9%E7%94%A8-strictmode-%E5%92%8C-mat-%E8%A7%A3%E5%86%B3%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </div>
+      
+
+    </div>
+  </div>
+</div>
+
+      
+
+    </div>
+
+    <footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+          <li>
+            <a href="https://github.com/diov" title="GitHub">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+		      
+          <li>
+            <a href="mailto:diov87@outlook.com" title="Email me">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		      
+	    	  
+          
+          
+
+    		  <li>
+      			<a href="https://diov.github.io/index.xml" title="RSS">
+      			  <span class="fa-stack fa-lg">
+        				<i class="fa fa-circle fa-stack-2x"></i>
+        				<i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+      			  </span>
+      			</a>
+    		  </li>		
+
+        </ul>
+        <p class="credits copyright text-muted">
+    	  Dio_V
+    	  &nbsp;&bull;&nbsp;
+    	  2017
+    		  
+    	  
+    	  &nbsp;&bull;&nbsp;
+    	  <a href="https://diov.github.io/">Meow</a>
+    	  
+  	    </p>
+  	    
+    	<p class="credits theme-by text-muted">
+          <a href="http://gohugo.io">Hugo v0.19</a> powered &nbsp;&bull;&nbsp; Theme by <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a> adapted to <a href="https://github.com/1138-4EB/beautifulhugo">Beautiful Hugo</a>
+          
+    	</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://diov.github.io//js/jquery-1.11.2.min.js"></script>
+<script src="https://diov.github.io//js/bootstrap.min.js"></script>
+<script src="https://diov.github.io//js/main.js"></script>
+<script src="https://diov.github.io/js/highlight.min.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+  </body>
+</html>
