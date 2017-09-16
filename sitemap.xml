@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://diov.github.io/2017/09/16/%E5%9F%BA%E4%BA%8E-phabricator-%E7%9A%84-git-flow-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/</loc>
+    <lastmod>2017-09-16T10:54:24+02:00</lastmod>
+  </url>
   
   <url>
     <loc>https://diov.github.io/2017/03/10/%E5%88%A9%E7%94%A8-strictmode-%E5%92%8C-mat-%E8%A7%A3%E5%86%B3%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/</loc>
@@ -9,11 +15,6 @@
   <url>
     <loc>https://diov.github.io/2017/02/27/%E4%BB%8E-hexo-%E5%88%B0-hugo/</loc>
     <lastmod>2017-02-27T15:06:19+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://diov.github.io/2016/06/12/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90/</loc>
-    <lastmod>2016-06-12T14:58:44+08:00</lastmod>
   </url>
   
   <url>
@@ -70,7 +71,7 @@
   
   <url>
     <loc>https://diov.github.io/</loc>
-    <lastmod>2017-03-10T15:06:19+08:00</lastmod>
+    <lastmod>2017-09-16T10:54:24+02:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -82,12 +83,18 @@
   
   <url>
     <loc>https://diov.github.io/post/</loc>
-    <lastmod>2017-03-10T15:06:19+08:00</lastmod>
+    <lastmod>2017-09-16T10:54:24+02:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://diov.github.io/tags/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://diov.github.io/categories/workflow/</loc>
+    <lastmod>2017-09-16T10:54:24+02:00</lastmod>
     <priority>0</priority>
   </url>
   

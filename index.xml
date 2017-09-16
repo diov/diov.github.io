@@ -8,10 +8,19 @@
     <language>zh-hans</language>
     <managingEditor>diov87@outlook.com (Dio_V)</managingEditor>
     <webMaster>diov87@outlook.com (Dio_V)</webMaster>
-    <lastBuildDate>Fri, 10 Mar 2017 15:06:19 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 16 Sep 2017 10:54:24 +0200</lastBuildDate>
     
 	<atom:link href="https://diov.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>基于 Phabricator 的 Git Flow 最佳实践</title>
+      <link>https://diov.github.io/2017/09/16/%E5%9F%BA%E4%BA%8E-phabricator-%E7%9A%84-git-flow-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/</link>
+      <pubDate>Sat, 16 Sep 2017 10:54:24 +0200</pubDate>
+      <author>diov87@outlook.com (Dio_V)</author>
+      <guid>https://diov.github.io/2017/09/16/%E5%9F%BA%E4%BA%8E-phabricator-%E7%9A%84-git-flow-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/</guid>
+      <description>Phabricator : Facebook 出品的一个开发协作平台，可以方便的进行任务的指派、code review 等。 Git Flow: 基于git，适用于客户端的开发，围绕着版本发布(release)为</description>
+    </item>
     
     <item>
       <title>利用 StrictMode 和 MAT 解决内存泄漏</title>
@@ -38,15 +47,6 @@
       <author>diov87@outlook.com (Dio_V)</author>
       <guid>https://diov.github.io/2016/06/12/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90/</guid>
       <description>View 的 background 属性相信每一个 Android 开发都是非常了解的，但是好像对于 View 如何加载 background 资源的解析还是比较少的。 另外，最近项目里面加了很多圆角按钮，写 xml 写的实在不</description>
-    </item>
-    
-    <item>
-      <title>基于 SDK-24 的 Android Background-Drawable 解析</title>
-      <link>https://diov.github.io/2016/06/12/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90/</link>
-      <pubDate>Sun, 12 Jun 2016 14:58:44 +0800</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2016/06/12/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90/</guid>
-      <description>doctor hospital</description>
     </item>
     
     <item>
