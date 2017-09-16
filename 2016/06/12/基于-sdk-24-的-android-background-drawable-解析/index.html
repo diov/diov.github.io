@@ -9,7 +9,7 @@
   <title>基于 SDK-24 的 Android Background-Drawable 解析</title>
   <meta name="description" content="Android中给 View 设置 Background 的流程解析">
   <meta name="author" content="Dio_V"/>
-  <meta name="generator" content="Hugo 0.19" />
+  <meta name="generator" content="Hugo 0.20.7" />
   <link href='https://diov.github.io//img/favicon.ico' rel='icon' type='image/x-icon'/>
 
   <link rel="alternate" href="https://diov.github.io/index.xml" type="application/rss+xml" title="Meow">
@@ -25,7 +25,7 @@
   
   <meta property="og:title" content="基于 SDK-24 的 Android Background-Drawable 解析" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="/2016/06/12/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90" />
+  <meta property="og:url" content="/2016/06/12/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90/" />
   <meta property="og:image" content="/img/avatar-icon.png" />
   
 </head>
@@ -123,7 +123,7 @@
 
 <p>给 View 设置 background 通常有两种方式，一个是在 xml 中设置<code>android:background</code>，另一种是直接通过代码调用<code>setBackground()</code>。这里我们先了解 xml 这种方式。</p>
 
-<p>看过我之前的<a href="https://diov.github.io/2016/02/15/%E4%BB%8Exml%E5%88%B0view/">从 XML 到 view</a>的应该都知道，在系统通过 xml 文件来实例化出 View 对象的时候，需要调用到带有两个参数的构造函数，起最终调用的是带有四个参数的构造函数。</p>
+<p>看过之前的<a href="https://diov.github.io/2016/02/15/%E4%BB%8Exml%E5%88%B0view/">从 XML 到 view</a>的应该都知道，在系统通过 xml 文件来实例化出 View 对象的时候，需要调用到带有两个参数的构造函数，起最终调用的是带有四个参数的构造函数。</p>
 <div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="c1">// 删除不关心的代码，仅保留 Background 相关</span>
 <span class="kd">public</span> <span class="nf">View</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">,</span> <span class="nd">@Nullable</span> <span class="n">AttributeSet</span> <span class="n">attrs</span><span class="o">,</span> <span class="kt">int</span> <span class="n">defStyleAttr</span><span class="o">,</span> <span class="kt">int</span> <span class="n">defStyleRes</span><span class="o">)</span> <span class="o">{</span>
     <span class="k">this</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
@@ -156,7 +156,7 @@
 <span class="o">}</span>
 </code></pre></div>
 
-<p>我们知道 Background 实际上是一个 Drawable 对象，所以只需要关注 Drawable 相关的代码就可以了。构造函数通过 TypedArray 获取到写在 xml 文件里头的<code>android:background</code>字段，然后通过<code>a.getDrawable(attr)</code>这个方法返回了 Drawable 对象。</p>
+<p>Background 实际上是一个 Drawable 对象，所以只需要关注 Drawable 相关的代码就可以了。构造函数通过 TypedArray 获取到写在 xml 文件里头的<code>android:background</code>字段，然后通过<code>a.getDrawable(attr)</code>这个方法返回了 Drawable 对象。</p>
 
 <h2 id="分析-typedarray">分析 TypedArray</h2>
 
@@ -178,7 +178,7 @@
 <span class="o">}</span>
 </code></pre></div>
 
-<p>调用的是<code>mResources.loadDrawable(value, value.resourceId, mTheme)</code>。此处的mResources 是一个<code>Resources</code>对象。通过查看 Resources 的源码得知，实际调用的是 ResourcesImpl 这个类的<code>loadDrawable()</code>方法。继续跳入：</p>
+<p>调用的是<code>mResources.loadDrawable(value, value.resourceId, mTheme)</code>。此处的mResources 是一个<code>Resources</code>对象。通过查看 Resources 的源码得知，实际调用的是 ResourcesImpl 这个类的<code>loadDrawable()</code>方法：</p>
 <div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="n">Drawable</span> <span class="nf">loadDrawable</span><span class="o">(</span><span class="n">Resources</span> <span class="n">wrapper</span><span class="o">,</span> <span class="n">TypedValue</span> <span class="n">value</span><span class="o">,</span> <span class="kt">int</span> <span class="n">id</span><span class="o">,</span> <span class="n">Resources</span><span class="o">.</span><span class="na">Theme</span> <span class="n">theme</span><span class="o">,</span>
             <span class="kt">boolean</span> <span class="n">useCache</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">NotFoundException</span> <span class="o">{</span>
     <span class="k">try</span> <span class="o">{</span>
@@ -220,7 +220,7 @@
 
 <p>这里涉及到不少缓存 Drawable 的代码，系统会优先加载缓存中的 Drawable 对象，有兴趣的可以自行查看。这里我只保留了一些关键的代码。</p>
 
-<p>在 XML 文件中我们可以直接设置为十六进制的颜色信息（比如<code>#ff0000</code>），如果包含的值是这种类型的话，会创建一个<code>ColorDrawable</code>对象。否则则是调用<code>loadDrawableForCookie(wrapper, value, id, null)</code>方法：</p>
+<p>当 XML 文件中直接设置为十六进制的颜色信息（比如<code>#ff0000</code>）时，会创建一个<code>ColorDrawable</code>对象。否则则是调用<code>loadDrawableForCookie(wrapper, value, id, null)</code>方法：</p>
 <div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">private</span> <span class="n">Drawable</span> <span class="nf">loadDrawableForCookie</span><span class="o">(</span><span class="n">Resources</span> <span class="n">wrapper</span><span class="o">,</span> <span class="n">TypedValue</span> <span class="n">value</span><span class="o">,</span> <span class="kt">int</span> <span class="n">id</span><span class="o">,</span>
             <span class="n">Resources</span><span class="o">.</span><span class="na">Theme</span> <span class="n">theme</span><span class="o">)</span> <span class="o">{</span>
 
@@ -250,7 +250,7 @@
 <span class="o">}</span>
 </code></pre></div>
 
-<p>OK，这里我们发现，就像是生成 View 对象一样，依然需要<code>XmlResourceParser</code>来分析 XML 文件。</p>
+<p>OK，与加载 XML 生成 View 对象类似，依然需要<code>XmlResourceParser</code>来分析 XML 文件。</p>
 
 <h2 id="xml-解析">XML 解析</h2>
 
@@ -283,7 +283,7 @@
 <span class="o">}</span>
 </code></pre></div>
 
-<p>如果回到<code>Resources</code>查看一下<code>getDrawableInflater()</code>方法，我们就会知道，这个方法返回的是<code>DrawableInflater</code>对象。这是一个被标识为_@hide_的类，进入到这个类中：</p>
+<p>回到<code>Resources</code>查看一下<code>getDrawableInflater()</code>方法，返回的是<code>DrawableInflater</code>对象。这是一个被标识为_@hide_的类，进入到这个类中：</p>
 <div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="n">Drawable</span> <span class="nf">inflateFromXml</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="n">String</span> <span class="n">name</span><span class="o">,</span> <span class="nd">@NonNull</span> <span class="n">XmlPullParser</span> <span class="n">parser</span><span class="o">,</span>
             <span class="nd">@NonNull</span> <span class="n">AttributeSet</span> <span class="n">attrs</span><span class="o">,</span> <span class="nd">@Nullable</span> <span class="n">Theme</span> <span class="n">theme</span><span class="o">)</span>
             <span class="kd">throws</span> <span class="n">XmlPullParserException</span><span class="o">,</span> <span class="n">IOException</span> <span class="o">{</span>
@@ -307,7 +307,7 @@
 <span class="o">}</span>
 </code></pre></div>
 
-<p>这个方法里的重点是<code>inflateFromTag()</code>。此处涉及到<code>inflateFromClass()</code>的判断我还不是特别明白，如果有哪位 dalao 愿意的话可以指点指点。</p>
+<p>重点是<code>inflateFromTag()</code>。此处涉及到<code>inflateFromClass()</code>的判断我还不是特别明白，如果有哪位 dalao 愿意的话可以指点指点。</p>
 <div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">private</span> <span class="n">Drawable</span> <span class="nf">inflateFromTag</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="n">String</span> <span class="n">name</span><span class="o">)</span> <span class="o">{</span>
     <span class="k">switch</span> <span class="o">(</span><span class="n">name</span><span class="o">)</span> <span class="o">{</span>
         <span class="k">case</span> <span class="s">&quot;selector&quot;</span><span class="o">:</span>
@@ -371,12 +371,12 @@
       <ul class="pager blog-pager">
         
         <li class="previous">
-          <a href="https://diov.github.io/2016/03/27/%E5%9C%A8textview%E4%B8%AD%E8%87%AA%E5%AE%9A%E4%B9%89html%E6%A0%B7%E5%BC%8F" data-toggle="tooltip" data-placement="top" title="在TextView中自定义HTML样式">&larr; Previous Post</a>
+          <a href="https://diov.github.io/2016/06/12/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90/" data-toggle="tooltip" data-placement="top" title="基于 SDK-24 的 Android Background-Drawable 解析">&larr; Previous Post</a>
         </li>
         
         
         <li class="next">
-          <a href="https://diov.github.io/2017/02/27/%E4%BB%8E-hexo-%E5%88%B0-hugo" data-toggle="tooltip" data-placement="top" title="从 Hexo 到 Hugo">Next Post &rarr;</a>
+          <a href="https://diov.github.io/2017/02/27/%E4%BB%8E-hexo-%E5%88%B0-hugo/" data-toggle="tooltip" data-placement="top" title="从 Hexo 到 Hugo">Next Post &rarr;</a>
         </li>
         
       </ul>
@@ -386,9 +386,9 @@
         <div id="disqus_thread"></div>
 <script type="text/javascript">
     var disqus_shortname = 'diovgithubio';
-    var disqus_identifier = 'https:\/\/diov.github.io\/2016\/06\/12\/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90';
+    var disqus_identifier = 'https:\/\/diov.github.io\/2016\/06\/12\/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90\/';
     var disqus_title = '基于 SDK-24 的 Android Background-Drawable 解析';
-    var disqus_url = 'https:\/\/diov.github.io\/2016\/06\/12\/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90';
+    var disqus_url = 'https:\/\/diov.github.io\/2016\/06\/12\/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90\/';
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
@@ -463,7 +463,7 @@
   	    </p>
   	    
     	<p class="credits theme-by text-muted">
-          <a href="http://gohugo.io">Hugo v0.19</a> powered &nbsp;&bull;&nbsp; Theme by <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a> adapted to <a href="https://github.com/1138-4EB/beautifulhugo">Beautiful Hugo</a>
+          <a href="http://gohugo.io">Hugo v0.20.7</a> powered &nbsp;&bull;&nbsp; Theme by <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a> adapted to <a href="https://github.com/1138-4EB/beautifulhugo">Beautiful Hugo</a>
           
     	</p>
       </div>

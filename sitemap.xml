@@ -2,63 +2,69 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://diov.github.io/2017/03/10/%E5%88%A9%E7%94%A8-strictmode-%E5%92%8C-mat-%E8%A7%A3%E5%86%B3%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F</loc>
+    <loc>https://diov.github.io/2017/03/10/%E5%88%A9%E7%94%A8-strictmode-%E5%92%8C-mat-%E8%A7%A3%E5%86%B3%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/</loc>
     <lastmod>2017-03-10T15:06:19+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://diov.github.io/2017/02/27/%E4%BB%8E-hexo-%E5%88%B0-hugo</loc>
+    <loc>https://diov.github.io/2017/02/27/%E4%BB%8E-hexo-%E5%88%B0-hugo/</loc>
     <lastmod>2017-02-27T15:06:19+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://diov.github.io/2016/06/12/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90</loc>
+    <loc>https://diov.github.io/2016/06/12/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90/</loc>
     <lastmod>2016-06-12T14:58:44+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://diov.github.io/2016/03/27/%E5%9C%A8textview%E4%B8%AD%E8%87%AA%E5%AE%9A%E4%B9%89html%E6%A0%B7%E5%BC%8F</loc>
+    <loc>https://diov.github.io/2016/06/12/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90/</loc>
+    <lastmod>2016-06-12T14:58:44+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://diov.github.io/2016/03/27/%E5%9C%A8textview%E4%B8%AD%E8%87%AA%E5%AE%9A%E4%B9%89html%E6%A0%B7%E5%BC%8F/</loc>
     <lastmod>2016-03-27T15:33:46+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://diov.github.io/2016/03/20/%E4%BB%8Eaidl%E6%B5%85%E6%9E%90binder%E6%9C%BA%E5%88%B6</loc>
+    <loc>https://diov.github.io/2016/03/20/%E4%BB%8Eaidl%E6%B5%85%E6%9E%90binder%E6%9C%BA%E5%88%B6/</loc>
     <lastmod>2016-03-20T13:38:44+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://diov.github.io/2016/03/08/setcontentview%E5%92%8Cfindviewbyid%E7%9A%84%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90</loc>
+    <loc>https://diov.github.io/2016/03/08/setcontentview%E5%92%8Cfindviewbyid%E7%9A%84%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/</loc>
     <lastmod>2016-03-08T13:40:53+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://diov.github.io/2016/03/02/%E7%BB%99-coordinatorlayout-%E8%87%AA%E5%AE%9A%E4%B9%89-behavior</loc>
+    <loc>https://diov.github.io/2016/03/02/%E7%BB%99-coordinatorlayout-%E8%87%AA%E5%AE%9A%E4%B9%89-behavior/</loc>
     <lastmod>2016-03-02T20:49:18+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://diov.github.io/2016/02/28/%E4%BB%8Elistview%E7%9A%84%E5%B5%8C%E5%A5%97%E6%9D%A5%E7%90%86%E8%A7%A3onmeasure%E6%96%B9%E6%B3%95</loc>
+    <loc>https://diov.github.io/2016/02/28/%E4%BB%8Elistview%E7%9A%84%E5%B5%8C%E5%A5%97%E6%9D%A5%E7%90%86%E8%A7%A3onmeasure%E6%96%B9%E6%B3%95/</loc>
     <lastmod>2016-02-28T16:54:13+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://diov.github.io/2016/02/15/%E4%BB%8Exml%E5%88%B0view</loc>
+    <loc>https://diov.github.io/2016/02/15/%E4%BB%8Exml%E5%88%B0view/</loc>
     <lastmod>2016-02-15T20:56:42+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://diov.github.io/2016/01/17/android-%E8%A7%A6%E6%91%B8%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%BA%90%E7%A0%81</loc>
+    <loc>https://diov.github.io/2016/01/17/android-%E8%A7%A6%E6%91%B8%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%BA%90%E7%A0%81/</loc>
     <lastmod>2016-01-17T19:41:49+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://diov.github.io/categories/android.html</loc>
+    <loc>https://diov.github.io/categories/android/</loc>
     <lastmod>2017-03-10T15:06:19+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://diov.github.io/categories.html</loc>
+    <loc>https://diov.github.io/categories/</loc>
+    <lastmod>2017-03-10T15:06:19+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -69,14 +75,19 @@
   </url>
   
   <url>
-    <loc>https://diov.github.io/categories/other.html</loc>
+    <loc>https://diov.github.io/categories/other/</loc>
     <lastmod>2017-02-27T15:06:19+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://diov.github.io/post.html</loc>
+    <loc>https://diov.github.io/post/</loc>
     <lastmod>2017-03-10T15:06:19+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://diov.github.io/tags/</loc>
     <priority>0</priority>
   </url>
   

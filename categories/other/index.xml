@@ -2,105 +2,24 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Other on Meow</title>
-    <link>https://diov.github.io/categories/other.xml</link>
+    <link>https://diov.github.io/categories/other/</link>
     <description>Recent content in Other on Meow</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-hans</language>
     <managingEditor>diov87@outlook.com (Dio_V)</managingEditor>
     <webMaster>diov87@outlook.com (Dio_V)</webMaster>
-    <atom:link href="https://diov.github.io/categories/other.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 27 Feb 2017 15:06:19 +0800</lastBuildDate>
+    
+	<atom:link href="https://diov.github.io/categories/other/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>从 Hexo 到 Hugo</title>
-      <link>https://diov.github.io/2017/02/27/%E4%BB%8E-hexo-%E5%88%B0-hugo</link>
+      <link>https://diov.github.io/2017/02/27/%E4%BB%8E-hexo-%E5%88%B0-hugo/</link>
       <pubDate>Mon, 27 Feb 2017 15:06:19 +0800</pubDate>
       <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2017/02/27/%E4%BB%8E-hexo-%E5%88%B0-hugo</guid>
-      <description>
-
-&lt;p&gt;最开始搭建博客的时候用的是 Hexo，相对其他的静态博客框架，Hexo 的搭建确实够简单，主题也够丰富。但是上个周末花了两天时间把框架从 Hexo 换到了 Hugo。原因有二：&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Hexo 生成静态文件的速度&lt;/li&gt;
-&lt;li&gt;Hexo 是基于 Node.js 的，而从 mpn 上下载插件太容易出各种问题了。尤其是当你的 node 版本太高的时候&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;当然，最主要的原因其实是：Hexo 的更新简直是一场噩梦。所以决定将博客的框架换为 Hugo。一个是性能够好，另一个是安装够简单&lt;/p&gt;
-
-&lt;h2 id=&#34;hugo-安装-使用&#34;&gt;Hugo 安装+使用&lt;/h2&gt;
-
-&lt;ul&gt;
-&lt;li&gt;安装 Hugo 非常简单，直接在&lt;a href=&#34;http://gohugo.io/&#34;&gt;官网&lt;/a&gt;下载安装包。或者用 Homebrew:&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre&gt;&lt;code&gt;$ brew update &amp;amp;&amp;amp; brew install hugo
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;ul&gt;
-&lt;li&gt;创建新博客&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;pre&gt;&lt;code&gt;$ hugo new site xxBlog
-
-.
-|-- archetypes
-|-- config.toml
-|-- content
-|-- data
-|-- layouts
-`-- static
-
-5 directories, 1 file
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Markdown 文件放在 content 文件夹下。配置内容放在 config.toml 里。不同于 Hexo 的 YAML，Hugo 使用了 TOML 作为配置的格式。具体的配置选可以在&lt;a href=&#34;https://gohugo.io/overview/configuration/&#34;&gt;这里&lt;/a&gt;找到。需要注意的是，中文博客需要设置&lt;code&gt;hasCJKLanguage = true&lt;/code&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;配置代码高亮&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Hugo 的代码高亮有两种方式，一个是生成静态文件时加上高亮，另一个是通过在页面上加上 js&lt;/p&gt;
-
-&lt;p&gt;第二种方法需要修改 Theme 下的 &lt;code&gt;header.html&lt;/code&gt;。所以我用的是第一种方法。&lt;/p&gt;
-
-&lt;p&gt;安装 Pygments&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;pip install Pygments
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;安装完之后，可以在 terminal 里面输入&lt;code&gt;pygmentize&lt;/code&gt;，如果没有这个命令。需要将这个命令加到 PATH 里面。&lt;/p&gt;
-
-&lt;p&gt;之后，需要在 config.toml 里面添加&lt;code&gt;pygmentsUseClasses = true&lt;/code&gt;，自定义高亮格式&lt;code&gt;pygmentsStyle = &amp;quot;&amp;quot;&lt;/code&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;添加文章&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;在 xxBlog 文件夹下面输入&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ hugo new xxx.md
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;然后就可以编辑 Markdown 文件了。当然，这里每篇文章的 frontmatter 也是用 TOML 格式的。如果是从 Hexo 迁移过来也需要修改一下&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;生成静态文件并预览&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;在 xxBlog 文件夹下面生成静态文件&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ hugo
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;本地预览&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ hugo serve
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;访问&lt;code&gt;http://localhost:1313/&lt;/code&gt;访问&lt;/p&gt;
-
-&lt;p&gt;另外，相比 Hexo 的一键部署到 GitHub Page，Hugo 需要手动将 /public/文件夹 中的内容传送到 Github 仓库。这里就不细讲了&lt;/p&gt;
-</description>
+      <guid>https://diov.github.io/2017/02/27/%E4%BB%8E-hexo-%E5%88%B0-hugo/</guid>
+      <description>最开始搭建博客的时候用的是 Hexo，相对其他的静态博客框架，Hexo 的搭建确实够简单，主题也够丰富。但是上个周末花了两天时间把框架从 Hexo 换到了</description>
     </item>
     
   </channel>
