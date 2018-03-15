@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>从XML到View - Meow</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="Dio_V" /><meta name="description" content="如何将一个XML布局文件转换为一个View对象" />
+
+  <meta name="keywords" content="Hugo, Android" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.37.1" />
+
+
+<link rel="canonical" href="https://diov.github.io/post/from_xml_to_view/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+
+
+<meta property="og:title" content="从XML到View" />
+<meta property="og:description" content="如何将一个XML布局文件转换为一个View对象" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://diov.github.io/post/from_xml_to_view/" />
+
+
+
+<meta property="article:published_time" content="2016-02-15T20:56:42&#43;08:00"/>
+
+<meta property="article:modified_time" content="2016-02-15T20:56:42&#43;08:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta itemprop="name" content="从XML到View">
+<meta itemprop="description" content="如何将一个XML布局文件转换为一个View对象">
+
+
+<meta itemprop="datePublished" content="2016-02-15T20:56:42&#43;08:00" />
+<meta itemprop="dateModified" content="2016-02-15T20:56:42&#43;08:00" />
+<meta itemprop="wordCount" content="2707">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="从XML到View"/>
+<meta name="twitter:description" content="如何将一个XML布局文件转换为一个View对象"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Meow</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Meow</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">从XML到View</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2016-02-15 </span>
+        <div class="post-category">
+            
+              <a href="/categories/android/"> Android </a>
+            
+          </div>
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#获取layoutinflater实例">获取LayoutInflater实例</a></li>
+<li><a href="#从xml到view">从XML到View</a>
+<ul>
+<li><a href="#从inflate-开始">从inflate()开始</a></li>
+<li><a href="#createviewfromtag-的实现">createViewFromTag()的实现</a></li>
+<li><a href="#rinflatechildren-的实现">rInflateChildren()的实现</a></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      
+
+<p>通常，我们会将应用中需要展示的界面内容都写在XML文件中，通过<code>Activity</code>的<code>setContentView()</code>方法设置。<br />
+当我们希望动态的添加一个没有被加载的xml布局文件，比如在<code>ViewPager</code>或者是<code>ListView</code>中，就需要使用到<code>View.inflate()</code>方法或者是<code>LayoutInflater</code>这个类。</p>
+
+<!-- more -->
+
+<hr />
+
+<h1 id="获取layoutinflater实例">获取LayoutInflater实例</h1>
+
+<p>先来看一下<code>View.inflate()</code>方法的实现：</p>
+
+<pre><code class="language-java">public static View inflate(Context context, @LayoutRes int resource, ViewGroup root) {
+    LayoutInflater factory = LayoutInflater.from(context);
+    return factory.inflate(resource, root);
+}
+</code></pre>
+
+<p>实际上是封装了<code>LayoutInflater</code>的<code>from(Context context)</code>方法，并通过获取的<code>LayoutInflater</code>实例来返回<code>View</code>对象</p>
+
+<p>那么如何能获取到<code>LayoutInflater</code>对象的实例呢？通常有三种方式：</p>
+
+<pre><code class="language-java">LayoutInflater layoutInflater = Activity.this.getLayoutInflater(); // 该方法只能由Activity的实例来调用
+LayoutInflater layoutInflater = LayoutInflater.from(Context context);
+LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+</code></pre>
+
+<p>第一种方法只能由Activity的实例来调用，内部实际上是调用了<code>Window</code>接口的<code>getLayoutInflater()</code>方法：</p>
+
+<pre><code class="language-java">public LayoutInflater getLayoutInflater() {
+    return getWindow().getLayoutInflater();
+}
+</code></pre>
+
+<p>具体的实现在<code>PhoneWindow</code>类中，通过<code>LayoutInflater.from(Context context)</code>来返回实例</p>
+
+<pre><code class="language-java">public PhoneWindow(Context context) {
+    super(context);
+    mLayoutInflater = LayoutInflater.from(context);
+}
+
+public LayoutInflater getLayoutInflater() {
+    return mLayoutInflater;
+}
+</code></pre>
+
+<p>第二种方法的实现：</p>
+
+<pre><code class="language-java">public static LayoutInflater from(Context context) {
+    LayoutInflater LayoutInflater =
+            (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    if (LayoutInflater == null) {
+        throw new AssertionError(&quot;LayoutInflater not found.&quot;);
+    }
+    return LayoutInflater;
+}
+</code></pre>
+
+<p>所以三种方法实际上是以同样的代码来实现的。</p>
+
+<h1 id="从xml到view">从XML到View</h1>
+
+<p>首先明确一下，一般在布局文件中，我们都必须给每一个控件添加两个属性：<code>layout_height</code>和<code>layout_width</code>，通过这两个属性来控制控件的宽高。但是为什么有时候，通过<code>inflate()</code>方法将其转换为View之后，两个属性就不起作用了呢？</p>
+
+<h2 id="从inflate-开始">从inflate()开始</h2>
+
+<p>获取到<code>LayoutInflater</code>的实例之后，就可以调用<code>layoutInflater.inflate()</code>方法将XML布局文件转换成View对象了。</p>
+
+<p><code>inflate()</code>方法有多个重载，先来看看这些重载有什么不同：</p>
+
+<pre><code class="language-java">public View inflate(@LayoutRes int resource, @Nullable ViewGroup root) {
+    return inflate(resource, root, root != null);
+}
+
+public View inflate(@LayoutRes int resource, @Nullable ViewGroup root, boolean attachToRoot) {
+    final Resources res = getContext().getResources();
+
+    final XmlResourceParser parser = res.getLayout(resource);
+    try {
+        return inflate(parser, root, attachToRoot);
+    } finally {
+        parser.close();
+    }
+}
+</code></pre>
+
+<p>最终这些重载的方法都调用了<code>inflate(XmlPullParser parser, ViewGroup root, boolean attachToRoot)</code>的代码：</p>
+
+<pre><code class="language-java">//删掉了一些不关心的代码
+public View inflate(XmlPullParser parser, @Nullable ViewGroup root, boolean attachToRoot) {
+    synchronized (mConstructorArgs) {
+        final Context inflaterContext = mContext;
+        final AttributeSet attrs = Xml.asAttributeSet(parser);
+        Context lastContext = (Context) mConstructorArgs[0];
+        mConstructorArgs[0] = inflaterContext;
+        // 1. 先将rootView赋值给result
+        View result = root;
+
+        //2. 开始通过Pull解析对XML文件进行解析
+        try {
+            // 解析根节点，从START_TAG开始解析
+            int type;
+            while ((type = parser.next()) != XmlPullParser.START_TAG &amp;&amp; type != XmlPullParser.END_DOCUMENT) {
+            }
+
+            if (type != XmlPullParser.START_TAG) {
+                throw new InflateException(parser.getPositionDescription() + &quot;: No start tag found!&quot;);
+            }
+
+            final String name = parser.getName();
+
+            // XML根标签为&lt;merge&gt;，优化XML时使用
+            if (TAG_MERGE.equals(name)) {
+                if (root == null || !attachToRoot) {
+                    throw new InflateException(&quot;&lt;merge /&gt; can be used only with a valid &quot;
+                            + &quot;ViewGroup root and attachToRoot=true&quot;);
+                }
+
+                rInflate(parser, root, inflaterContext, attrs, false);
+            } else {
+                // 将XML文件的根节点转化为View对象，赋值给temp
+                final View temp = createViewFromTag(root, name, inflaterContext, attrs);
+
+                ViewGroup.LayoutParams params = null;
+
+                if (root != null) {
+                    // 如果root不为null，就根据父控件及XML中配置的属性来生成LayoutParams
+                    params = root.generateLayoutParams(attrs);
+                    if (!attachToRoot) {
+                        // 如果不需要将当前View添加到父控件中，就直接设置参数
+                        temp.setLayoutParams(params);
+                    }
+                }
+
+                // 依次遍历，将XML中所有的控件转换为View对象
+                rInflateChildren(parser, temp, attrs, true);
+
+                if (root != null &amp;&amp; attachToRoot) {
+                    // 如果root不为null，并且要将转换后的View对象添加到父控件中，就直接调用addView()方法
+                    root.addView(temp, params);
+                }
+
+                // 决定返回的View时root(父控件)或者是XML中换换后的控件
+                if (root == null || !attachToRoot) {
+                    result = temp;
+                }
+            }
+        } catch(Exception e) {
+          ...
+        }
+
+        // 3. 返回View对象
+        return result;
+    }
+}
+</code></pre>
+
+<p>熟悉整个源码之后，我们再回头来看一看就清晰明了了：</p>
+
+<ol>
+<li><code>inflate(resource, null)</code> : 如果root为null，那么不论第三个参数存在与否、是否为true，在XML文件中设置的关于布局的属性就都不会生效</li>
+<li><code>inflate(resource, root, false)</code> : 如果root不为null，但是不将XML转换的View添加到root下，那么XML文件中设置的属性生效，返回的是XML的根节点生成的View对象</li>
+<li><code>inflate(resource, root, true)</code> : 如果root不为null，并且将转换的View添加到root下，那么返回的是添加View对象后的root<br /></li>
+</ol>
+
+<p>此外，从源码中我们可以知道，如果在一个XML布局文件中，我们将根节点设置为<code>&lt;merge&gt;</code>的话，必须存在一个父控件将其包裹，否则就会抛出异常</p>
+
+<h2 id="createviewfromtag-的实现">createViewFromTag()的实现</h2>
+
+<p>在<code>inflate()</code>中，是通过<code>createViewFromTag()</code>将XML中的标签转换为一个View对象的，那么他是如何实现的呢？</p>
+
+<pre><code class="language-java">// 删掉了一些不关心的代码
+private View createViewFromTag(View parent, String name, Context context, AttributeSet attrs) {
+    return createViewFromTag(parent, name, context, attrs, false);
+}
+
+View createViewFromTag(View parent, String name, Context context, AttributeSet attrs, boolean ignoreThemeAttr) {
+        // 在布局文件中我们可以将标签设置为&lt;view&gt;，通过class属性设置具体的控件
+        if (name.equals(&quot;view&quot;)) {
+            name = attrs.getAttributeValue(null, &quot;class&quot;);
+        }
+
+        if (!ignoreThemeAttr) {
+            // 从Theme中获取属性
+        }
+
+        try {
+            View view;
+            if (view == null) {
+                final Object lastContext = mConstructorArgs[0];
+                mConstructorArgs[0] = context;
+                try {
+                    if (-1 == name.indexOf('.')) {
+                        // 如果控件名中不包含'.'，表明是系统的控件
+                        view = onCreateView(parent, name, attrs);
+                    } else {
+                        // 否则为自定义的控件
+                        view = createView(name, null, attrs);
+                    }
+                } finally {
+                    mConstructorArgs[0] = lastContext;
+                }
+            }
+
+            return view;
+        } catch (Exception e) {
+            ...
+        }
+    }
+</code></pre>
+
+<p>分别调用了<code>onCreateView()</code>和<code>createView()</code>方法，而最终调用的是<code>createView(String name, String prefix, AttributeSet attrs)</code>中的代码：</p>
+
+<pre><code class="language-java">// 删掉了一些不关心的代码
+protected View onCreateView(View parent, String name, AttributeSet attrs)
+        throws ClassNotFoundException {
+    return onCreateView(name, attrs);
+}
+
+protected View onCreateView(String name, AttributeSet attrs)
+        throws ClassNotFoundException {
+    return createView(name, &quot;android.view.&quot;, attrs);
+}
+
+public final View createView(String name, String prefix, AttributeSet attrs)
+        throws ClassNotFoundException, InflateException {
+    Constructor&lt;? extends View&gt; constructor = sConstructorMap.get(name);
+    Class&lt;? extends View&gt; clazz = null;
+
+    try {
+        if (constructor == null) {
+            clazz = mContext.getClassLoader().loadClass(prefix != null ? (prefix + name) : name).asSubclass(View.class);
+
+            constructor = clazz.getConstructor(mConstructorSignature);
+            constructor.setAccessible(true);
+            sConstructorMap.put(name, constructor);
+        } else {
+            ...
+        }
+
+        Object[] args = mConstructorArgs;
+        args[1] = attrs;
+
+        final View view = constructor.newInstance(args);
+        if (view instanceof ViewStub) {
+            final ViewStub viewStub = (ViewStub) view;
+            viewStub.setLayoutInflater(cloneInContext((Context) args[0]));
+        }
+        return view;
+    } catch (Exception e) {
+        ...
+    }
+}
+
+static final Class&lt;?&gt;[] mConstructorSignature = new Class[] {Context.class, AttributeSet.class};
+</code></pre>
+
+<p>其实核心代码还是比较简单的，就是通过反射来获取两个参数（mConstructorSignature）的构造器，再调用<code>newInstance()</code>方法构造出需要的<code>View</code>对象。这也是为什么如果我们使用自定义控件时，如果需要通过XML文件来使用必须复写有两个参数的构造函数的原因。</p>
+
+<h2 id="rinflatechildren-的实现">rInflateChildren()的实现</h2>
+
+<p>通过<code>createViewFromTag()</code>将XML文件中的标签转换为<code>View</code>对象后，就要调用<code>rInflateChildren()</code>将布局文件中其他子控件转换为<code>View</code>：</p>
+
+<pre><code class="language-java">// 删掉了一些不关心的代码
+final void rInflateChildren(XmlPullParser parser, View parent, AttributeSet attrs,
+        boolean finishInflate) throws XmlPullParserException, IOException {
+    rInflate(parser, parent, parent.getContext(), attrs, finishInflate);
+}
+
+void rInflate(XmlPullParser parser, View parent, Context context,
+        AttributeSet attrs, boolean finishInflate) throws XmlPullParserException, IOException {
+
+    final int depth = parser.getDepth();
+    int type;
+
+    while (((type = parser.next()) != XmlPullParser.END_TAG ||
+            parser.getDepth() &gt; depth) &amp;&amp; type != XmlPullParser.END_DOCUMENT) {
+
+        if (type != XmlPullParser.START_TAG) {
+            continue;
+        }
+
+        final String name = parser.getName();
+
+        if (...) {
+            ...
+        } else {
+            // 调用 createViewFromTag()
+            final View view = createViewFromTag(parent, name, context, attrs);
+            final ViewGroup viewGroup = (ViewGroup) parent;
+            final ViewGroup.LayoutParams params = viewGroup.generateLayoutParams(attrs);
+            // 调用rInflateChildren()
+            rInflateChildren(parser, view, attrs, true);
+            // 将生成的View添加父控件中
+            viewGroup.addView(view, params);
+        }
+    }
+
+    if (finishInflate) {
+        parent.onFinishInflate();
+    }
+}
+</code></pre>
+
+<p>可以清楚的看到，由<code>rInflateChildren</code>开始，形成了一个循环：<code>rInflateChildren</code> -&gt; <code>rInflate</code> -&gt; <code>createViewFromTag</code> -&gt; <code>rInflateChildren</code>。通过循环遍历所有的子控件，直到整个布局文件结束</p>
+
+<p>此外，在最后可以看到，当<code>rInflate()</code>方法执行到最后时，会回调<code>parent.onFinishInflate()</code>方法，我们可以在重写这个回调方法获取View的属性</p>
+
+    </div>
+
+    
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">Dio_V</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">2016-02-15</span>
+  </p>
+  
+  
+</div>
+
+    
+    
+
+    <footer class="post-footer">
+      
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/knowledge-about-onmeasure-from-listview-height-problem/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">从ListView的嵌套来理解onMeasure方法</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+          <a class="next" href="/post/analisis-of-touchevent-in-android/">
+            <span class="next-text nav-default">Android 触摸事件分发源码</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+    (function() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'diovgithubio';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="diov87@outlook.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://twitter.com/Dio_Vin" class="iconfont icon-twitter" title="twitter"></a>
+      <a href="https://www.facebook.com/diov87" class="iconfont icon-facebook" title="facebook"></a>
+      <a href="https://github.com/diov" class="iconfont icon-github" title="github"></a>
+  <a href="https://diov.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    
+      2016 - 
+    2018
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Dio_V</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+<script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106569198-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

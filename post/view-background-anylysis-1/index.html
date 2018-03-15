@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>基于 SDK-24 的 Android Background-Drawable 解析 - Meow</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="Dio_V" /><meta name="description" content="Android中给 View 设置 Background 的流程解析" />
+
+  <meta name="keywords" content="Hugo, Android" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.37.1" />
+
+
+<link rel="canonical" href="https://diov.github.io/post/view-background-anylysis-1/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+
+
+<meta property="og:title" content="基于 SDK-24 的 Android Background-Drawable 解析" />
+<meta property="og:description" content="Android中给 View 设置 Background 的流程解析" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://diov.github.io/post/view-background-anylysis-1/" />
+
+
+
+<meta property="article:published_time" content="2016-06-12T14:58:44&#43;08:00"/>
+
+<meta property="article:modified_time" content="2016-06-12T14:58:44&#43;08:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta itemprop="name" content="基于 SDK-24 的 Android Background-Drawable 解析">
+<meta itemprop="description" content="Android中给 View 设置 Background 的流程解析">
+
+
+<meta itemprop="datePublished" content="2016-06-12T14:58:44&#43;08:00" />
+<meta itemprop="dateModified" content="2016-06-12T14:58:44&#43;08:00" />
+<meta itemprop="wordCount" content="1727">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="基于 SDK-24 的 Android Background-Drawable 解析"/>
+<meta name="twitter:description" content="Android中给 View 设置 Background 的流程解析"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Meow</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Meow</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">基于 SDK-24 的 Android Background-Drawable 解析</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2016-06-12 </span>
+        <div class="post-category">
+            
+              <a href="/categories/android/"> Android </a>
+            
+          </div>
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#解析-xml-文件中的-background-属性">解析 XML 文件中的 background 属性</a></li>
+<li><a href="#分析-typedarray">分析 TypedArray</a></li>
+<li><a href="#xml-解析">XML 解析</a></li>
+<li><a href="#小结">小结</a></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      
+
+<p>View 的 <code>background</code> 属性相信每一个 Android 开发都是非常了解的，但是好像对于 View 如何加载 background 资源的解析还是比较少的。</p>
+
+<p>另外，最近项目里面加了很多圆角按钮，写 xml 写的实在不愉快，就打算以代码的形式来实现一个自定义的圆角按钮，这其中也涉及到不少 background 的知识点。正好在这里做一个梳理。</p>
+
+<!-- more -->
+
+<h2 id="解析-xml-文件中的-background-属性">解析 XML 文件中的 background 属性</h2>
+
+<p>给 View 设置 background 通常有两种方式，一个是在 xml 中设置<code>android:background</code>，另一种是直接通过代码调用<code>setBackground()</code>。这里我们先了解 xml 这种方式。</p>
+
+<p>看过之前的<a href="https://diov.github.io/2016/02/15/%E4%BB%8Exml%E5%88%B0view/">从 XML 到 view</a>的应该都知道，在系统通过 xml 文件来实例化出 View 对象的时候，需要调用到带有两个参数的构造函数，起最终调用的是带有四个参数的构造函数。</p>
+
+<pre><code class="language-java">// 删除不关心的代码，仅保留 Background 相关
+public View(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    this(context);
+
+    final TypedArray a = context.obtainStyledAttributes(
+            attrs, com.android.internal.R.styleable.View, defStyleAttr, defStyleRes);
+
+    Drawable background = null;
+
+    // ...
+
+    final int N = a.getIndexCount();
+    for (int i = 0; i &lt; N; i++) {
+        int attr = a.getIndex(i);
+        switch (attr) {
+            case com.android.internal.R.styleable.View_background:
+                background = a.getDrawable(attr);
+                break;
+            // ...
+        }
+    }
+
+    // ...
+
+    if (background != null) {
+        setBackground(background);
+    }
+
+    // ...
+}
+</code></pre>
+
+<p>Background 实际上是一个 Drawable 对象，所以只需要关注 Drawable 相关的代码就可以了。构造函数通过 TypedArray 获取到写在 xml 文件里头的<code>android:background</code>字段，然后通过<code>a.getDrawable(attr)</code>这个方法返回了 Drawable 对象。</p>
+
+<h2 id="分析-typedarray">分析 TypedArray</h2>
+
+<p>跳入到 TypydArray 的源码中：</p>
+
+<pre><code class="language-java">public Drawable getDrawable(@StyleableRes int index) {
+    if (mRecycled) {
+        throw new RuntimeException(&quot;Cannot make calls to a recycled instance!&quot;);
+    }
+
+    final TypedValue value = mValue;
+    if (getValueAt(index*AssetManager.STYLE_NUM_ENTRIES, value)) {
+        if (value.type == TypedValue.TYPE_ATTRIBUTE) {
+            throw new UnsupportedOperationException(
+                    &quot;Failed to resolve attribute at index &quot; + index + &quot;: &quot; + value);
+        }
+        return mResources.loadDrawable(value, value.resourceId, mTheme);
+    }
+    return null;
+}
+</code></pre>
+
+<p>调用的是<code>mResources.loadDrawable(value, value.resourceId, mTheme)</code>。此处的mResources 是一个<code>Resources</code>对象。通过查看 Resources 的源码得知，实际调用的是 ResourcesImpl 这个类的<code>loadDrawable()</code>方法：</p>
+
+<pre><code class="language-java">Drawable loadDrawable(Resources wrapper, TypedValue value, int id, Resources.Theme theme,
+            boolean useCache) throws NotFoundException {
+    try {
+        // ...
+
+        final boolean isColorDrawable;
+        final DrawableCache caches;
+        final long key;
+        if (value.type &gt;= TypedValue.TYPE_FIRST_COLOR_INT
+                &amp;&amp; value.type &lt;= TypedValue.TYPE_LAST_COLOR_INT) {
+            isColorDrawable = true;
+            caches = mColorDrawableCache;
+            key = value.data;
+        } else {
+            isColorDrawable = false;
+            caches = mDrawableCache;
+            key = (((long) value.assetCookie) &lt;&lt; 32) | value.data;
+        }
+
+        // ...
+
+        Drawable dr;
+        if (cs != null) {
+            dr = cs.newDrawable(wrapper);
+        } else if (isColorDrawable) {
+            dr = new ColorDrawable(value.data);
+        } else {
+            dr = loadDrawableForCookie(wrapper, value, id, null);
+        }
+
+        // ...
+
+        return dr;
+    } catch (Exception e) {
+        // ...
+    }
+}
+</code></pre>
+
+<p>这里涉及到不少缓存 Drawable 的代码，系统会优先加载缓存中的 Drawable 对象，有兴趣的可以自行查看。这里我只保留了一些关键的代码。</p>
+
+<p>当 XML 文件中直接设置为十六进制的颜色信息（比如<code>#ff0000</code>）时，会创建一个<code>ColorDrawable</code>对象。否则则是调用<code>loadDrawableForCookie(wrapper, value, id, null)</code>方法：</p>
+
+<pre><code class="language-java">private Drawable loadDrawableForCookie(Resources wrapper, TypedValue value, int id,
+            Resources.Theme theme) {
+
+    // ...
+
+    final Drawable dr;
+
+    // ...
+    try {
+        if (file.endsWith(&quot;.xml&quot;)) {
+            final XmlResourceParser rp = loadXmlResourceParser(
+                    file, id, value.assetCookie, &quot;drawable&quot;);
+            dr = Drawable.createFromXml(wrapper, rp, theme);
+            rp.close();
+        } else {
+            final InputStream is = mAssets.openNonAsset(
+                    value.assetCookie, file, AssetManager.ACCESS_STREAMING);
+            dr = Drawable.createFromResourceStream(wrapper, value, is, file, null);
+            is.close();
+        }
+    } catch (Exception e) {
+        // ...
+    }
+    // ...
+
+    return dr;
+}
+</code></pre>
+
+<p>OK，与加载 XML 生成 View 对象类似，依然需要<code>XmlResourceParser</code>来分析 XML 文件。</p>
+
+<h2 id="xml-解析">XML 解析</h2>
+
+<p>此处的代码在<code>Drawable</code>里：</p>
+
+<pre><code class="language-java">public static Drawable createFromXml(Resources r, XmlPullParser parser, Theme theme)
+            throws XmlPullParserException, IOException {
+    AttributeSet attrs = Xml.asAttributeSet(parser);
+
+    int type;
+    //noinspection StatementWithEmptyBody
+    while ((type=parser.next()) != XmlPullParser.START_TAG
+            &amp;&amp; type != XmlPullParser.END_DOCUMENT) {
+        // Empty loop.
+    }
+
+    // ...
+
+    Drawable drawable = createFromXmlInner(r, parser, attrs, theme);
+
+    // ...
+
+    return drawable;
+}
+</code></pre>
+
+<p>调用了<code>createFromXmlInner(r, parser, attrs, theme)</code>方法：</p>
+
+<pre><code class="language-java">public static Drawable createFromXmlInner(Resources r, XmlPullParser parser, AttributeSet attrs,
+            Theme theme) throws XmlPullParserException, IOException {
+    return r.getDrawableInflater().inflateFromXml(parser.getName(), parser, attrs, theme);
+}
+</code></pre>
+
+<p>回到<code>Resources</code>查看一下<code>getDrawableInflater()</code>方法，返回的是<code>DrawableInflater</code>对象。这是一个被标识为_@hide_的类，进入到这个类中：</p>
+
+<pre><code class="language-java">public Drawable inflateFromXml(@NonNull String name, @NonNull XmlPullParser parser,
+            @NonNull AttributeSet attrs, @Nullable Theme theme)
+            throws XmlPullParserException, IOException {
+    // Inner classes must be referenced as Outer$Inner, but XML tag names
+    // can't contain $, so the &lt;drawable&gt; tag allows developers to specify
+    // the class in an attribute. We'll still run it through inflateFromTag
+    // to stay consistent with how LayoutInflater works.
+    if (name.equals(&quot;drawable&quot;)) {
+        name = attrs.getAttributeValue(null, &quot;class&quot;);
+        if (name == null) {
+            throw new InflateException(&quot;&lt;drawable&gt; tag must specify class attribute&quot;);
+        }
+    }
+
+    Drawable drawable = inflateFromTag(name);
+    if (drawable == null) {
+        drawable = inflateFromClass(name);
+    }
+    drawable.inflate(mRes, parser, attrs, theme);
+    return drawable;
+}
+</code></pre>
+
+<p>重点是<code>inflateFromTag()</code>。此处涉及到<code>inflateFromClass()</code>的判断我还不是特别明白，如果有哪位 dalao 愿意的话可以指点指点。</p>
+
+<pre><code class="language-java">private Drawable inflateFromTag(@NonNull String name) {
+    switch (name) {
+        case &quot;selector&quot;:
+            return new StateListDrawable();
+        case &quot;animated-selector&quot;:
+            return new AnimatedStateListDrawable();
+        case &quot;level-list&quot;:
+            return new LevelListDrawable();
+        case &quot;layer-list&quot;:
+            return new LayerDrawable();
+        case &quot;transition&quot;:
+            return new TransitionDrawable();
+        case &quot;ripple&quot;:
+            return new RippleDrawable();
+        case &quot;color&quot;:
+            return new ColorDrawable();
+        case &quot;shape&quot;:
+            return new GradientDrawable();
+        case &quot;vector&quot;:
+            return new VectorDrawable();
+        case &quot;animated-vector&quot;:
+            return new AnimatedVectorDrawable();
+        case &quot;scale&quot;:
+            return new ScaleDrawable();
+        case &quot;clip&quot;:
+            return new ClipDrawable();
+        case &quot;rotate&quot;:
+            return new RotateDrawable();
+        case &quot;animated-rotate&quot;:
+            return new AnimatedRotateDrawable();
+        case &quot;animation-list&quot;:
+            return new AnimationDrawable();
+        case &quot;inset&quot;:
+            return new InsetDrawable();
+        case &quot;bitmap&quot;:
+            return new BitmapDrawable();
+        case &quot;nine-patch&quot;:
+            return new NinePatchDrawable();
+        default:
+            return null;
+    }
+}
+</code></pre>
+
+<p><code>inflateFromTag()</code>方法判断标签的名字，然后生成对应的 Drawable 的子类对象。</p>
+
+<h2 id="小结">小结</h2>
+
+<p>至此，我们也大致了解了 Background-Drawable 的加载流程：</p>
+
+<ol>
+<li>通过<code>View</code>的构造函数，获取<code>android:background</code>属性的值</li>
+<li><code>Resourses</code>加载<code>background</code>中定义的 XML 文件</li>
+<li>以<code>XmlResourceParser</code>解析 XML 文件，针对特定的 tag 生成指定的<code>Drawable</code>对象</li>
+</ol>
+
+<p>但是仅仅是<code>inflateFromTag(name)</code> 还是只生成了指定的Drawable，那这些 Drawable 自己的属性是怎么生成的呢？我会在下一篇来解析</p>
+
+    </div>
+
+    
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">Dio_V</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">2016-06-12</span>
+  </p>
+  
+  
+</div>
+
+    
+    
+
+    <footer class="post-footer">
+      
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/from-hexo-to-hugo/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">从 Hexo 到 Hugo</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+          <a class="next" href="/post/consum-html-pattern/">
+            <span class="next-text nav-default">在TextView中自定义HTML样式</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+    (function() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'diovgithubio';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="diov87@outlook.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://twitter.com/Dio_Vin" class="iconfont icon-twitter" title="twitter"></a>
+      <a href="https://www.facebook.com/diov87" class="iconfont icon-facebook" title="facebook"></a>
+      <a href="https://github.com/diov" class="iconfont icon-github" title="github"></a>
+  <a href="https://diov.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    
+      2016 - 
+    2018
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Dio_V</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+<script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106569198-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

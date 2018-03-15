@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Android 触摸事件分发源码 - Meow</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="Dio_V" /><meta name="description" content="对于View中触摸事件分发的源码(android-23)分析" />
+
+  <meta name="keywords" content="Hugo, Android" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.37.1" />
+
+
+<link rel="canonical" href="https://diov.github.io/post/analisis-of-touchevent-in-android/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+
+
+<meta property="og:title" content="Android 触摸事件分发源码" />
+<meta property="og:description" content="对于View中触摸事件分发的源码(android-23)分析" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://diov.github.io/post/analisis-of-touchevent-in-android/" />
+
+
+
+<meta property="article:published_time" content="2016-01-17T19:41:49&#43;08:00"/>
+
+<meta property="article:modified_time" content="2016-01-17T19:41:49&#43;08:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta itemprop="name" content="Android 触摸事件分发源码">
+<meta itemprop="description" content="对于View中触摸事件分发的源码(android-23)分析">
+
+
+<meta itemprop="datePublished" content="2016-01-17T19:41:49&#43;08:00" />
+<meta itemprop="dateModified" content="2016-01-17T19:41:49&#43;08:00" />
+<meta itemprop="wordCount" content="5591">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Android 触摸事件分发源码"/>
+<meta name="twitter:description" content="对于View中触摸事件分发的源码(android-23)分析"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Meow</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Meow</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Android 触摸事件分发源码</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2016-01-17 </span>
+        <div class="post-category">
+            
+              <a href="/categories/android/"> Android </a>
+            
+          </div>
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#viewgroup事件的分发拦截和处理">ViewGroup事件的分发拦截和处理</a>
+<ul>
+<li><a href="#事件分发-dispatchtouchevent">事件分发(dispatchTouchEvent)</a></li>
+<li><a href="#viewgroup中事件的拦截">ViewGroup中事件的拦截</a></li>
+<li><a href="#viewgroup中事件的处理">ViewGroup中事件的处理</a></li>
+</ul></li>
+<li><a href="#view中事件的分发和处理">View中事件的分发和处理</a>
+<ul>
+<li><a href="#事件分发">事件分发</a></li>
+<li><a href="#事件处理">事件处理</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      
+
+<p>参考：<a href="http://trinea.github.io/download/pdf/android/PRE_andevcon_mastering-the-android-touch-system.pdf">Mastering   the Android Touch   System</a></p>
+
+<p>作为以触摸作为主要交互的系统，触摸事件是我们在写代码时无可避免的。不论是对触摸事件进行响应，还是拦截一些不需要关心的事件，都需要我们对View中触摸事件的分发机制进行了解。</p>
+
+<!-- more -->
+
+<h2 id="viewgroup事件的分发拦截和处理">ViewGroup事件的分发拦截和处理</h2>
+
+<p>触摸事件一般是从Activity开始分发，但是这里我们就跳过Activity，直接从根布局也就是ViewGroup开始了。</p>
+
+<h3 id="事件分发-dispatchtouchevent">事件分发(dispatchTouchEvent)</h3>
+
+<ul>
+<li>#### 源码 ####</li>
+</ul>
+
+<pre><code class="language-java">public boolean dispatchTouchEvent(MotionEvent ev) {
+
+    /*...省略...*/
+    boolean handled = false;
+    if (onFilterTouchEventForSecurity(ev)) {
+        final int action = ev.getAction();
+        final int actionMasked = action &amp; MotionEvent.ACTION_MASK;
+
+        /*...省略...*/
+        // 1. 将ACTION_DOWN事件作为一系列触摸事件的起始，对事件进行初始化.
+        if (actionMasked == MotionEvent.ACTION_DOWN) {
+            // 在开始一系列新的手势时清除之前的所有状态（可能由于app切换、ANR所遗留下来）
+            // 将mFirstTouchTarget重置为null(在clearTouchTargets()中)，并且回收事件
+            cancelAndClearTouchTargets(ev);
+            resetTouchState();// 重置所有的触摸状态
+        }
+
+        // 2. 检测是否需要拦截.
+        final boolean intercepted;
+        if (actionMasked == MotionEvent.ACTION_DOWN || mFirstTouchTarget != null) {
+            // 当触摸事件为ACTION_DOWN或者mFirstTouchTarget不为null时（也就是已经找到接受事件并可以接受后续事件的子View）
+            final boolean disallowIntercept = (mGroupFlags &amp; FLAG_DISALLOW_INTERCEPT) != 0;
+            // 通过requestDisallowInterceptTouchEvent(boolean disallowIntercept)可以设置ViewGroup是否禁用拦截
+            if (!disallowIntercept) {
+                // 如果没有禁用拦截，那么就调用当前ViewGroup的onInterceptTouchEvent()方法。对是否拦截进行判断
+                intercepted = onInterceptTouchEvent(ev);
+                ev.setAction(action);
+            } else {
+                // 如果禁用拦截，那么直接返回false
+                intercepted = false;
+            }
+        } else {
+            // 触摸事件不是初始的ACTION_DOWN事件，并且没有接收后续事件的View控件。ViewGroup会继续拦截触摸事件
+            intercepted = true;
+        }
+
+        // 如果对事件进行了拦截，或者已经有一个控件对手势进行处理。那么进行normal的事件分发（这里不太明白）
+        if (intercepted || mFirstTouchTarget != null) {
+            ev.setTargetAccessibilityFocus(false);
+        }
+
+        final boolean canceled = resetCancelNextUpFlag(this) || actionMasked == MotionEvent.ACTION_CANCEL;
+        // 判断事件是否是ACTION_CANCEL或者之前的手势遗留的
+        final boolean split = (mGroupFlags &amp; FLAG_SPLIT_MOTION_EVENTS) != 0;// 判断VIewGroup是否可以分发事件
+
+        TouchTarget newTouchTarget = null;
+        boolean alreadyDispatchedToNewTouchTarget = false;
+        if (!canceled &amp;&amp; !intercepted) {
+            // 如果事件不是ACTION_CANCEL并且没有进行拦截
+
+            View childWithAccessibilityFocus = ev.isTargetAccessibilityFocus() ? findChildWithAccessibilityFocus(): null;
+            // 3. 当事件为ACTION_DOWN时进入该方法（另两个条件不太明白）
+            if (actionMasked == MotionEvent.ACTION_DOWN || (split &amp;&amp; actionMasked == MotionEvent
+                    .ACTION_POINTER_DOWN)
+                    || actionMasked == MotionEvent.ACTION_HOVER_MOVE) {
+
+                /*...省略...*/
+                final int childrenCount = mChildrenCount;
+                if (newTouchTarget == null &amp;&amp; childrenCount != 0) {
+                    // 获取触摸的位置
+                    final float x = ev.getX(actionIndex);
+                    final float y = ev.getY(actionIndex);
+
+                    /*...省略...*/
+                    // 按照从前到后的顺序遍历子View，找到可以接收事件的子View
+                    final View[] children = mChildren;
+                    for (int i = childrenCount - 1; i &gt;= 0; i--) {
+                        // 后添加的View覆盖在最上层，从集合的最后向前遍历
+                        final int childIndex = customOrder ? getChildDrawingOrder(childrenCount, i) : i;
+                        final View child = (preorderedList == null) ? children[childIndex] : preorderedList.get
+                                (childIndex);
+
+                        /*...省略...*/
+                        // 如果子View不能接收事件，或者Transformed(不太明白)后的触摸点不在子View中，continue。加速查找
+                        if (!canViewReceivePointerEvents(child) || !isTransformedTouchPointInView(x, y, child,
+                                null)) {
+                            ev.setTargetAccessibilityFocus(false);
+                            continue;
+                        }
+
+                        // 如果没有可以接收事件的子View就返回null，否则返回子View
+                        newTouchTarget = getTouchTarget(child);
+                        if (newTouchTarget != null) {
+                            // 如果已经找到了接收事件的子View，就跳出循环
+                            newTouchTarget.pointerIdBits |= idBitsToAssign;
+                            break;
+                        }
+
+                        resetCancelNextUpFlag(child);
+
+                        // 通过dispatchTransformedTouchEvent()方法，递归遍历所有子View。
+                        // 如果返回true，说明事件被子View消费了
+                        if (dispatchTransformedTouchEvent(ev, false, child, idBitsToAssign)) {
+                            mLastTouchDownTime = ev.getDownTime();
+                            if (preorderedList != null) {
+                                for (int j = 0; j &lt; childrenCount; j++) {
+                                    if (children[childIndex] == mChildren[j]) {
+                                        mLastTouchDownIndex = j;
+                                        break;
+                                    }
+                                }
+                            } else {
+                                mLastTouchDownIndex = childIndex;
+                            }
+                            mLastTouchDownX = ev.getX();
+                            mLastTouchDownY = ev.getY();
+                            //将接收并消费ACTION_DOWN事件的子View其赋值给newTouchTarget，作为后续事件的接受者。跳出循环
+                            newTouchTarget = addTouchTarget(child, idBitsToAssign);
+                            alreadyDispatchedToNewTouchTarget = true;
+                            break;
+                        }
+
+                        ev.setTargetAccessibilityFocus(false);
+                    }
+                    if (preorderedList != null) preorderedList.clear();
+                }
+
+                    if (newTouchTarget == null &amp;&amp; mFirstTouchTarget != null) {
+                        // 没有找到可以接收事件的子View，但是之前某个子View消费过触摸事件。那么将该子View赋值给newTouchTarget
+                        newTouchTarget = mFirstTouchTarget;
+                        while (newTouchTarget.next != null) {
+                            newTouchTarget = newTouchTarget.next;
+                        }
+                    newTouchTarget.pointerIdBits |= idBitsToAssign;
+                }
+            }
+        }
+
+        // 4. 如果触摸事件不是ACTION_DOWN时，处理事件.
+        if (mFirstTouchTarget == null) {
+            // a. 没有哪个子View能够消费ACTION_DOWN事件，或者后续的事件被拦截了
+            // 将ViewGroup作为一般的View，调用dispatchTransformedTouchEvent()对事件进行处理(参数传入null)
+            handled = dispatchTransformedTouchEvent(ev, canceled, null, TouchTarget.ALL_POINTER_IDS);
+        } else {
+            // b. 存在某个子View能够消费ACTION_DOWN事件
+            TouchTarget predecessor = null;
+            TouchTarget target = mFirstTouchTarget;
+            while (target != null) {
+                final TouchTarget next = target.next;
+                if (alreadyDispatchedToNewTouchTarget &amp;&amp; target == newTouchTarget) {
+                    // 如果能消费ACTION_DOWN的子View，同时也在这次触摸事件中消费ACTION_DOWN事件，也就是第一次消费事件。(瞎猜的:P)
+                    handled = true;中
+                } else {
+                    // 对于ACTION_DOWN后续的事件，根据onInterceptTouchEvent()的返回值决定是否想子View发送ACTION_CANCEL
+                    final boolean cancelChild = resetCancelNextUpFlag(target.child) || intercepted;
+                    // 再将事件通过dispatchTransformedTouchEvent()交由子View处理
+                    if (dispatchTransformedTouchEvent(ev, cancelChild, target.child, target.pointerIdBits)) {
+                        handled = true;
+                    }
+                    /*...省略...*/
+                }
+            }
+            /*...省略...*/
+        }
+
+        if (canceled || actionMasked == MotionEvent.ACTION_UP || actionMasked == MotionEvent.ACTION_HOVER_MOVE) {
+            // 如果对后续的事件设置了CANCEL或者事件是ACTION_UP.重置事件状态
+            resetTouchState();
+        } else if (split &amp;&amp; actionMasked == MotionEvent.ACTION_POINTER_UP) {
+            final int actionIndex = ev.getActionIndex();
+            final int idBitsToRemove = 1 &lt;&lt; ev.getPointerId(actionIndex);
+            removePointersFromTouchTargets(idBitsToRemove);
+        }
+    }
+
+    /*...省略...*/
+    return handled;
+}
+</code></pre>
+
+<ul>
+<li>#### 源码分析 ####</li>
+</ul>
+
+<blockquote>
+<ol>
+<li>将ACTION_DOWN事件作为一系列触摸事件的起始，对事件进行初始化.
+这个步骤最重要的一点就是<strong>将mFirstTouchTarget置为null</strong></li>
+<li>检测是否需要拦截
+先判断当前ViewGroup是否禁用了拦截。如果禁用了，直接返回false
+如果没有禁用，当触摸事件为ACTION_DOWN或着是接收后续事件时会调用<strong>onInterceptTouchEvent()</strong>进行判断</li>
+<li>如果不进行拦截，当触摸事件为ACTION_DOWN时(触摸事件的起始)进行特殊的判断
+递归遍历子View，找到能够消费事件的子View。在这个过程中多次调用dispatchTransformedTouchEvent()方法以递归的形式将事件依次发送给子View
+这个步骤最重要的一点就是是否<strong>给mFirstTouchTarget赋值</strong></li>
+<li>处理完ACTION_DOWN后，对事件是否消费做判断(根据<strong>mFirstTouchTarget是否为null</strong>)
+如果没有子View可以消费事件或者事件被拦截，事件通过dispatchTransformedTouchEvent()由父ViewGroup处理，返回结果
+如果当前事件为ACTION_DOWN并且被消费，返回true
+如果当前事件为ACTION_DOWN的后续事件，根据onInterceptTouchEvent()的返回值决定向下分发的时ACTION_CANCEL还是当前事件。通过dispatchTransformedTouchEvent()由子View处理，返回结果</li>
+</ol>
+</blockquote>
+
+<hr />
+
+<h3 id="viewgroup中事件的拦截">ViewGroup中事件的拦截</h3>
+
+<ul>
+<li>#### 源码 ####</li>
+</ul>
+
+<pre><code class="language-java">public boolean onInterceptTouchEvent(MotionEvent ev) {
+    return false;
+}
+</code></pre>
+
+<ul>
+<li>#### 源码分析 ####</li>
+</ul>
+
+<blockquote>
+<p>ViewGroup中对事件是不进行拦截的，将其向下传送</p>
+</blockquote>
+
+<hr />
+
+<h3 id="viewgroup中事件的处理">ViewGroup中事件的处理</h3>
+
+<ul>
+<li>#### 源码 ####</li>
+</ul>
+
+<pre><code class="language-java">
+private boolean dispatchTransformedTouchEvent(MotionEvent event, boolean cancel,
+        View child, int desiredPointerIdBits) {
+    final boolean handled;
+
+    final int oldAction = event.getAction();
+    if (cancel || oldAction == MotionEvent.ACTION_CANCEL) {
+        // 1. 根据传入的参数cancel或者事件决定发送的事件是否时ACTION_CANCEL
+        event.setAction(MotionEvent.ACTION_CANCEL);
+        // 2. 根据传入的参数child决定是将事件交由父ViewGroup还是交由子View处理
+        if (child == null) {
+            handled = super.dispatchTouchEvent(event);
+        } else {
+            handled = child.dispatchTouchEvent(event);
+        }
+        event.setAction(oldAction);
+        return handled;
+    }
+
+    final int oldPointerIdBits = event.getPointerIdBits();
+    final int newPointerIdBits = oldPointerIdBits &amp; dcancelesiredPointerIdBits;
+
+    if (newPointerIdBits == 0) {
+        return false;
+    }
+
+    final MotionEvent transformedEvent;
+    if (newPointerIdBits == oldPointerIdBits) {
+        if (child == null || child.hasIdentityMatrix()) {
+            if (child == null) {
+                handled = super.dispatchTouchEvent(event);
+            } else {
+                final float offsetX = mScrollX - child.mLeft;
+                final float offsetY = mScrollY - child.mTop;
+                event.offsetLocation(offsetX, offsetY);
+
+                handled = child.dispatchTouchEvent(event);
+
+                event.offsetLocation(-offsetX, -offsetY);
+            }
+            return handled;
+        }
+        transformedEvent = MotionEvent.obtain(event);
+    } else {
+        transformedEvent = event.split(newPointerIdBits);
+    }
+
+    if (child == null) {
+        handled = super.dispatchTouchEvent(transformedEvent);
+    } else {
+        final float offsetX = mScrollX - child.mLeft;
+        final float offsetY = mScrollY - child.mTop;
+        transformedEvent.offsetLocation(offsetX, offsetY);
+        if (! child.hasIdentityMatrix()) {
+            transformedEvent.transform(child.getInverseMatrix());
+        }
+
+        handled = child.dispatchTouchEvent(transformedEvent);
+    }
+
+    transformedEvent.recycle();
+    return handled;
+}
+
+</code></pre>
+
+<ul>
+<li>#### 源码分析 ####</li>
+</ul>
+
+<blockquote>
+<p>虽然这个方法很长，但是其实我们只需要关注两个参数：<code>boolean cancel</code>和<code>View child</code>
+1. boolean cancel控制了发送的事件是否是ACTION_CANCEL
+2. View child控制了事件是发送给子View还是交由父ViewGroup处理</p>
+
+<p>事件是否被消费决定了最后的返回值。</p>
+</blockquote>
+
+<ul>
+<li>ViewGroup是View的子类，他并没有重写View的onTouchEvent()方法。所以如果事件交由父ViewGroup处理，实际调用的是<code>super.dispatchTouchEvent()</code></li>
+</ul>
+
+<hr />
+
+<p>将触摸事件从ACTION_DOWN -&gt; ACTION_MOVE -&gt; ACTION_UP看做一系列触摸事件的整体。当ViewGroup处理这一系列事件的过程中，我们需要特别注意一个变量：mFirstTouchTarget。
+在ACTION_DOWN事件中mFirstTouchTarget被置为了null。那么mFirstTouchTarget的最终值就意味着是否找到了能够消费触摸事件的子View。来看一下mFirstTouchTarget在那些情况下可以被赋值：
+1. 在ACTION_DOWN事件中：a).父ViewGroup不对事件进行拦截；2).点击点位于某个子View上；3). 被点击的子View消费了ACTION_DOWN事件
+2. 在ACTION_DOWN的后续事件中：a). 首先必须存在可以消费ACTION_DOWN事件的子View，否则后续事件都无法向下分发；b). 在分发后续事件时，父ViewGroup不对事件进行拦截</p>
+
+<hr />
+
+<h2 id="view中事件的分发和处理">View中事件的分发和处理</h2>
+
+<p>上面我们说到了当ViewGroup中所有的子View都无法消费触摸事件时，会把事件返回给ViewGroup，再调用View的<code>dispatchTouchEvent()</code>方法，那么就来看看具体的实现吧</p>
+
+<h3 id="事件分发">事件分发</h3>
+
+<ul>
+<li>#### 源码 ####</li>
+</ul>
+
+<pre><code class="language-java">public boolean dispatchTouchEvent(MotionEvent event) {
+
+    /*...省略...*/
+    boolean result = false;
+
+    /*...省略...*/
+    final int actionMasked = event.getActionMasked();
+    if (actionMasked == MotionEvent.ACTION_DOWN) {
+        // NestedScroll是Lolipop之后添加的嵌套滚动机制，用于解决子View不处理滑动事件时，父View也无法处理的该事件的问题
+        // 这里我们只要看作是触摸事件时清除掉之前的触摸事件的状态就可以了
+        stopNestedScroll();
+    }
+
+    if (onFilterTouchEventForSecurity(event)) {
+        // ListenerInfo是封装了一系列监听器的类
+        ListenerInfo li = mListenerInfo;
+        if (li != null &amp;&amp; li.mOnTouchListener != null &amp;&amp; (mViewFlags &amp; ENABLED_MASK) == ENABLED &amp;&amp; li.mOnTouchListener.onTouch(this, event)) {
+            // 1. 首先判断是否给View添加了onTouchListener监听器；mViewFlags是在View构造时传入的一系列状态值，这里用来判断View是否是enabled的。
+            // 如果前面都为true，最后执行监听器的onTouch()方法，并根据其返回值决定result的值
+            result = true;
+        }
+
+        if (!result &amp;&amp; onTouchEvent(event)) {
+            // 2. 当未设置onTouchListener或者onTouch()方法返回false（表示事件未被消费），则会调用onTouchEvent()方法并决定result的值
+            result = true;
+        }
+    }
+
+    /*...省略...*/
+    return result;
+}
+</code></pre>
+
+<ul>
+<li>#### 源码分析 ####</li>
+</ul>
+
+<blockquote>
+<p>相比起ViewGroup，View的dispatchTouchEvent()方法就简单多了。重点主要有两点：
+1. 判断View是否设置了onTouchListener，相信设置监听器的方法大家应该都知道了——setOnTouchListener()。如果设置了监听器，就调用监听器的<code>onTouch()</code>方法
+2. 如果没有设置监听器或者onTouch()返回false时，会调用<code>onTouchEvent()</code>方法</p>
+</blockquote>
+
+<hr />
+
+<h3 id="事件处理">事件处理</h3>
+
+<ul>
+<li>#### 源码 ####</li>
+</ul>
+
+<pre><code class="language-java">public boolean onTouchEvent(MotionEvent event) {
+    //获取点击的位置
+    final float x = event.getX();
+    final float y = event.getY();
+    final int viewFlags = mViewFlags;
+    final int action = event.getAction();
+
+    if ((viewFlags &amp; ENABLED_MASK) == DISABLED) {
+        if (action == MotionEvent.ACTION_UP &amp;&amp; (mPrivateFlags &amp; PFLAG_PRESSED) != 0) {
+            // 当触摸事件为ACTION_UP并且View未设定pressed属性时，设置pressed状态未false
+            setPressed(false);
+        }
+        // 1. 如果当前View同时具有clickable和disabled两个属性，返回true(消费事件但不作出响应)
+        return (((viewFlags &amp; CLICKABLE) == CLICKABLE
+                || (viewFlags &amp; LONG_CLICKABLE) == LONG_CLICKABLE)
+                || (viewFlags &amp; CONTEXT_CLICKABLE) == CONTEXT_CLICKABLE);
+    }
+
+    // 2. 将事件委托给一个代理进行处理，如果代理的onTouchEvent()返回true，表示事件被消费（不懂）
+    if (mTouchDelegate != null) {
+        if (mTouchDelegate.onTouchEvent(event)) {
+            return true;
+        }
+    }
+
+    if (((viewFlags &amp; CLICKABLE) == CLICKABLE ||
+            (viewFlags &amp; LONG_CLICKABLE) == LONG_CLICKABLE) ||
+            (viewFlags &amp; CONTEXT_CLICKABLE) == CONTEXT_CLICKABLE) {
+        switch (action) {
+            case MotionEvent.ACTION_UP:
+                boolean prepressed = (mPrivateFlags &amp; PFLAG_PREPRESSED) != 0;
+
+                if ((mPrivateFlags &amp; PFLAG_PRESSED) != 0 || prepressed) {
+
+                    /*...省略...*/
+                    //做了一系列判断，设置按下状态并迅速弹起
+                    if (!mHasPerformedLongPress &amp;&amp; !mIgnoreNextUpEvent) {
+                        // 判断未tap（轻触）状态，移除长按的回调
+                        removeLongPressCallback();
+
+                        // 如果View没有夺取焦点
+                        if (!focusTaken) {
+                            // 调用一个处理Click事件的Runnable对象进行异步的处理
+                            // 最终调用了onClickListener的onClick()方法
+                            if (mPerformClick == null) {
+                                mPerformClick = new PerformClick();
+                            }
+                            if (!post(mPerformClick)) {
+                                performClick();
+                            }
+                        }
+                    }
+
+                    if (mUnsetPressedState == null) {
+                        mUnsetPressedState = new UnsetPressedState();
+                    }
+                    /*...省略...*/
+                }
+                break;
+
+            case MotionEvent.ACTION_DOWN:
+
+                /*...省略...*/
+                // 处理长按事件等
+                break;
+
+            case MotionEvent.ACTION_CANCEL:
+                /*...省略...*/
+                //移除回调、清除状态
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+                /*...省略...*/
+                break;
+        }
+        // 3. 只要View是clickable、longclickable或者contextclickable的，不论触摸事件是什么都消费事件
+        return true;
+    }
+
+    return false;
+}
+
+//PerformClick类中执行的还是performClick()方法
+private final class PerformClick implements Runnable {
+    @Override
+    public void run() {
+        performClick();
+    }
+}
+
+//处理Click事件的方法
+public boolean performClick() {
+    final boolean result;
+    final ListenerInfo li = mListenerInfo;
+    if (li != null &amp;&amp; li.mOnClickListener != null) {
+        playSoundEffect(SoundEffectConstants.CLICK);
+        // 调用onClickListener的onClick()方法
+        li.mOnClickListener.onClick(this);
+        result = true;
+    } else {
+        result = false;
+    }
+
+   sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_CLICKED);
+    return result;
+}
+</code></pre>
+
+<ul>
+<li>#### 源码分析 ####</li>
+</ul>
+
+<blockquote>
+<p>对onTouchEvent()的分析，我们主要关注其返回值
+1. View同时具有clickable和disabled两个属性，返回true(消费事件但不作出响应)
+2. 只要View是clickable、longclickable或者contextclickable的，不论触摸事件是什么都消费事件
+3. 如果不是上面的情况，返回false</p>
+
+<p>要注意的是，在第二种情况下，当触摸事件是ACTION_DOWN时，创建了一个处理Click事件的Runnable对象并将其加入消息队列
+这个Runnable对象内部执行的是performClick()方法。而我们可以看到，如果Runnable对象添加到消息队列失败的话时会直接调用这个方法的
+在performClick()中，判断了是否设置了onClickListener，最终调用了onClickListener的onClick()方法</p>
+</blockquote>
+
+<hr />
+
+    </div>
+
+    
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">Dio_V</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">2016-01-17</span>
+  </p>
+  
+  
+</div>
+
+    
+    
+
+    <footer class="post-footer">
+      
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/from_xml_to_view/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">从XML到View</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+    (function() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'diovgithubio';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="diov87@outlook.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://twitter.com/Dio_Vin" class="iconfont icon-twitter" title="twitter"></a>
+      <a href="https://www.facebook.com/diov87" class="iconfont icon-facebook" title="facebook"></a>
+      <a href="https://github.com/diov" class="iconfont icon-github" title="github"></a>
+  <a href="https://diov.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    
+      2016 - 
+    2018
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Dio_V</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+<script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106569198-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

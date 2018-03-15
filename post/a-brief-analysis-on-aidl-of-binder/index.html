@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>从AIDL浅析Binder机制 - Meow</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="Dio_V" /><meta name="description" content="通过AIDL的使用，来简单分析一下Android中Binder的IPC机制" />
+
+  <meta name="keywords" content="Hugo, Android" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.37.1" />
+
+
+<link rel="canonical" href="https://diov.github.io/post/a-brief-analysis-on-aidl-of-binder/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+
+
+<meta property="og:title" content="从AIDL浅析Binder机制" />
+<meta property="og:description" content="通过AIDL的使用，来简单分析一下Android中Binder的IPC机制" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://diov.github.io/post/a-brief-analysis-on-aidl-of-binder/" />
+
+
+
+<meta property="article:published_time" content="2016-03-20T13:38:44&#43;08:00"/>
+
+<meta property="article:modified_time" content="2016-03-20T13:38:44&#43;08:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta itemprop="name" content="从AIDL浅析Binder机制">
+<meta itemprop="description" content="通过AIDL的使用，来简单分析一下Android中Binder的IPC机制">
+
+
+<meta itemprop="datePublished" content="2016-03-20T13:38:44&#43;08:00" />
+<meta itemprop="dateModified" content="2016-03-20T13:38:44&#43;08:00" />
+<meta itemprop="wordCount" content="1820">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="从AIDL浅析Binder机制"/>
+<meta name="twitter:description" content="通过AIDL的使用，来简单分析一下Android中Binder的IPC机制"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Meow</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Meow</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">从AIDL浅析Binder机制</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2016-03-20 </span>
+        <div class="post-category">
+            
+              <a href="/categories/android/"> Android </a>
+            
+          </div>
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#aidl的使用">AIDL的使用</a></li>
+<li><a href="#aidl的实现原理">AIDL的实现原理</a></li>
+<li><a href="#binder机制">Binder机制</a></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      
+
+<p>AIDL(Android Interface Defination Language),Android接口定义语言。是Google专门为Android中跨进程调用服务所设计的一种接口语言。<br />
+其本质是Android中特有的一种IPC机制：Binder机制。通过对AIDL的分析我们也可以对Binder机制有所了解</p>
+
+<!-- more -->
+
+<h1 id="aidl的使用">AIDL的使用</h1>
+
+<p>首先让我们简单回顾一下AIDL是如何使用的。下面的操作基于Android Studio。</p>
+
+<ul>
+<li>创建AIDL文件<br />
+在Project视图下，在/src/main/下创建与java同级的aidl文件夹，并在该文件夹下创建包名(例:com.example.diov.testaidl),在该文件夹下创建AIDL文件</li>
+</ul>
+
+<pre><code class="language-java">package com.example.diov.testaidl;
+
+interface TestAidl {
+    void add(int i);
+}
+</code></pre>
+
+<p>在这个接口文件中定义Service需要实现的方法。</p>
+
+<ul>
+<li>实现AIDL中的方法<br />
+创建完AIDL文件后，通过Gradle编译。编译成功后可以在/generated/source/debug/{packagename}/下找到生成的TestAidl.java文件。<br />
+然后我们回到Service中，实现AIDL接口中定义的方法</li>
+</ul>
+
+<pre><code class="language-java">public class IRemoteService extends Service{
+
+  // 绑定服务时将IBinder对象返回出去
+  @Override
+  public IBinder onBind(Intent intent){
+    return iBinder;
+  }
+
+  private IBinder iBinder = new TestAidl.Stub(){
+
+    @Override
+    public int add(int i, int j) throws RemoteException {
+      // 具体实现
+      return i + j;
+    }
+  }
+}
+</code></pre>
+
+<ul>
+<li>调用AIDL<br />
+在Client里按照第一步，把相同的AIDL文件创建出来。<br />
+绑定Service需要调用<code>bindService(Intent intent, ServiceConnection conn, int flag)</code>方法。<br />
+这里主要是实现ServiceConnection接口，在这个接口的回调方法中就可以得到对应的服务所提供IBinder对象了<br /></li>
+</ul>
+
+<pre><code class="language-java">private TestAidl aidl;
+private ServiceConnection conn = new ServiceConnection{
+  // 绑定成功时回调
+  @Override
+  public void onServiceConnected(ComponentName name, IBinder service){
+    // 获取到了远程服务
+    aidl = TestAidl.Stub.asInterface(service);
+  }
+
+  // 解除绑定时回调
+  @Override
+  public void onServiceDisconnected(ComponentName name){
+    aidl = null;
+  }
+}
+</code></pre>
+
+<p>获取到IBinder对象后，就可以实现IPC，调用远程服务了。</p>
+
+<h1 id="aidl的实现原理">AIDL的实现原理</h1>
+
+<p>现在来看看AS自动帮我们生成的TestAdil.java这个文件</p>
+
+<pre><code class="language-java">package com.example.diov.testaidl;
+
+public interface TestAidl extends android.os.IInterface {
+    /**
+     * 存根类，实现了Binder和TestAidl接口(IInterface接口)
+     */
+    public static abstract class Stub extends android.os.Binder implements com.example.dio_v.materialdemo.TestAidl {
+        private static final java.lang.String DESCRIPTOR = &quot;com.example.dio_v.materialdemo.TestAidl&quot;;
+
+        public Stub() {
+            this.attachInterface(this, DESCRIPTOR);
+        }
+
+        /**
+         * 将IBinder对象转换成com.example.diov.testaidl.TestAidl接口,
+         * 如果需要的话生成一个代理.
+         */
+        public static com.example.dio_v.materialdemo.TestAidl asInterface(android.os.IBinder obj) {
+            if ((obj == null)) {
+                return null;
+            }
+            android.os.IInterface iin = obj.queryLocalInterface(DESCRIPTOR);
+            if (((iin != null) &amp;&amp; (iin instanceof com.example.dio_v.materialdemo.TestAidl))) {
+                return ((com.example.dio_v.materialdemo.TestAidl) iin);
+            }
+            return new com.example.dio_v.materialdemo.TestAidl.Stub.Proxy(obj);
+        }
+
+        @Override
+        public android.os.IBinder asBinder() {
+            return this;
+        }
+
+        // 当Client调用Service时，获取代理类发送过来的数据
+        @Override
+        public boolean onTransact(int code, android.os.Parcel data, android.os.Parcel reply, int flags) throws
+                android.os.RemoteException {
+            switch (code) {
+                case INTERFACE_TRANSACTION: {
+                    reply.writeString(DESCRIPTOR);
+                    return true;
+                }
+                case TRANSACTION_add: {
+                    data.enforceInterface(DESCRIPTOR);
+                    int _arg0;
+                    _arg0 = data.readInt();
+                    int _arg1;
+                    _arg1 = data.readInt();
+
+                    // 通过子类来实现方法中具体的操作，并将结果通过reply对象返回出去
+                    int _result = this.add(_arg0, _arg1);
+                    reply.writeNoException();
+                    reply.writeInt(_result);
+                    return true;
+                }
+            }
+            return super.onTransact(code, data, reply, flags);
+        }
+
+        // 代理类，实现了TestAidl接口(IInterface接口)
+        private static class Proxy implements com.example.dio_v.materialdemo.TestAidl {
+            private android.os.IBinder mRemote;
+
+            Proxy(android.os.IBinder remote) {
+                mRemote = remote;
+            }
+
+            @Override
+            public android.os.IBinder asBinder() {
+                return mRemote;
+            }
+
+            public java.lang.String getInterfaceDescriptor() {
+                return DESCRIPTOR;
+            }
+
+            @Override
+            public int add(int i, int j) throws android.os.RemoteException {
+                android.os.Parcel _data = android.os.Parcel.obtain();
+                android.os.Parcel _reply = android.os.Parcel.obtain();
+                int _result;
+                try {
+                    // 通过序列化将参数发送
+                    _data.writeInterfaceToken(DESCRIPTOR);
+                    _data.writeInt(i);
+                    _data.writeInt(j);
+
+                    // 通过Framework将序列化后的参数发送给IBinder对象
+                    mRemote.transact(Stub.TRANSACTION_add, _data, _reply, 0);
+                    _reply.readException();
+
+                    // 通过返回的reply将Service返回的结果解析出来
+                    _result = _reply.readInt();
+                } finally {
+                    _reply.recycle();
+                    _data.recycle();
+                }
+                return _result;
+            }
+        }
+
+        static final int TRANSACTION_add = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
+    }
+
+    // 接口中的方法
+    public int add(int i, int j) throws android.os.RemoteException;
+}
+</code></pre>
+
+<ol>
+<li>在Client中绑定Service，会通过<code>TestAdil.Stub.asInterface()</code>方法去转换返回的IBinder对象(Stub继承的Binder类是IBinder接口的实现类),得到的是一个Proxy类对象<br /></li>
+<li>Proxy类将参数序列化之后，通过Framework将参数发送给<code>Service.onBind()</code>返回的IBinder对象<br /></li>
+<li>Service中返回的IBinder对象(Stub对象)，通过具体实现来完成对参数的操作，并且将返回值封装在一个Parcel对象中<br /></li>
+<li>Framework层将封装后的Parcel对象再返回给Proxy对象<br /></li>
+<li>Proxy对象从Parcel对象中获取返回值<br /></li>
+</ol>
+
+<h1 id="binder机制">Binder机制</h1>
+
+<p>其实在Binder机制中存在一个重要的角色，ServiceManager，他是Service和Client中IPC交互的重要一环。ServiceManager负责在Framework层将参数传递、返回Proxy对象等等</p>
+
+<p>而在Client，并不是真正持有了Service中的对象，而是通过ServiceManager，借助Proxy对象来完成跨进程通信。所以说Binder机制使用的其实就是/代理模式/。</p>
+
+<p>对于Binder机制，我也还只是对概念有初步的了解。想要深入了解Binder机制，还需要继续学习。</p>
+
+<hr />
+
+<blockquote>
+<p>资料推荐：
+  1. <a href="http://blog.csdn.net/universus/article/details/6211589">Binder设计与实现</a>
+  2. <a href="http://blog.csdn.net/luoshengyang/article/details/6618363">Android进程间通信（IPC）机制Binder简要介绍和学习计划</a></p>
+</blockquote>
+
+    </div>
+
+    
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">Dio_V</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">2016-03-20</span>
+  </p>
+  
+  
+</div>
+
+    
+    
+
+    <footer class="post-footer">
+      
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/consum-html-pattern/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">在TextView中自定义HTML样式</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+          <a class="next" href="/post/setcontentview-findviewbyid/">
+            <span class="next-text nav-default">setContentView和findViewById的源码解析</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+    (function() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'diovgithubio';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="diov87@outlook.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://twitter.com/Dio_Vin" class="iconfont icon-twitter" title="twitter"></a>
+      <a href="https://www.facebook.com/diov87" class="iconfont icon-facebook" title="facebook"></a>
+      <a href="https://github.com/diov" class="iconfont icon-github" title="github"></a>
+  <a href="https://diov.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    
+      2016 - 
+    2018
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Dio_V</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+<script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106569198-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>setContentView和findViewById的源码解析 - Meow</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="Dio_V" /><meta name="description" content="从源码角度(android-23)来分析Activity.setContentView()和findViewById()" />
+
+  <meta name="keywords" content="Hugo, Android" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.37.1" />
+
+
+<link rel="canonical" href="https://diov.github.io/post/setcontentview-findviewbyid/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+
+
+<meta property="og:title" content="setContentView和findViewById的源码解析" />
+<meta property="og:description" content="从源码角度(android-23)来分析Activity.setContentView()和findViewById()" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://diov.github.io/post/setcontentview-findviewbyid/" />
+
+
+
+<meta property="article:published_time" content="2016-03-08T13:40:53&#43;08:00"/>
+
+<meta property="article:modified_time" content="2016-03-08T13:40:53&#43;08:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<meta itemprop="name" content="setContentView和findViewById的源码解析">
+<meta itemprop="description" content="从源码角度(android-23)来分析Activity.setContentView()和findViewById()">
+
+
+<meta itemprop="datePublished" content="2016-03-08T13:40:53&#43;08:00" />
+<meta itemprop="dateModified" content="2016-03-08T13:40:53&#43;08:00" />
+<meta itemprop="wordCount" content="2434">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="setContentView和findViewById的源码解析"/>
+<meta name="twitter:description" content="从源码角度(android-23)来分析Activity.setContentView()和findViewById()"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Meow</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Meow</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">setContentView和findViewById的源码解析</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2016-03-08 </span>
+        <div class="post-category">
+            
+              <a href="/categories/android/"> Android </a>
+            
+          </div>
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#activity-setcontentview-int-layoutresid">Activity.setContentView(int layoutResID)</a>
+<ul>
+<li><a href="#phonewindow-setcontentview-int-layoutresid">PhoneWindow.setContentView(int layoutResID)</a></li>
+<li><a href="#phonewindow-installdecor">PhoneWindow.installDecor()</a></li>
+<li><a href="#phonewindow-generatedecor">PhoneWindow.generateDecor()</a></li>
+<li><a href="#小结">小结</a></li>
+</ul></li>
+<li><a href="#activity-findviewbyid-int-id">Activity.findViewById(int id)</a>
+<ul>
+<li><a href="#window-findviewbyid">Window.findViewById()</a></li>
+<li><a href="#view-findviewbyid">View.findViewById()</a></li>
+<li><a href="#viewgroup-findviewtraversal-int-id">ViewGroup.findViewTraversal(int id)</a></li>
+<li><a href="#小结-1">小结</a></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      
+
+<p>最近在面试的时候有碰到这样一个问题，就是“View.inflate()和View.findViewById()哪个更耗时，为什么&rdquo;。通过之前对于<a href="http://diov.github.io/2016/02/15/From_XML_to_View/">View.inflate()源码的分析</a>，可以知道在将布局文件转化为View对象的时候需要通过io读取文件+遍历解析XML文件+生成每一个View对象，而findViewById()只是遍历View树来获取对应的View对象。所以很明显应该是View.inflate()更为耗时。</p>
+
+<p>那么，findViewById()究竟是如何通过id来获取对应的View对象的呢？我们今天从<code>Activity.setContentView()</code>和<code>Activity.findViewById()</code>的源码谈起</p>
+
+<!-- more -->
+
+<h1 id="activity-setcontentview-int-layoutresid">Activity.setContentView(int layoutResID)</h1>
+
+<p>在使用Activity时，都会在onCreate()中通过<code>setContentView()</code>给Activity设置布局</p>
+
+<pre><code class="language-java">public void setContentView(@LayoutRes int layoutResID) {
+    getWindow().setContentView(layoutResID);
+    initWindowDecorActionBar();
+}
+</code></pre>
+
+<p>可以看到里面做了两件事：
+  1. 获取Window对象，并调用Window的setContentView()
+  2. 设置ActionBar</p>
+
+<h2 id="phonewindow-setcontentview-int-layoutresid">PhoneWindow.setContentView(int layoutResID)</h2>
+
+<p>我们只关注前者。Window是一个抽象类，他具体的实现大多在<em>PhoneWindow</em> 这个实现类中</p>
+
+<pre><code class="language-java">public void setContentView(int layoutResID) {
+    // 初始化DecorView
+    if (mContentParent == null) {
+        installDecor();
+    } else if (!hasFeature(FEATURE_CONTENT_TRANSITIONS)) {
+        mContentParent.removeAllViews();
+    }
+
+    if (hasFeature(FEATURE_CONTENT_TRANSITIONS)) {
+        final Scene newScene = Scene.getSceneForLayout(mContentParent, layoutResID,
+                getContext());
+        transitionTo(newScene);
+    } else {
+        // 通过LayoutInflater将布局文件添加到 mContentParent中
+        mLayoutInflater.inflate(layoutResID, mContentParent);
+    }
+    mContentParent.requestApplyInsets();
+
+    // Activity 实现了Window.Callback接口.
+    final Callback cb = getCallback();
+    if (cb != null &amp;&amp; !isDestroyed()) {
+        cb.onContentChanged();
+    }
+}
+</code></pre>
+
+<p>首先判断mContentParent，如果为null就初始化，否则将其所有的View移除。然后通过LayoutInflater把布局文件添加到mContentParent中。之后还获取了一个Calback对象，来进行回调。而这个Callback对象正是Activity，他实现了Callback接口，需要我们自己去实现onContentChanged()方法</p>
+
+<h2 id="phonewindow-installdecor">PhoneWindow.installDecor()</h2>
+
+<pre><code class="language-java">private void installDecor() {
+    if (mDecor == null) {
+        mDecor = generateDecor();
+        mDecor.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+        mDecor.setIsRootNamespace(true);
+        if (!mInvalidatePanelMenuPosted &amp;&amp; mInvalidatePanelMenuFeatures != 0) {
+            mDecor.postOnAnimation(mInvalidatePanelMenuRunnable);
+        }
+    }
+    if (mContentParent == null) {
+        mContentParent = generateLayout(mDecor);
+
+        mDecor.makeOptionalFitsSystemWindows();
+
+        final DecorContentParent decorContentParent = (DecorContentParent) mDecor.findViewById(
+                R.id.decor_content_parent);
+
+        if (decorContentParent != null) {
+        /*
+         * 省略代码，根据style和其他一些属性去设置title、icon等等
+         */
+       } else {
+            mTitleView = (TextView)findViewById(R.id.title);
+            if (mTitleView != null) {
+                mTitleView.setLayoutDirection(mDecor.getLayoutDirection());
+                // 为什么需要在setContentView()之前调用requestWindowFeature()
+                if ((getLocalFeatures() &amp; (1 &lt;&lt; FEATURE_NO_TITLE)) != 0) {
+                    //...
+                } else {
+                    mTitleView.setText(mTitle);
+                }
+            }
+        }
+    }
+}
+</code></pre>
+
+<p>我们知道在Android的每个页面中，都会由系统来初始化一个根布局DecorView，它是FrameLayout的子类。事实上就是在<code>installDecor()</code>方法里面进行的。可以看到首先调用了<code>generateDecor()</code>来实例化了一个DecorView，然后通过<code>generateLayout(mDecor)</code>生成了mContentParent。此后会通过我们给Activity设置的style和属性对DDecorView进行初始化。在这里有一点需要注意的，就是我们都知道，如果要设置Activity无标题，需要在setContentView()之前调用requestWindowFeature(FEATURE_NO_TITLE)，在源码中我们可以找到答案。</p>
+
+<h2 id="phonewindow-generatedecor">PhoneWindow.generateDecor()</h2>
+
+<pre><code class="language-java">protected DecorView generateDecor() {
+    return new DecorView(getContext(), -1);
+}
+
+protected ViewGroup generateLayout(DecorView decor) {
+     // Apply data from current theme.
+     TypedArray a = getWindowStyle();
+
+     /*
+      * 通过获取的theme来设置根布局
+      */
+
+      // 根据theme来获取指定的布局文件，添加到DecorView中
+      View in = mLayoutInflater.inflate(layoutResource, null);
+      decor.addView(in, new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
+      mContentRoot = (ViewGroup) in;
+
+      // 不论是那种跟布局文件，都可以ID_ANDROID_CONTENT来获取一个contentParent
+      // 就是我们可以自己去填充内容的FrameLayout
+      ViewGroup contentParent = (ViewGroup)findViewById(ID_ANDROID_CONTENT);
+
+      /*
+       * 省略
+       */
+
+      return contentParent;
+}
+</code></pre>
+
+<p>generateDecor()仅仅是返回一个DecorView对象。而在generateLayout()中，可以看到通过TypedArray去获取我们在XML中给Activity定义的theme和style，根据这些属性决定最终的使用是哪个布局。最终返回的是布局文件中id为ID_ANDROID_CONTENT的FrameLayout对象。</p>
+
+<h2 id="小结">小结</h2>
+
+<p>到这里，我们基本把<code>Activity.setContentView()</code>的流程搞清楚了。</p>
+
+<ol>
+<li>通过Window对象创建DecorView对象</li>
+<li>在DecorView中根据Activity的theme和style创建根布局、title等</li>
+<li>通过LayoutInflater将自定义的布局文件转化为View对象，添加到根布局中作为内容的FrameLayout中</li>
+<li>LayoutInflater.inflate()依次向下遍历，直到生成整个View树</li>
+</ol>
+
+<hr />
+
+<h1 id="activity-findviewbyid-int-id">Activity.findViewById(int id)</h1>
+
+<pre><code class="language-java">public View findViewById(@IdRes int id) {
+    return getWindow().findViewById(id);
+}
+</code></pre>
+
+<p>看到<code>findViewById()</code>的源码我想你也会会心一笑，他跟<code>setContentView()</code>真的很像，同样是由Window这个类区来实现</p>
+
+<h2 id="window-findviewbyid">Window.findViewById()</h2>
+
+<pre><code class="language-java">public View findViewById(@IdRes int id) {
+    return getDecorView().findViewById(id);
+}
+</code></pre>
+
+<p>通过上面我们对<code>setContentView()</code>的分析，可以直到getDecorView()其实就是返回页面上最顶端的ViewGroup对象，从上向下去findViewById(int id)找到指定的子控件</p>
+
+<h2 id="view-findviewbyid">View.findViewById()</h2>
+
+<pre><code class="language-java">public final View findViewById(@IdRes int id) {
+    if (id &lt; 0) {
+        return null;
+    }
+    return findViewTraversal(id);
+}
+</code></pre>
+
+<p>View.findViewById()实际上是调用findViewTraversal()方法。这个方法就是根据id决定返回的是View自身还是null</p>
+
+<pre><code class="language-java">protected View findViewTraversal(@IdRes int id) {
+    if (id == mID) {
+        return this;
+    }
+    return null;
+}
+</code></pre>
+
+<p>我们已经知道，DecorView是FrameLayout的子类。所以向下遍历findViewById()的核心应该实在ViewGroup这个View的子类中。</p>
+
+<h2 id="viewgroup-findviewtraversal-int-id">ViewGroup.findViewTraversal(int id)</h2>
+
+<pre><code class="language-java">protected View findViewTraversal(@IdRes int id) {
+    if (id == mID) {
+        return this;
+    }
+
+    final View[] where = mChildren;
+    final int len = mChildrenCount;
+
+    for (int i = 0; i &lt; len; i++) {
+        View v = where[i];
+
+        if ((v.mPrivateFlags &amp; PFLAG_IS_ROOT_NAMESPACE) == 0) {
+            v = v.findViewById(id);
+
+            if (v != null) {
+                return v;
+            }
+        }
+    }
+
+    return null;
+}
+</code></pre>
+
+<p>ViewGroup首先也是判断自身的mID与参数id是否相等，来决定是否需要返回自身。之后，可以看到在ViewGroup中维护了一个View[]数组，用来存储所有的子控件。遍历这些子控件，再调用子控件的findViewById()向下遍历，直到找到指定id的View对象。</p>
+
+<h2 id="小结-1">小结</h2>
+
+<p><code>Activity.findViewById()</code>的流程相对简单很多</p>
+
+<ol>
+<li>首先获取Window对象，通过该对象得到DecorView对象</li>
+<li>由DecorView对象向下，通过ViewGroup.findViewById()（调用父类View方法） -&gt; ViewGroup.findViewTraversal() -&gt; View.findViewById() -&gt; View.findViewTraversal() 依次遍历整个View树，找到View对象</li>
+</ol>
+
+    </div>
+
+    
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">Dio_V</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">2016-03-08</span>
+  </p>
+  
+  
+</div>
+
+    
+    
+
+    <footer class="post-footer">
+      
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/a-brief-analysis-on-aidl-of-binder/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">从AIDL浅析Binder机制</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+          <a class="next" href="/post/consum-behavior-to-response-coordinatorlayout-scroll/">
+            <span class="next-text nav-default">给 CoordinatorLayout 自定义 Behavior</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+    (function() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'diovgithubio';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="diov87@outlook.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://twitter.com/Dio_Vin" class="iconfont icon-twitter" title="twitter"></a>
+      <a href="https://www.facebook.com/diov87" class="iconfont icon-facebook" title="facebook"></a>
+      <a href="https://github.com/diov" class="iconfont icon-github" title="github"></a>
+  <a href="https://diov.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    
+      2016 - 
+    2018
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Dio_V</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+<script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106569198-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+
+
+
+
+</body>
+</html>
