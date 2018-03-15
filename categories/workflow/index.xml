@@ -5,9 +5,7 @@
     <link>https://diov.github.io/categories/workflow/</link>
     <description>Recent content in Workflow on Meow</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>zh-hans</language>
-    <managingEditor>diov87@outlook.com (Dio_V)</managingEditor>
-    <webMaster>diov87@outlook.com (Dio_V)</webMaster>
+    <language>en</language>
     <lastBuildDate>Sat, 16 Sep 2017 10:54:24 +0200</lastBuildDate>
     
 	<atom:link href="https://diov.github.io/categories/workflow/index.xml" rel="self" type="application/rss+xml" />
@@ -15,10 +13,10 @@
     
     <item>
       <title>基于 Phabricator 的 Git Flow 最佳实践</title>
-      <link>https://diov.github.io/2017/09/16/%E5%9F%BA%E4%BA%8E-phabricator-%E7%9A%84-git-flow-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/</link>
+      <link>https://diov.github.io/post/git-flow-based-on-phabricator/</link>
       <pubDate>Sat, 16 Sep 2017 10:54:24 +0200</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2017/09/16/%E5%9F%BA%E4%BA%8E-phabricator-%E7%9A%84-git-flow-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/</guid>
+      
+      <guid>https://diov.github.io/post/git-flow-based-on-phabricator/</guid>
       <description>Phabricator : Facebook 出品的一个开发协作平台，可以方便的进行任务的指派、code review 等。 Git Flow: 基于git，适用于客户端的开发，围绕着版本发布(release)为</description>
     </item>
     

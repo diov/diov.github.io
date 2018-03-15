@@ -5,9 +5,7 @@
     <link>https://diov.github.io/</link>
     <description>Recent content on Meow</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>zh-hans</language>
-    <managingEditor>diov87@outlook.com (Dio_V)</managingEditor>
-    <webMaster>diov87@outlook.com (Dio_V)</webMaster>
+    <language>en</language>
     <lastBuildDate>Sat, 16 Sep 2017 10:54:24 +0200</lastBuildDate>
     
 	<atom:link href="https://diov.github.io/index.xml" rel="self" type="application/rss+xml" />
@@ -15,100 +13,100 @@
     
     <item>
       <title>基于 Phabricator 的 Git Flow 最佳实践</title>
-      <link>https://diov.github.io/2017/09/16/%E5%9F%BA%E4%BA%8E-phabricator-%E7%9A%84-git-flow-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/</link>
+      <link>https://diov.github.io/post/git-flow-based-on-phabricator/</link>
       <pubDate>Sat, 16 Sep 2017 10:54:24 +0200</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2017/09/16/%E5%9F%BA%E4%BA%8E-phabricator-%E7%9A%84-git-flow-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/</guid>
+      
+      <guid>https://diov.github.io/post/git-flow-based-on-phabricator/</guid>
       <description>Phabricator : Facebook 出品的一个开发协作平台，可以方便的进行任务的指派、code review 等。 Git Flow: 基于git，适用于客户端的开发，围绕着版本发布(release)为</description>
     </item>
     
     <item>
       <title>利用 StrictMode 和 MAT 解决内存泄漏</title>
-      <link>https://diov.github.io/2017/03/10/%E5%88%A9%E7%94%A8-strictmode-%E5%92%8C-mat-%E8%A7%A3%E5%86%B3%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/</link>
+      <link>https://diov.github.io/post/a-practice-of-memory-leak/</link>
       <pubDate>Fri, 10 Mar 2017 15:06:19 +0800</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2017/03/10/%E5%88%A9%E7%94%A8-strictmode-%E5%92%8C-mat-%E8%A7%A3%E5%86%B3%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/</guid>
+      
+      <guid>https://diov.github.io/post/a-practice-of-memory-leak/</guid>
       <description>前一阵子正好碰到了 App 里出现内存泄漏，记录一下完整的流程。 起因 在运行时检测 App 的内存泄漏有多种方式：比如手动的在 Android Studio 中调用 GC,然后观察内存抖动</description>
     </item>
     
     <item>
       <title>从 Hexo 到 Hugo</title>
-      <link>https://diov.github.io/2017/02/27/%E4%BB%8E-hexo-%E5%88%B0-hugo/</link>
+      <link>https://diov.github.io/post/from-hexo-to-hugo/</link>
       <pubDate>Mon, 27 Feb 2017 15:06:19 +0800</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2017/02/27/%E4%BB%8E-hexo-%E5%88%B0-hugo/</guid>
+      
+      <guid>https://diov.github.io/post/from-hexo-to-hugo/</guid>
       <description>最开始搭建博客的时候用的是 Hexo，相对其他的静态博客框架，Hexo 的搭建确实够简单，主题也够丰富。但是上个周末花了两天时间把框架从 Hexo 换到了</description>
     </item>
     
     <item>
       <title>基于 SDK-24 的 Android Background-Drawable 解析</title>
-      <link>https://diov.github.io/2016/06/12/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90/</link>
+      <link>https://diov.github.io/post/view-background-anylysis-1/</link>
       <pubDate>Sun, 12 Jun 2016 14:58:44 +0800</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2016/06/12/%E5%9F%BA%E4%BA%8E-sdk-24-%E7%9A%84-android-background-drawable-%E8%A7%A3%E6%9E%90/</guid>
+      
+      <guid>https://diov.github.io/post/view-background-anylysis-1/</guid>
       <description>View 的 background 属性相信每一个 Android 开发都是非常了解的，但是好像对于 View 如何加载 background 资源的解析还是比较少的。 另外，最近项目里面加了很多圆角按钮，写 xml 写的实在不</description>
     </item>
     
     <item>
       <title>在TextView中自定义HTML样式</title>
-      <link>https://diov.github.io/2016/03/27/%E5%9C%A8textview%E4%B8%AD%E8%87%AA%E5%AE%9A%E4%B9%89html%E6%A0%B7%E5%BC%8F/</link>
+      <link>https://diov.github.io/post/consum-html-pattern/</link>
       <pubDate>Sun, 27 Mar 2016 15:33:46 +0800</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2016/03/27/%E5%9C%A8textview%E4%B8%AD%E8%87%AA%E5%AE%9A%E4%B9%89html%E6%A0%B7%E5%BC%8F/</guid>
+      
+      <guid>https://diov.github.io/post/consum-html-pattern/</guid>
       <description>通常，当我们需要在TextView中显示服务器端返回的Html内容时，就会用到Html.fromHtml(String source)这个方法</description>
     </item>
     
     <item>
       <title>从AIDL浅析Binder机制</title>
-      <link>https://diov.github.io/2016/03/20/%E4%BB%8Eaidl%E6%B5%85%E6%9E%90binder%E6%9C%BA%E5%88%B6/</link>
+      <link>https://diov.github.io/post/a-brief-analysis-on-aidl-of-binder/</link>
       <pubDate>Sun, 20 Mar 2016 13:38:44 +0800</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2016/03/20/%E4%BB%8Eaidl%E6%B5%85%E6%9E%90binder%E6%9C%BA%E5%88%B6/</guid>
+      
+      <guid>https://diov.github.io/post/a-brief-analysis-on-aidl-of-binder/</guid>
       <description>AIDL(Android Interface Defination Language),Android接口定义语言。是Google专门为Android中跨进程调用服务所设计的一种接口语言。 其本质是And</description>
     </item>
     
     <item>
       <title>setContentView和findViewById的源码解析</title>
-      <link>https://diov.github.io/2016/03/08/setcontentview%E5%92%8Cfindviewbyid%E7%9A%84%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/</link>
+      <link>https://diov.github.io/post/setcontentview-findviewbyid/</link>
       <pubDate>Tue, 08 Mar 2016 13:40:53 +0800</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2016/03/08/setcontentview%E5%92%8Cfindviewbyid%E7%9A%84%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/</guid>
+      
+      <guid>https://diov.github.io/post/setcontentview-findviewbyid/</guid>
       <description>最近在面试的时候有碰到这样一个问题，就是“View.inflate()和View.findViewById()哪个更耗时，为什么&amp;rdquo</description>
     </item>
     
     <item>
       <title>给 CoordinatorLayout 自定义 Behavior</title>
-      <link>https://diov.github.io/2016/03/02/%E7%BB%99-coordinatorlayout-%E8%87%AA%E5%AE%9A%E4%B9%89-behavior/</link>
+      <link>https://diov.github.io/post/consum-behavior-to-response-coordinatorlayout-scroll/</link>
       <pubDate>Wed, 02 Mar 2016 20:49:18 +0800</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2016/03/02/%E7%BB%99-coordinatorlayout-%E8%87%AA%E5%AE%9A%E4%B9%89-behavior/</guid>
+      
+      <guid>https://diov.github.io/post/consum-behavior-to-response-coordinatorlayout-scroll/</guid>
       <description>在Design Support Library中，Google为我们提供了一系列实现Material Design的控件：TextInputLayout、Na</description>
     </item>
     
     <item>
       <title>从ListView的嵌套来理解onMeasure方法</title>
-      <link>https://diov.github.io/2016/02/28/%E4%BB%8Elistview%E7%9A%84%E5%B5%8C%E5%A5%97%E6%9D%A5%E7%90%86%E8%A7%A3onmeasure%E6%96%B9%E6%B3%95/</link>
+      <link>https://diov.github.io/post/knowledge-about-onmeasure-from-listview-height-problem/</link>
       <pubDate>Sun, 28 Feb 2016 16:54:13 +0800</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2016/02/28/%E4%BB%8Elistview%E7%9A%84%E5%B5%8C%E5%A5%97%E6%9D%A5%E7%90%86%E8%A7%A3onmeasure%E6%96%B9%E6%B3%95/</guid>
+      
+      <guid>https://diov.github.io/post/knowledge-about-onmeasure-from-listview-height-problem/</guid>
       <description>在Google提供的控件中，有一系列支持触摸滚动的原生控件：ScrollView、ListView、GridView。尽管Google并不推</description>
     </item>
     
     <item>
       <title>从XML到View</title>
-      <link>https://diov.github.io/2016/02/15/%E4%BB%8Exml%E5%88%B0view/</link>
+      <link>https://diov.github.io/post/from_xml_to_view/</link>
       <pubDate>Mon, 15 Feb 2016 20:56:42 +0800</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2016/02/15/%E4%BB%8Exml%E5%88%B0view/</guid>
+      
+      <guid>https://diov.github.io/post/from_xml_to_view/</guid>
       <description>通常，我们会将应用中需要展示的界面内容都写在XML文件中，通过Activity的setContentView()方法设置。 当我们希望动态的添</description>
     </item>
     
     <item>
       <title>Android 触摸事件分发源码</title>
-      <link>https://diov.github.io/2016/01/17/android-%E8%A7%A6%E6%91%B8%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%BA%90%E7%A0%81/</link>
+      <link>https://diov.github.io/post/analisis-of-touchevent-in-android/</link>
       <pubDate>Sun, 17 Jan 2016 19:41:49 +0800</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
-      <guid>https://diov.github.io/2016/01/17/android-%E8%A7%A6%E6%91%B8%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%BA%90%E7%A0%81/</guid>
+      
+      <guid>https://diov.github.io/post/analisis-of-touchevent-in-android/</guid>
       <description>参考：Mastering the Android Touch System 作为以触摸作为主要交互的系统，触摸事件是我们在写代码时无可避免的。不论是对触摸事件进行响应，还是拦截一些不需</description>
     </item>
     

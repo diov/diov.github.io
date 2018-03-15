@@ -5,9 +5,7 @@
     <link>https://diov.github.io/categories/</link>
     <description>Recent content in Categories on Meow</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>zh-hans</language>
-    <managingEditor>diov87@outlook.com (Dio_V)</managingEditor>
-    <webMaster>diov87@outlook.com (Dio_V)</webMaster>
+    <language>en</language>
     <lastBuildDate>Fri, 10 Mar 2017 15:06:19 +0800</lastBuildDate>
     
 	<atom:link href="https://diov.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
@@ -17,7 +15,7 @@
       <title>Android</title>
       <link>https://diov.github.io/categories/android/</link>
       <pubDate>Fri, 10 Mar 2017 15:06:19 +0800</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
+      
       <guid>https://diov.github.io/categories/android/</guid>
       <description></description>
     </item>
@@ -26,7 +24,7 @@
       <title>Other</title>
       <link>https://diov.github.io/categories/other/</link>
       <pubDate>Mon, 27 Feb 2017 15:06:19 +0800</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
+      
       <guid>https://diov.github.io/categories/other/</guid>
       <description></description>
     </item>
@@ -35,7 +33,7 @@
       <title>Workflow</title>
       <link>https://diov.github.io/categories/workflow/</link>
       <pubDate>Sat, 16 Sep 2017 10:54:24 +0200</pubDate>
-      <author>diov87@outlook.com (Dio_V)</author>
+      
       <guid>https://diov.github.io/categories/workflow/</guid>
       <description></description>
     </item>
