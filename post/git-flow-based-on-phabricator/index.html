@@ -16,16 +16,16 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="Dio_V" /><meta name="description" content="使用命令行工具 arc 及 git 在 Phabricator 上实现 Git Flow 工作流" />
+<meta name="author" content="Dio.Ye" /><meta name="description" content="使用命令行工具 arc 及 git 在 Phabricator 上实现 Git Flow 工作流" />
 
-  <meta name="keywords" content="Hugo, Android" />
-
-
+  <meta name="keywords" content="WebRTC, Android, golang" />
 
 
 
 
-<meta name="generator" content="Hugo 0.37.1" />
+
+
+<meta name="generator" content="Hugo 0.54.0" />
 
 
 <link rel="canonical" href="https://diov.github.io/post/git-flow-based-on-phabricator/" />
@@ -52,22 +52,8 @@
 <meta property="og:description" content="使用命令行工具 arc 及 git 在 Phabricator 上实现 Git Flow 工作流" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://diov.github.io/post/git-flow-based-on-phabricator/" />
-
-
-
 <meta property="article:published_time" content="2017-09-16T10:54:24&#43;02:00"/>
-
 <meta property="article:modified_time" content="2017-09-16T10:54:24&#43;02:00"/>
-
-
-
-
-
-
-
-
-
-
 
 <meta itemprop="name" content="基于 Phabricator 的 Git Flow 最佳实践">
 <meta itemprop="description" content="使用命令行工具 arc 及 git 在 Phabricator 上实现 Git Flow 工作流">
@@ -75,7 +61,7 @@
 
 <meta itemprop="datePublished" content="2017-09-16T10:54:24&#43;02:00" />
 <meta itemprop="dateModified" content="2017-09-16T10:54:24&#43;02:00" />
-<meta itemprop="wordCount" content="603">
+<meta itemprop="wordCount" content="612">
 
 
 
@@ -243,7 +229,7 @@
     <div class="post-copyright">
   <p class="copyright-item">
     <span class="item-title">文章作者</span>
-    <span class="item-content">Dio_V</span>
+    <span class="item-content">Dio.Ye</span>
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
@@ -315,11 +301,11 @@
     &copy; 
     
       2016 - 
-    2018
+    2019
     <span class="heart">
       <i class="iconfont icon-heart"></i>
     </span>
-    <span class="author">Dio_V</span>
+    <span class="author">Dio.Ye</span>
   </span>
 </div>
     </footer>
@@ -336,12 +322,16 @@
 <script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
 
 
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-106569198-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-106569198-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
 

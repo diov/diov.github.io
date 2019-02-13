@@ -16,16 +16,16 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="Dio_V" /><meta name="description" content="对于View中触摸事件分发的源码(android-23)分析" />
+<meta name="author" content="Dio.Ye" /><meta name="description" content="对于View中触摸事件分发的源码(android-23)分析" />
 
-  <meta name="keywords" content="Hugo, Android" />
-
-
+  <meta name="keywords" content="WebRTC, Android, golang" />
 
 
 
 
-<meta name="generator" content="Hugo 0.37.1" />
+
+
+<meta name="generator" content="Hugo 0.54.0" />
 
 
 <link rel="canonical" href="https://diov.github.io/post/analisis-of-touchevent-in-android/" />
@@ -52,22 +52,8 @@
 <meta property="og:description" content="对于View中触摸事件分发的源码(android-23)分析" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://diov.github.io/post/analisis-of-touchevent-in-android/" />
-
-
-
 <meta property="article:published_time" content="2016-01-17T19:41:49&#43;08:00"/>
-
 <meta property="article:modified_time" content="2016-01-17T19:41:49&#43;08:00"/>
-
-
-
-
-
-
-
-
-
-
 
 <meta itemprop="name" content="Android 触摸事件分发源码">
 <meta itemprop="description" content="对于View中触摸事件分发的源码(android-23)分析">
@@ -75,7 +61,7 @@
 
 <meta itemprop="datePublished" content="2016-01-17T19:41:49&#43;08:00" />
 <meta itemprop="dateModified" content="2016-01-17T19:41:49&#43;08:00" />
-<meta itemprop="wordCount" content="5591">
+<meta itemprop="wordCount" content="5623">
 
 
 
@@ -709,7 +695,7 @@ public boolean performClick() {
     <div class="post-copyright">
   <p class="copyright-item">
     <span class="item-title">文章作者</span>
-    <span class="item-content">Dio_V</span>
+    <span class="item-content">Dio.Ye</span>
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
@@ -781,11 +767,11 @@ public boolean performClick() {
     &copy; 
     
       2016 - 
-    2018
+    2019
     <span class="heart">
       <i class="iconfont icon-heart"></i>
     </span>
-    <span class="author">Dio_V</span>
+    <span class="author">Dio.Ye</span>
   </span>
 </div>
     </footer>
@@ -802,12 +788,16 @@ public boolean performClick() {
 <script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
 
 
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-106569198-1', 'auto');
-ga('send', 'pageview');
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-106569198-1', 'auto');
+	
+	ga('send', 'pageview');
+}
 </script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 
 
 
