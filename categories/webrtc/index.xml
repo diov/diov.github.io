@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Webrtc on Meow</title>
+    <link>https://diov.github.io/categories/webrtc/</link>
+    <description>Recent content in Webrtc on Meow</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Mon, 18 Feb 2019 17:02:35 +0800</lastBuildDate>
+    
+	<atom:link href="https://diov.github.io/categories/webrtc/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>为 WebRTC Android (M70) 添加 H.264 编解码</title>
+      <link>https://diov.github.io/post/enable-h264-codec-for-webrtc/</link>
+      <pubDate>Mon, 18 Feb 2019 17:02:35 +0800</pubDate>
+      
+      <guid>https://diov.github.io/post/enable-h264-codec-for-webrtc/</guid>
+      <description>作为 Google 的 p2p 音视频方案，WebRTC 在很长时间里都会优先选择同样是 Google 自家的 VP8/VP9 作为编解码方案。但是不可否认，H.264 才是现在业界里更加主流的方</description>
+    </item>
+    
+  </channel>
+</rss>

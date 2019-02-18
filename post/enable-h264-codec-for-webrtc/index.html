@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>利用 StrictMode 和 MAT 解决内存泄漏 - Meow</title>
+  <title>为 WebRTC Android (M70) 添加 H.264 编解码 - Meow</title>
   <meta name="renderer" content="webkit" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="Dio.Ye" /><meta name="description" content="通过 MAT 解决内存泄漏的实例" />
+<meta name="author" content="Dio.Ye" /><meta name="description" content="WebRTC Android 添加 H.264 编解码" />
 
   <meta name="keywords" content="WebRTC, Android, golang" />
 
@@ -28,7 +28,7 @@
 <meta name="generator" content="Hugo 0.54.0" />
 
 
-<link rel="canonical" href="https://diov.github.io/post/a-practice-of-memory-leak/" />
+<link rel="canonical" href="https://diov.github.io/post/enable-h264-codec-for-webrtc/" />
 
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -48,27 +48,27 @@
 
 
 
-<meta property="og:title" content="利用 StrictMode 和 MAT 解决内存泄漏" />
-<meta property="og:description" content="通过 MAT 解决内存泄漏的实例" />
+<meta property="og:title" content="为 WebRTC Android (M70) 添加 H.264 编解码" />
+<meta property="og:description" content="WebRTC Android 添加 H.264 编解码" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://diov.github.io/post/a-practice-of-memory-leak/" />
-<meta property="article:published_time" content="2017-03-10T15:06:19&#43;08:00"/>
-<meta property="article:modified_time" content="2017-03-10T15:06:19&#43;08:00"/>
+<meta property="og:url" content="https://diov.github.io/post/enable-h264-codec-for-webrtc/" />
+<meta property="article:published_time" content="2019-02-18T17:02:35&#43;08:00"/>
+<meta property="article:modified_time" content="2019-02-18T17:02:35&#43;08:00"/>
 
-<meta itemprop="name" content="利用 StrictMode 和 MAT 解决内存泄漏">
-<meta itemprop="description" content="通过 MAT 解决内存泄漏的实例">
+<meta itemprop="name" content="为 WebRTC Android (M70) 添加 H.264 编解码">
+<meta itemprop="description" content="WebRTC Android 添加 H.264 编解码">
 
 
-<meta itemprop="datePublished" content="2017-03-10T15:06:19&#43;08:00" />
-<meta itemprop="dateModified" content="2017-03-10T15:06:19&#43;08:00" />
-<meta itemprop="wordCount" content="1184">
+<meta itemprop="datePublished" content="2019-02-18T17:02:35&#43;08:00" />
+<meta itemprop="dateModified" content="2019-02-18T17:02:35&#43;08:00" />
+<meta itemprop="wordCount" content="1066">
 
 
 
 <meta itemprop="keywords" content="" />
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="利用 StrictMode 和 MAT 解决内存泄漏"/>
-<meta name="twitter:description" content="通过 MAT 解决内存泄漏的实例"/>
+<meta name="twitter:title" content="为 WebRTC Android (M70) 添加 H.264 编解码"/>
+<meta name="twitter:description" content="WebRTC Android 添加 H.264 编解码"/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -131,13 +131,13 @@
           <article class="post">
     
     <header class="post-header">
-      <h1 class="post-title">利用 StrictMode 和 MAT 解决内存泄漏</h1>
+      <h1 class="post-title">为 WebRTC Android (M70) 添加 H.264 编解码</h1>
 
       <div class="post-meta">
-        <span class="post-time"> 2017-03-10 </span>
+        <span class="post-time"> 2019-02-18 </span>
         <div class="post-category">
             
-              <a href="/categories/android/"> Android </a>
+              <a href="/categories/webrtc/"> WebRTC </a>
             
           </div>
         
@@ -155,10 +155,10 @@
 <ul>
 <li>
 <ul>
-<li><a href="#起因">起因</a></li>
-<li><a href="#利用-android-studio-获取-java-heap">利用 Android Studio 获取 Java Heap</a></li>
-<li><a href="#利用-mat-分析-heap-文件">利用 MAT 分析 Heap 文件</a></li>
-<li><a href="#排查以外">排查以外</a></li>
+<li><a href="#完善硬编解列表">完善硬编解列表</a></li>
+<li><a href="#ffmpeg-开启-h-264-软解">FFmpeg 开启 H.264 软解</a></li>
+<li><a href="#webrtc-开启-h-264-软编解">WebRTC 开启 H.264 软编解</a></li>
+<li><a href="#收个尾">收个尾</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -169,96 +169,66 @@
     <div class="post-content">
       
 
-<p>前一阵子正好碰到了 App 里出现内存泄漏，记录一下完整的流程。</p>
+<p>作为 Google 的 p2p 音视频方案，WebRTC 在很长时间里都会优先选择同样是 Google 自家的 VP8/VP9 作为编解码方案。但是不可否认，H.264 才是现在业界里更加主流的方案。所以在最近的几个版本中，WebRTC 也开始逐渐<a href="http://webrtcbydralex.com/index.php/2018/06/21/h-264-finally-a-first-class-citizen-in-webrtc-stacks/">将 H.264 添加到默认的编解码方案中</a>来了。</p>
 
-<h2 id="起因">起因</h2>
+<p>Android 上 WebRTC 只针对少量的设备提供了硬编解的支持，而软解则是完全不支持。幸运的是，WebRTC 使用 openH264 来实现软编码，FFmpeg 实现软解码，而这两部分代码都包含在了 <code>src/third_party</code> 中，我们只需要修改部分代码及编译的脚本就可以把这部分能力集成进来了。</p>
 
-<p>在运行时检测 App 的内存泄漏有多种方式：比如手动的在 Android Studio 中调用 GC,然后观察内存抖动的情况；比如在 App 中加入 leakcanary 这样的 lib，当发生内存泄漏时直接输出 Heap Dump。不过我一直不希望在 App 中引入过多的 lib，所以我是通过 StrictMode 来监测 App 有没有发生内存泄漏。</p>
+<p>针对 Android 平台，我们要完整的支持 H.264 的编解码，需要完成这些目标：</p>
+
+<ol>
+<li>完善硬编解列表<br /></li>
+<li>FFmpeg 开启 H.264 软解<br /></li>
+<li>WebRTC 开启 H.264 软编解<br /></li>
+</ol>
 
 <blockquote>
-<p>StrictMode 是 Android 2.3 之后加入的一个类，用以检测程序中是否有违例情况发生的开发者工具。</p>
+<p>本文基于 M70 版本</p>
 </blockquote>
 
-<p>在自定义的 Application 中的 <code>onCreate()</code> 方法中初始化 StrictMode 就可以了</p>
+<h2 id="完善硬编解列表">完善硬编解列表</h2>
 
-<pre><code class="language-java">public void onCreate() {
-    super.onCreate();
+<p>不同于早期的版本，M70 移除了默认的编解码，必须在创建 <code>PeerConnectionFactory</code> 的时候显式的传入 <code>VideoDecoderFactory</code> 和 <code>VideoEncoderFactory</code>，通常来说，可以按照官方的 <a href="https://groups.google.com/forum/#!topic/discuss-webrtc/SKSkOUHXB2A/discussion">PSA</a> 配置默认的工厂类。</p>
 
-    if (BuildConfig.DEBUG) {
-        // 设置线程策略和 VM策略
-        StrictMode.setThreadPolicy(new StrictMode
-                                        .ThreadPolicy
-                                        .Builder()
-                                        .detectAll()
-                                        .penaltyLog()
-                                        .build());
-        StrictMode.setVmPolicy(new StrictMode
-                                    .VmPolicy.
-                                    Builder().
-                                    detectAll().
-                                    penaltyLog().
-                                    build());
-    }
-}
+<p>配置硬编(解)码的代码在 <code>sdk/android/api/org/webrtc/HardwareVideoEncoderFactory.java</code> 和 <code>sdk/android/api/org/webrtc/HardwareVideoDecoderFactory.java</code> 中。两个类对于编(解)码实例创建的逻辑是相似的，都需要先根据 <code>MediaCodecInfo</code> 和 <code>VideoCodecType</code> 判断当前设备是否支持。仅以 <code>HardwareVideoEncoderFactory</code> 为例：</p>
+
+<pre><code class="language-flowchart">op1=&gt;operation: HardwareVideoEncoderFactory::createEncoder
+op2=&gt;operation: HardwareVideoEncoderFactory::findCodecForType
+op3=&gt;operation: HardwareVideoEncoderFactory::isSupportedCodec
+op4=&gt;operation: HardwareVideoEncoderFactory::isHardwareSupportedInCurrentSdk
+op5=&gt;operation: HardwareVideoEncoderFactory::isHardwareSupportedInCurrentSdkH264
+op1-&gt;op2-&gt;op3-&gt;op4-&gt;op5
 </code></pre>
 
-<p>之后如果有内存泄漏、未关闭 closable 对象或在主线程中监测到耗时操作时，StrictMode 就会通过 log 输出来提醒我们。</p>
+<p>默认只支持 <code>OMX.qcom.</code> 和 <code>OMX.Exynos.</code>，可以根据业务需求把 <code>OMX.hisi.</code>、<code>OMX.MTK.</code> 添加进来，当然也可以根据黑名单排除一些设备。</p>
 
-<h2 id="利用-android-studio-获取-java-heap">利用 Android Studio 获取 Java Heap</h2>
+<h2 id="ffmpeg-开启-h-264-软解">FFmpeg 开启 H.264 软解</h2>
 
-<p><img src="http://o9xs75p7d.bkt.clouddn.com/2017-03-10-084831.jpg" alt="发生内存泄漏的 log" /></p>
-
-<p>之后，当某次发生内存泄漏时，StrictMode 就通过 log 提示我们。此处是我的 App 所遇到的情况，也就是存在多个 Activity 实例，并且无法释放。</p>
-
-<p><img src="http://o9xs75p7d.bkt.clouddn.com/2017-03-10-085229.jpg" alt="获取 Java Heap" /></p>
-
-<p>此时可以通过 Android Studio 自带的 Monitor 来获取此时应用的堆信息。</p>
+<p>为 FFmpeg 开启 H.264 的编译选项，需要修改 <code>third_party/ffmpeg</code> 下的脚本。</p>
 
 <ol>
-<li>点击<code>Initate GC</code>按钮，强制 GC</li>
-<li>点击<code>Dump Java Heap</code>按钮，生成 Heap 文件(*.hprof)</li>
+<li><code>third_party/ffmpeg/ffmpeg_generated.gni</code> 将 h264 相关的源码添加到  ffmpeg_c_sources 中<br /></li>
+<li>修改 <code>third_party/ffmpeg/chromium/config/Chromium/{ABI}/config.h</code> 中 <code>#define CONFIG_H264_DECODER</code> 的宏定义<br /></li>
+<li>由于 FFmpeg 废弃了 <code>av_register_all</code>，所以需要静态的注册 H.264。<code>third_party/ffmpeg/chromium/config/Chromium/android/{ABI}/libavcodec/parser_list.c</code> 和 <code>third_party/ffmpeg/chromium/config/Chromium/android/{ABI}/libavcodec/codec_list.c</code> 分别添加 h264 的 parser 和 decoder<br /></li>
 </ol>
 
-<p>通常获取 Heap 文件之后会直接打开 *.hprof 文件，不过我们也可以在 Android Studio 左侧的<code>Captures</code>标签找到已经生成的 Heap 文件。</p>
+<h2 id="webrtc-开启-h-264-软编解">WebRTC 开启 H.264 软编解</h2>
 
-<p><img src="http://o9xs75p7d.bkt.clouddn.com/2017-03-10-090110.jpg" alt="通过 Android Studio 分析 Memory Leak" /></p>
+<p>尽管我们已经将 H.264 的软解添加到 FFmpeg 中了，但是 WebRTC 还是没有调用到这些代码。这里我们可以参考源码中对于 VP8/VP9 的处理，依样画葫芦。</p>
 
 <ol>
-<li>打开 Heap 文件之后，首先打开右侧的<code>Analyzer Tasks</code>标签</li>
-<li>点击<code>perform action</code>按钮</li>
-<li>在<code>Analysis Results</code>里就可以看到具体有哪些 Acitvity 导致了内存泄漏</li>
-<li>在<code>Reference Tree</code>里可以看到持有这个 Activity 引用的对象</li>
+<li>参照 <code>sdk/android/src/java/org/webrtc/VP8Decoder.java</code> 和 <code>sdk/android/src/java/org/webrtc/VP8Encoder.java</code> 实现 H.264 的 Java 层 Wrapper<br /></li>
+<li>参照 <code>sdk/android/jni/vp8codec.cc</code> 实现 H.264 的 native 代码<br /></li>
+<li><code>sdk/android/BUILD.gn</code> 中分别添加 <code>generate_jni</code> 和 <code>rtc_static_library</code> 任务，并添加对应的 java 和 cpp 文件<br /></li>
+<li>在 <code>sdk/android/api/org/webrtc/SoftwareVideoDecoderFacoty.java</code> 和 <code>sdk/android/api/org/webrtc/SoftwareVideoEncoderFacoty.java</code> 中分别注册 H.264 并添加创建 codec 的代码<br /></li>
 </ol>
 
-<p>如果是简单的情况的话，这里就可以排查出到底是那个引用导致的 Activity 无法释放，从而导致了内存泄漏。但是如果情况复杂一些的话，就需要用到 MAT 来分析了</p>
+<p>注：WebRTC Android JNI 接口的 C 层函数定义，都是通过 Python 脚本 <code>base/android/jni_generator/jni_generator.py</code> 生成的，生成的代码在 <code>out/{destination}/gen/sdk/android/generated_xxx_jni/jni</code> 目录下。我们需要通过第3步生成 H.264 的 JNI 函数，并在第四步中引用生成的头文件。</p>
 
-<h2 id="利用-mat-分析-heap-文件">利用 MAT 分析 Heap 文件</h2>
+<p>另注：我们在将 H.264 的软编(解)码添加到工厂类里时，需要传入一个 <code>Map</code> 作为参数。<code>sdk/android/src/java/org/webrtc/H264Utils.java</code> 提供了这些生成参数的方法。这里的参数会影响协商时生成的 SDP，要根据业务实现。</p>
 
-<p>MAT 全称&rdquo;Eclipse Memory Analyzer&rdquo;,是一个强大 JAVA 堆转储文件分析工具，也就是分析 *.hprof 文件的工具。</p>
+<h2 id="收个尾">收个尾</h2>
 
-<p><img src="http://o9xs75p7d.bkt.clouddn.com/2017-03-10-091145.jpg" alt="转化为标准格式的文件" /></p>
-
-<p>在使用 MAT 之前，我们需要先将 Android Studio 生成的 Heap 文件转换为标准格式。</p>
-
-<p><img src="http://o9xs75p7d.bkt.clouddn.com/2017-03-10-092346.jpg" alt="筛选出泄漏对象" /></p>
-
-<p>用 MAT 打开 Heap 文件之后点击生成 Histogram，可以列出内存中的对象及其个数、大小</p>
-
-<p>由于我们已经通过 Android Studio我们已经知道泄漏的对象的类名。所以可以直接筛选出泄漏的对象。右键<code>Merge Shortest Paths to GC Roots</code> -&gt; <code>exclude all phantom/weak/soft etc. references</code>。排除掉所有的虚/软/弱引用之后，就可以知道到底是那些对象持有泄漏的 Activity 的强引用从而导致内存泄漏了。</p>
-
-<p><img src="http://o9xs75p7d.bkt.clouddn.com/2017-03-10-092955.jpg" alt="查明泄漏原因" /></p>
-
-<p>这里可以看到是 Glide 引起的，此时就可以通过代码中 Glide 相关的代码来排查。</p>
-
-<blockquote>
-<p>此处的例子，是一个匿名内部类<code>BitmapTransformation</code>持有了 Activity 的引用，而 Glide 是全局配置的。所以 Activity 对象无法释放，从而导致了内存泄漏</p>
-</blockquote>
-
-<h2 id="排查以外">排查以外</h2>
-
-<p>内存泄漏通常是由于我们代码的不规范所导致的。比如长引用持有对象而不释放啊，closable 对象未及时关闭啊，或者一些非静态类持有对象啊。</p>
-
-<p>除了在内存泄漏发生之后，及时的通过工具来排查原因，修改代码之外，最重要的还是要规范自己的代码，提高代码质量。当然，不忽略任何一个 <code>lint</code> 提示的警告大概是最方便快捷的方式了吧！</p>
+<p>编译时，我们需要将 <code>rtc_use_h264</code> 设置为 true。可以在 <code>webrtc.gni</code> 中修改，也可以通过 <code>gn gen</code> 在生成 gn  项目的时候通过 <code>--args</code> 设置。</p>
 
     </div>
 
@@ -270,7 +240,7 @@
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
-    <span class="item-content">2017-03-10</span>
+    <span class="item-content">2019-02-18</span>
   </p>
   
   
@@ -285,14 +255,9 @@
       
       <nav class="post-nav">
         
-          <a class="prev" href="/post/git-flow-based-on-phabricator/">
-            <i class="iconfont icon-left"></i>
-            <span class="prev-text nav-default">基于 Phabricator 的 Git Flow 最佳实践</span>
-            <span class="prev-text nav-mobile">上一篇</span>
-          </a>
         
-          <a class="next" href="/post/from-hexo-to-hugo/">
-            <span class="next-text nav-default">从 Hexo 到 Hugo</span>
+          <a class="next" href="/post/git-flow-based-on-phabricator/">
+            <span class="next-text nav-default">基于 Phabricator 的 Git Flow 最佳实践</span>
             <span class="prev-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>

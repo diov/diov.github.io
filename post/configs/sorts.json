@@ -1,0 +1,44 @@
+{
+    "": [
+        "enable-h264-codec-for-webrtc.md", 
+        "a-practice-of-memory-leak.md", 
+        "git-flow-based-on-phabricator.md", 
+        "consum-behavior-to-response-coordinatorlayout-scroll.md", 
+        "view-background-anylysis-1.md", 
+        "analisis-of-touchevent-in-android.md", 
+        "from-hexo-to-hugo.md", 
+        "setcontentview-findviewbyid.md", 
+        "from_xml_to_view.md", 
+        "consum-html-pattern.md", 
+        "a-brief-analysis-on-aidl-of-binder.md", 
+        "knowledge-about-onmeasure-from-listview-height-problem.md"
+    ], 
+    "__positions": {
+        "from-hexo-to-hugo.md": 7, 
+        "consum-html-pattern.md": 10, 
+        "from_xml_to_view.md": 9, 
+        "enable-h264-codec-for-webrtc.md": 1, 
+        "setcontentview-findviewbyid.md": 8, 
+        "a-practice-of-memory-leak.md": 2, 
+        "analisis-of-touchevent-in-android.md": 6, 
+        "view-background-anylysis-1.md": 5, 
+        "a-brief-analysis-on-aidl-of-binder.md": 11, 
+        "consum-behavior-to-response-coordinatorlayout-scroll.md": 4, 
+        "knowledge-about-onmeasure-from-listview-height-problem.md": 12, 
+        "git-flow-based-on-phabricator.md": 3
+    }, 
+    "__raw_positions": {
+        "from-hexo-to-hugo.md": 7, 
+        "consum-html-pattern.md": 10, 
+        "from_xml_to_view.md": 9, 
+        "enable-h264-codec-for-webrtc.md": 1, 
+        "setcontentview-findviewbyid.md": 8, 
+        "a-practice-of-memory-leak.md": 2, 
+        "knowledge-about-onmeasure-from-listview-height-problem.md": 12, 
+        "view-background-anylysis-1.md": 5, 
+        "a-brief-analysis-on-aidl-of-binder.md": 11, 
+        "consum-behavior-to-response-coordinatorlayout-scroll.md": 4, 
+        "analisis-of-touchevent-in-android.md": 6, 
+        "git-flow-based-on-phabricator.md": 3
+    }
+}
