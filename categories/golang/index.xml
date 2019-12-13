@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Golang on Meow</title>
+    <link>https://diov.github.io/categories/golang/</link>
+    <description>Recent content in Golang on Meow</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sat, 30 Nov 2019 17:02:35 +0800</lastBuildDate>
+    
+	<atom:link href="https://diov.github.io/categories/golang/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>用 Golang 在 Android 上实现代理的几个问题</title>
+      <link>https://diov.github.io/post/tips-for-golang-proxy-for-android/</link>
+      <pubDate>Sat, 30 Nov 2019 17:02:35 +0800</pubDate>
+      
+      <guid>https://diov.github.io/post/tips-for-golang-proxy-for-android/</guid>
+      <description>用 Golang 来实现的代理不要太多，像 V2Ray，Brook，Clash。一方面得益于 Golang 标准库对于网络编程的支持，另一方面也是由于其便利的交叉编译。如</description>
+    </item>
+    
+  </channel>
+</rss>

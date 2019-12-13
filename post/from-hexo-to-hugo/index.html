@@ -16,20 +16,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="Dio.Ye" /><meta name="description" content="Hugo 搭建静态博客" />
-
-  <meta name="keywords" content="WebRTC, Android, golang" />
+<meta name="author" content="Dio.Ye" /><meta name="description" content="Hugo 搭建静态博客" /><meta name="keywords" content="WebRTC, Android, Golang" />
 
 
 
 
 
 
-<meta name="generator" content="Hugo 0.54.0" />
+<meta name="generator" content="Hugo 0.61.0 with theme even" />
 
 
 <link rel="canonical" href="https://diov.github.io/post/from-hexo-to-hugo/" />
-
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -37,36 +34,25 @@
 <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
 
 
-
-
-
-
-
-<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link href="/dist/even.c2a46f00.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
-
-
 
 
 <meta property="og:title" content="从 Hexo 到 Hugo" />
 <meta property="og:description" content="Hugo 搭建静态博客" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://diov.github.io/post/from-hexo-to-hugo/" />
-<meta property="article:published_time" content="2017-02-27T15:06:19&#43;08:00"/>
-<meta property="article:modified_time" content="2017-02-27T15:06:19&#43;08:00"/>
-
+<meta property="article:published_time" content="2017-02-27T15:06:19+08:00" />
+<meta property="article:modified_time" content="2017-02-27T15:06:19+08:00" />
 <meta itemprop="name" content="从 Hexo 到 Hugo">
 <meta itemprop="description" content="Hugo 搭建静态博客">
-
-
 <meta itemprop="datePublished" content="2017-02-27T15:06:19&#43;08:00" />
 <meta itemprop="dateModified" content="2017-02-27T15:06:19&#43;08:00" />
 <meta itemprop="wordCount" content="714">
 
 
 
-<meta itemprop="keywords" content="" />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="从 Hexo 到 Hugo"/>
 <meta name="twitter:description" content="Hugo 搭建静态博客"/>
 
@@ -136,58 +122,37 @@
       <div class="post-meta">
         <span class="post-time"> 2017-02-27 </span>
         <div class="post-category">
-            
-              <a href="/categories/other/"> Other </a>
-            
-          </div>
-        
+            <a href="/categories/other/"> Other </a>
+            </div>
         
       </div>
     </header>
 
-    
-    
-<div class="post-toc" id="post-toc">
+    <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">文章目录</h2>
-  
   <div class="post-toc-content always-active">
     <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#hugo-安装-使用">Hugo 安装+使用</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li><a href="#hugo-">Hugo 安装+使用</a></li>
+  </ul>
 </nav>
   </div>
 </div>
-
-    
     <div class="post-content">
-      
-
-<p>最开始搭建博客的时候用的是 Hexo，相对其他的静态博客框架，Hexo 的搭建确实够简单，主题也够丰富。但是上个周末花了两天时间把框架从 Hexo 换到了 Hugo。原因有二：</p>
-
+      <p>最开始搭建博客的时候用的是 Hexo，相对其他的静态博客框架，Hexo 的搭建确实够简单，主题也够丰富。但是上个周末花了两天时间把框架从 Hexo 换到了 Hugo。原因有二：</p>
 <ul>
 <li>Hexo 生成静态文件的速度</li>
 <li>Hexo 是基于 Node.js 的，而从 mpn 上下载插件太容易出各种问题了。尤其是当你的 node 版本太高的时候</li>
 </ul>
-
 <p>当然，最主要的原因其实是：Hexo 的更新简直是一场噩梦。所以决定将博客的框架换为 Hugo。一个是性能够好，另一个是安装够简单</p>
-
-<h2 id="hugo-安装-使用">Hugo 安装+使用</h2>
-
+<h2 id="hugo-">Hugo 安装+使用</h2>
 <ul>
 <li>安装 Hugo 非常简单，直接在<a href="http://gohugo.io/">官网</a>下载安装包。或者用 Homebrew:</li>
 </ul>
-
 <pre><code>$ brew update &amp;&amp; brew install hugo
-</code></pre>
-
-<ul>
+</code></pre><ul>
 <li>创建新博客</li>
 </ul>
-
 <pre><code>$ hugo new site xxBlog
 
 .
@@ -199,59 +164,34 @@
 `-- static
 
 5 directories, 1 file
-</code></pre>
-
-<p>Markdown 文件放在 content 文件夹下。配置内容放在 config.toml 里。不同于 Hexo 的 YAML，Hugo 使用了 TOML 作为配置的格式。具体的配置选可以在<a href="https://gohugo.io/overview/configuration/">这里</a>找到。需要注意的是，中文博客需要设置<code>hasCJKLanguage = true</code></p>
-
+</code></pre><p>Markdown 文件放在 content 文件夹下。配置内容放在 config.toml 里。不同于 Hexo 的 YAML，Hugo 使用了 TOML 作为配置的格式。具体的配置选可以在<a href="https://gohugo.io/overview/configuration/">这里</a>找到。需要注意的是，中文博客需要设置<code>hasCJKLanguage = true</code></p>
 <ul>
 <li>配置代码高亮</li>
 </ul>
-
 <p>Hugo 的代码高亮有两种方式，一个是生成静态文件时加上高亮，另一个是通过在页面上加上 js</p>
-
 <p>第二种方法需要修改 Theme 下的 <code>header.html</code>。所以我用的是第一种方法。</p>
-
 <p>安装 Pygments</p>
-
 <pre><code>pip install Pygments
-</code></pre>
-
-<p>安装完之后，可以在 terminal 里面输入<code>pygmentize</code>，如果没有这个命令。需要将这个命令加到 PATH 里面。</p>
-
+</code></pre><p>安装完之后，可以在 terminal 里面输入<code>pygmentize</code>，如果没有这个命令。需要将这个命令加到 PATH 里面。</p>
 <p>之后，需要在 config.toml 里面添加<code>pygmentsUseClasses = true</code>，自定义高亮格式<code>pygmentsStyle = &quot;&quot;</code></p>
-
 <ul>
 <li>添加文章</li>
 </ul>
-
 <p>在 xxBlog 文件夹下面输入</p>
-
 <pre><code>$ hugo new xxx.md
-</code></pre>
-
-<p>然后就可以编辑 Markdown 文件了。当然，这里每篇文章的 frontmatter 也是用 TOML 格式的。如果是从 Hexo 迁移过来也需要修改一下</p>
-
+</code></pre><p>然后就可以编辑 Markdown 文件了。当然，这里每篇文章的 frontmatter 也是用 TOML 格式的。如果是从 Hexo 迁移过来也需要修改一下</p>
 <ul>
 <li>生成静态文件并预览</li>
 </ul>
-
 <p>在 xxBlog 文件夹下面生成静态文件</p>
-
 <pre><code>$ hugo
-</code></pre>
-
-<p>本地预览</p>
-
+</code></pre><p>本地预览</p>
 <pre><code>$ hugo serve
-</code></pre>
-
-<p>访问<code>http://localhost:1313/</code>访问</p>
-
+</code></pre><p>访问<code>http://localhost:1313/</code>访问</p>
 <p>另外，相比 Hexo 的一键部署到 GitHub Page，Hugo 需要手动将 /public/文件夹 中的内容传送到 Github 仓库。这里就不细讲了</p>
 
     </div>
 
-    
     <div class="post-copyright">
   <p class="copyright-item">
     <span class="item-title">文章作者</span>
@@ -259,38 +199,32 @@
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
-    <span class="item-content">2017-02-27</span>
+    <span class="item-content">
+        2017-02-27
+        
+    </span>
   </p>
   
   
 </div>
-
-    
-    
-
-    <footer class="post-footer">
-      
-
+<footer class="post-footer">
       
       <nav class="post-nav">
-        
-          <a class="prev" href="/post/a-practice-of-memory-leak/">
+        <a class="prev" href="/post/a-practice-of-memory-leak/">
             <i class="iconfont icon-left"></i>
             <span class="prev-text nav-default">利用 StrictMode 和 MAT 解决内存泄漏</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
-        
-          <a class="next" href="/post/view-background-anylysis-1/">
+        <a class="next" href="/post/view-background-anylysis-1/">
             <span class="next-text nav-default">基于 SDK-24 的 Android Background-Drawable 解析</span>
-            <span class="prev-text nav-mobile">下一篇</span>
+            <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
       </nav>
     </footer>
   </article>
         </div>
-        
-  <div id="disqus_thread"></div>
+        <div id="disqus_thread"></div>
     <script type="text/javascript">
     (function() {
       
@@ -304,6 +238,11 @@
     })();
     </script>
     <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+  
+
       </div>
     </main>
 
@@ -330,8 +269,7 @@
 
   <span class="copyright-year">
     &copy; 
-    
-      2016 - 
+    2016 - 
     2019
     <span class="heart">
       <i class="iconfont icon-heart"></i>
@@ -345,14 +283,12 @@
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
-<script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script>
-<script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script>window.sequenceDiagramsOptions = simple;</script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+<script type="text/javascript" src="/dist/even.26188efa.min.js"></script>
 
 
 <script type="application/javascript">
@@ -360,7 +296,7 @@ var doNotTrack = false;
 if (!doNotTrack) {
 	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
 	ga('create', 'UA-106569198-1', 'auto');
-	
+	ga('set', 'anonymizeIp', true);
 	ga('send', 'pageview');
 }
 </script>

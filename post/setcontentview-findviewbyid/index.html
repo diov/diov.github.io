@@ -16,20 +16,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="Dio.Ye" /><meta name="description" content="从源码角度(android-23)来分析Activity.setContentView()和findViewById()" />
-
-  <meta name="keywords" content="WebRTC, Android, golang" />
+<meta name="author" content="Dio.Ye" /><meta name="description" content="从源码角度(android-23)来分析Activity.setContentView()和findViewById()" /><meta name="keywords" content="WebRTC, Android, Golang" />
 
 
 
 
 
 
-<meta name="generator" content="Hugo 0.54.0" />
+<meta name="generator" content="Hugo 0.61.0 with theme even" />
 
 
 <link rel="canonical" href="https://diov.github.io/post/setcontentview-findviewbyid/" />
-
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -37,36 +34,25 @@
 <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
 
 
-
-
-
-
-
-<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link href="/dist/even.c2a46f00.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
-
-
 
 
 <meta property="og:title" content="setContentView和findViewById的源码解析" />
 <meta property="og:description" content="从源码角度(android-23)来分析Activity.setContentView()和findViewById()" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://diov.github.io/post/setcontentview-findviewbyid/" />
-<meta property="article:published_time" content="2016-03-08T13:40:53&#43;08:00"/>
-<meta property="article:modified_time" content="2016-03-08T13:40:53&#43;08:00"/>
-
+<meta property="article:published_time" content="2016-03-08T13:40:53+08:00" />
+<meta property="article:modified_time" content="2016-03-08T13:40:53+08:00" />
 <meta itemprop="name" content="setContentView和findViewById的源码解析">
 <meta itemprop="description" content="从源码角度(android-23)来分析Activity.setContentView()和findViewById()">
-
-
 <meta itemprop="datePublished" content="2016-03-08T13:40:53&#43;08:00" />
 <meta itemprop="dateModified" content="2016-03-08T13:40:53&#43;08:00" />
-<meta itemprop="wordCount" content="2581">
+<meta itemprop="wordCount" content="2579">
 
 
 
-<meta itemprop="keywords" content="" />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="setContentView和findViewById的源码解析"/>
 <meta name="twitter:description" content="从源码角度(android-23)来分析Activity.setContentView()和findViewById()"/>
 
@@ -136,257 +122,200 @@
       <div class="post-meta">
         <span class="post-time"> 2016-03-08 </span>
         <div class="post-category">
-            
-              <a href="/categories/android/"> Android </a>
-            
-          </div>
-        
+            <a href="/categories/android/"> Android </a>
+            </div>
         
       </div>
     </header>
 
-    
-    
-<div class="post-toc" id="post-toc">
+    <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">文章目录</h2>
-  
   <div class="post-toc-content always-active">
     <nav id="TableOfContents">
-<ul>
-<li><a href="#activity-setcontentview-int-layoutresid">Activity.setContentView(int layoutResID)</a>
-<ul>
-<li><a href="#phonewindow-setcontentview-int-layoutresid">PhoneWindow.setContentView(int layoutResID)</a></li>
-<li><a href="#phonewindow-installdecor">PhoneWindow.installDecor()</a></li>
-<li><a href="#phonewindow-generatedecor">PhoneWindow.generateDecor()</a></li>
-<li><a href="#小结">小结</a></li>
-</ul></li>
-<li><a href="#activity-findviewbyid-int-id">Activity.findViewById(int id)</a>
-<ul>
-<li><a href="#window-findviewbyid">Window.findViewById()</a></li>
-<li><a href="#view-findviewbyid">View.findViewById()</a></li>
-<li><a href="#viewgroup-findviewtraversal-int-id">ViewGroup.findViewTraversal(int id)</a></li>
-<li><a href="#小结-1">小结</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li><a href="#phonewindowsetcontentviewint-layoutresid">PhoneWindow.setContentView(int layoutResID)</a></li>
+    <li><a href="#phonewindowinstalldecor">PhoneWindow.installDecor()</a></li>
+    <li><a href="#phonewindowgeneratedecor">PhoneWindow.generateDecor()</a></li>
+    <li><a href="#heading">小结</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#windowfindviewbyid">Window.findViewById()</a></li>
+    <li><a href="#viewfindviewbyid">View.findViewById()</a></li>
+    <li><a href="#viewgroupfindviewtraversalint-id">ViewGroup.findViewTraversal(int id)</a></li>
+    <li><a href="#heading-1">小结</a></li>
+  </ul>
 </nav>
   </div>
 </div>
-
-    
     <div class="post-content">
-      
-
-<p>最近在面试的时候有碰到这样一个问题，就是“View.inflate()和View.findViewById()哪个更耗时，为什么&rdquo;。通过之前对于<a href="http://diov.github.io/2016/02/15/From_XML_to_View/">View.inflate()源码的分析</a>，可以知道在将布局文件转化为View对象的时候需要通过io读取文件+遍历解析XML文件+生成每一个View对象，而findViewById()只是遍历View树来获取对应的View对象。所以很明显应该是View.inflate()更为耗时。</p>
-
+      <p>最近在面试的时候有碰到这样一个问题，就是“View.inflate()和View.findViewById()哪个更耗时，为什么&rdquo;。通过之前对于<a href="http://diov.github.io/2016/02/15/From_XML_to_View/">View.inflate()源码的分析</a>，可以知道在将布局文件转化为View对象的时候需要通过io读取文件+遍历解析XML文件+生成每一个View对象，而findViewById()只是遍历View树来获取对应的View对象。所以很明显应该是View.inflate()更为耗时。</p>
 <p>那么，findViewById()究竟是如何通过id来获取对应的View对象的呢？我们今天从<code>Activity.setContentView()</code>和<code>Activity.findViewById()</code>的源码谈起</p>
-
-<!-- more -->
-
-<h1 id="activity-setcontentview-int-layoutresid">Activity.setContentView(int layoutResID)</h1>
-
+<!-- raw HTML omitted -->
+<h1 id="activitysetcontentviewint-layoutresid">Activity.setContentView(int layoutResID)</h1>
 <p>在使用Activity时，都会在onCreate()中通过<code>setContentView()</code>给Activity设置布局</p>
-
-<pre><code class="language-java">public void setContentView(@LayoutRes int layoutResID) {
-    getWindow().setContentView(layoutResID);
-    initWindowDecorActionBar();
-}
-</code></pre>
-
-<p>可以看到里面做了两件事：
-  1. 获取Window对象，并调用Window的setContentView()
-  2. 设置ActionBar</p>
-
-<h2 id="phonewindow-setcontentview-int-layoutresid">PhoneWindow.setContentView(int layoutResID)</h2>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">setContentView</span><span style="color:#f92672">(</span><span style="color:#a6e22e">@LayoutRes</span> <span style="color:#66d9ef">int</span> layoutResID<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    getWindow<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">.</span><span style="color:#a6e22e">setContentView</span><span style="color:#f92672">(</span>layoutResID<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    initWindowDecorActionBar<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>可以看到里面做了两件事：</p>
+<ol>
+<li>获取Window对象，并调用Window的setContentView()</li>
+<li>设置ActionBar</li>
+</ol>
+<h2 id="phonewindowsetcontentviewint-layoutresid">PhoneWindow.setContentView(int layoutResID)</h2>
 <p>我们只关注前者。Window是一个抽象类，他具体的实现大多在<em>PhoneWindow</em> 这个实现类中</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">setContentView</span><span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> layoutResID<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#75715e">// 初始化DecorView
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>mContentParent <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        installDecor<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">!</span>hasFeature<span style="color:#f92672">(</span>FEATURE_CONTENT_TRANSITIONS<span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        mContentParent<span style="color:#f92672">.</span><span style="color:#a6e22e">removeAllViews</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
 
-<pre><code class="language-java">public void setContentView(int layoutResID) {
-    // 初始化DecorView
-    if (mContentParent == null) {
-        installDecor();
-    } else if (!hasFeature(FEATURE_CONTENT_TRANSITIONS)) {
-        mContentParent.removeAllViews();
-    }
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>hasFeature<span style="color:#f92672">(</span>FEATURE_CONTENT_TRANSITIONS<span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">final</span> Scene newScene <span style="color:#f92672">=</span> Scene<span style="color:#f92672">.</span><span style="color:#a6e22e">getSceneForLayout</span><span style="color:#f92672">(</span>mContentParent<span style="color:#f92672">,</span> layoutResID<span style="color:#f92672">,</span>
+                getContext<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        transitionTo<span style="color:#f92672">(</span>newScene<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+        <span style="color:#75715e">// 通过LayoutInflater将布局文件添加到 mContentParent中
+</span><span style="color:#75715e"></span>        mLayoutInflater<span style="color:#f92672">.</span><span style="color:#a6e22e">inflate</span><span style="color:#f92672">(</span>layoutResID<span style="color:#f92672">,</span> mContentParent<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+    mContentParent<span style="color:#f92672">.</span><span style="color:#a6e22e">requestApplyInsets</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-    if (hasFeature(FEATURE_CONTENT_TRANSITIONS)) {
-        final Scene newScene = Scene.getSceneForLayout(mContentParent, layoutResID,
-                getContext());
-        transitionTo(newScene);
-    } else {
-        // 通过LayoutInflater将布局文件添加到 mContentParent中
-        mLayoutInflater.inflate(layoutResID, mContentParent);
-    }
-    mContentParent.requestApplyInsets();
+    <span style="color:#75715e">// Activity 实现了Window.Callback接口.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">final</span> Callback cb <span style="color:#f92672">=</span> getCallback<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>cb <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> <span style="color:#f92672">!</span>isDestroyed<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        cb<span style="color:#f92672">.</span><span style="color:#a6e22e">onContentChanged</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>首先判断mContentParent，如果为null就初始化，否则将其所有的View移除。然后通过LayoutInflater把布局文件添加到mContentParent中。之后还获取了一个Calback对象，来进行回调。而这个Callback对象正是Activity，他实现了Callback接口，需要我们自己去实现onContentChanged()方法</p>
+<h2 id="phonewindowinstalldecor">PhoneWindow.installDecor()</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">private</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">installDecor</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>mDecor <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        mDecor <span style="color:#f92672">=</span> generateDecor<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        mDecor<span style="color:#f92672">.</span><span style="color:#a6e22e">setDescendantFocusability</span><span style="color:#f92672">(</span>ViewGroup<span style="color:#f92672">.</span><span style="color:#a6e22e">FOCUS_AFTER_DESCENDANTS</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        mDecor<span style="color:#f92672">.</span><span style="color:#a6e22e">setIsRootNamespace</span><span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">!</span>mInvalidatePanelMenuPosted <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> mInvalidatePanelMenuFeatures <span style="color:#f92672">!</span><span style="color:#f92672">=</span> 0<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            mDecor<span style="color:#f92672">.</span><span style="color:#a6e22e">postOnAnimation</span><span style="color:#f92672">(</span>mInvalidatePanelMenuRunnable<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>mContentParent <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        mContentParent <span style="color:#f92672">=</span> generateLayout<span style="color:#f92672">(</span>mDecor<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-    // Activity 实现了Window.Callback接口.
-    final Callback cb = getCallback();
-    if (cb != null &amp;&amp; !isDestroyed()) {
-        cb.onContentChanged();
-    }
-}
-</code></pre>
+        mDecor<span style="color:#f92672">.</span><span style="color:#a6e22e">makeOptionalFitsSystemWindows</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-<p>首先判断mContentParent，如果为null就初始化，否则将其所有的View移除。然后通过LayoutInflater把布局文件添加到mContentParent中。之后还获取了一个Calback对象，来进行回调。而这个Callback对象正是Activity，他实现了Callback接口，需要我们自己去实现onContentChanged()方法</p>
+        <span style="color:#66d9ef">final</span> DecorContentParent decorContentParent <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>DecorContentParent<span style="color:#f92672">)</span> mDecor<span style="color:#f92672">.</span><span style="color:#a6e22e">findViewById</span><span style="color:#f92672">(</span>
+                R<span style="color:#f92672">.</span><span style="color:#a6e22e">id</span><span style="color:#f92672">.</span><span style="color:#a6e22e">decor_content_parent</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-<h2 id="phonewindow-installdecor">PhoneWindow.installDecor()</h2>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>decorContentParent <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#75715e">/*
+</span><span style="color:#75715e">         * 省略代码，根据style和其他一些属性去设置title、icon等等
+</span><span style="color:#75715e">         */</span>
+       <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+            mTitleView <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>TextView<span style="color:#f92672">)</span>findViewById<span style="color:#f92672">(</span>R<span style="color:#f92672">.</span><span style="color:#a6e22e">id</span><span style="color:#f92672">.</span><span style="color:#a6e22e">title</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>mTitleView <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                mTitleView<span style="color:#f92672">.</span><span style="color:#a6e22e">setLayoutDirection</span><span style="color:#f92672">(</span>mDecor<span style="color:#f92672">.</span><span style="color:#a6e22e">getLayoutDirection</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                <span style="color:#75715e">// 为什么需要在setContentView()之前调用requestWindowFeature()
+</span><span style="color:#75715e"></span>                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">(</span>getLocalFeatures<span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">&amp;</span> <span style="color:#f92672">(</span>1 <span style="color:#f92672">&lt;</span><span style="color:#f92672">&lt;</span> FEATURE_NO_TITLE<span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> 0<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                    <span style="color:#75715e">//...
+</span><span style="color:#75715e"></span>                <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+                    mTitleView<span style="color:#f92672">.</span><span style="color:#a6e22e">setText</span><span style="color:#f92672">(</span>mTitle<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                <span style="color:#f92672">}</span>
+            <span style="color:#f92672">}</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>我们知道在Android的每个页面中，都会由系统来初始化一个根布局DecorView，它是FrameLayout的子类。事实上就是在<code>installDecor()</code>方法里面进行的。可以看到首先调用了<code>generateDecor()</code>来实例化了一个DecorView，然后通过<code>generateLayout(mDecor)</code>生成了mContentParent。此后会通过我们给Activity设置的style和属性对DDecorView进行初始化。在这里有一点需要注意的，就是我们都知道，如果要设置Activity无标题，需要在setContentView()之前调用requestWindowFeature(FEATURE_NO_TITLE)，在源码中我们可以找到答案。</p>
+<h2 id="phonewindowgeneratedecor">PhoneWindow.generateDecor()</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">protected</span> DecorView <span style="color:#a6e22e">generateDecor</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> DecorView<span style="color:#f92672">(</span>getContext<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">,</span> <span style="color:#f92672">-</span>1<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
 
-<pre><code class="language-java">private void installDecor() {
-    if (mDecor == null) {
-        mDecor = generateDecor();
-        mDecor.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
-        mDecor.setIsRootNamespace(true);
-        if (!mInvalidatePanelMenuPosted &amp;&amp; mInvalidatePanelMenuFeatures != 0) {
-            mDecor.postOnAnimation(mInvalidatePanelMenuRunnable);
-        }
-    }
-    if (mContentParent == null) {
-        mContentParent = generateLayout(mDecor);
+<span style="color:#66d9ef">protected</span> ViewGroup <span style="color:#a6e22e">generateLayout</span><span style="color:#f92672">(</span>DecorView decor<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+     <span style="color:#75715e">// Apply data from current theme.
+</span><span style="color:#75715e"></span>     TypedArray a <span style="color:#f92672">=</span> getWindowStyle<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-        mDecor.makeOptionalFitsSystemWindows();
+     <span style="color:#75715e">/*
+</span><span style="color:#75715e">      * 通过获取的theme来设置根布局
+</span><span style="color:#75715e">      */</span>
 
-        final DecorContentParent decorContentParent = (DecorContentParent) mDecor.findViewById(
-                R.id.decor_content_parent);
+      <span style="color:#75715e">// 根据theme来获取指定的布局文件，添加到DecorView中
+</span><span style="color:#75715e"></span>      View in <span style="color:#f92672">=</span> mLayoutInflater<span style="color:#f92672">.</span><span style="color:#a6e22e">inflate</span><span style="color:#f92672">(</span>layoutResource<span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+      decor<span style="color:#f92672">.</span><span style="color:#a6e22e">addView</span><span style="color:#f92672">(</span>in<span style="color:#f92672">,</span> <span style="color:#66d9ef">new</span> ViewGroup<span style="color:#f92672">.</span><span style="color:#a6e22e">LayoutParams</span><span style="color:#f92672">(</span>MATCH_PARENT<span style="color:#f92672">,</span> MATCH_PARENT<span style="color:#f92672">)</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+      mContentRoot <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>ViewGroup<span style="color:#f92672">)</span> in<span style="color:#f92672">;</span>
 
-        if (decorContentParent != null) {
-        /*
-         * 省略代码，根据style和其他一些属性去设置title、icon等等
-         */
-       } else {
-            mTitleView = (TextView)findViewById(R.id.title);
-            if (mTitleView != null) {
-                mTitleView.setLayoutDirection(mDecor.getLayoutDirection());
-                // 为什么需要在setContentView()之前调用requestWindowFeature()
-                if ((getLocalFeatures() &amp; (1 &lt;&lt; FEATURE_NO_TITLE)) != 0) {
-                    //...
-                } else {
-                    mTitleView.setText(mTitle);
-                }
-            }
-        }
-    }
-}
-</code></pre>
+      <span style="color:#75715e">// 不论是那种跟布局文件，都可以ID_ANDROID_CONTENT来获取一个contentParent
+</span><span style="color:#75715e"></span>      <span style="color:#75715e">// 就是我们可以自己去填充内容的FrameLayout
+</span><span style="color:#75715e"></span>      ViewGroup contentParent <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>ViewGroup<span style="color:#f92672">)</span>findViewById<span style="color:#f92672">(</span>ID_ANDROID_CONTENT<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-<p>我们知道在Android的每个页面中，都会由系统来初始化一个根布局DecorView，它是FrameLayout的子类。事实上就是在<code>installDecor()</code>方法里面进行的。可以看到首先调用了<code>generateDecor()</code>来实例化了一个DecorView，然后通过<code>generateLayout(mDecor)</code>生成了mContentParent。此后会通过我们给Activity设置的style和属性对DDecorView进行初始化。在这里有一点需要注意的，就是我们都知道，如果要设置Activity无标题，需要在setContentView()之前调用requestWindowFeature(FEATURE_NO_TITLE)，在源码中我们可以找到答案。</p>
+      <span style="color:#75715e">/*
+</span><span style="color:#75715e">       * 省略
+</span><span style="color:#75715e">       */</span>
 
-<h2 id="phonewindow-generatedecor">PhoneWindow.generateDecor()</h2>
-
-<pre><code class="language-java">protected DecorView generateDecor() {
-    return new DecorView(getContext(), -1);
-}
-
-protected ViewGroup generateLayout(DecorView decor) {
-     // Apply data from current theme.
-     TypedArray a = getWindowStyle();
-
-     /*
-      * 通过获取的theme来设置根布局
-      */
-
-      // 根据theme来获取指定的布局文件，添加到DecorView中
-      View in = mLayoutInflater.inflate(layoutResource, null);
-      decor.addView(in, new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
-      mContentRoot = (ViewGroup) in;
-
-      // 不论是那种跟布局文件，都可以ID_ANDROID_CONTENT来获取一个contentParent
-      // 就是我们可以自己去填充内容的FrameLayout
-      ViewGroup contentParent = (ViewGroup)findViewById(ID_ANDROID_CONTENT);
-
-      /*
-       * 省略
-       */
-
-      return contentParent;
-}
-</code></pre>
-
-<p>generateDecor()仅仅是返回一个DecorView对象。而在generateLayout()中，可以看到通过TypedArray去获取我们在XML中给Activity定义的theme和style，根据这些属性决定最终的使用是哪个布局。最终返回的是布局文件中id为ID_ANDROID_CONTENT的FrameLayout对象。</p>
-
-<h2 id="小结">小结</h2>
-
+      <span style="color:#66d9ef">return</span> contentParent<span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>generateDecor()仅仅是返回一个DecorView对象。而在generateLayout()中，可以看到通过TypedArray去获取我们在XML中给Activity定义的theme和style，根据这些属性决定最终的使用是哪个布局。最终返回的是布局文件中id为ID_ANDROID_CONTENT的FrameLayout对象。</p>
+<h2 id="heading">小结</h2>
 <p>到这里，我们基本把<code>Activity.setContentView()</code>的流程搞清楚了。</p>
-
 <ol>
 <li>通过Window对象创建DecorView对象</li>
 <li>在DecorView中根据Activity的theme和style创建根布局、title等</li>
 <li>通过LayoutInflater将自定义的布局文件转化为View对象，添加到根布局中作为内容的FrameLayout中</li>
 <li>LayoutInflater.inflate()依次向下遍历，直到生成整个View树</li>
 </ol>
+<hr>
+<h1 id="activityfindviewbyidint-id">Activity.findViewById(int id)</h1>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> View <span style="color:#a6e22e">findViewById</span><span style="color:#f92672">(</span><span style="color:#a6e22e">@IdRes</span> <span style="color:#66d9ef">int</span> id<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> getWindow<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">.</span><span style="color:#a6e22e">findViewById</span><span style="color:#f92672">(</span>id<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>看到<code>findViewById()</code>的源码我想你也会会心一笑，他跟<code>setContentView()</code>真的很像，同样是由Window这个类区来实现</p>
+<h2 id="windowfindviewbyid">Window.findViewById()</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> View <span style="color:#a6e22e">findViewById</span><span style="color:#f92672">(</span><span style="color:#a6e22e">@IdRes</span> <span style="color:#66d9ef">int</span> id<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> getDecorView<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">.</span><span style="color:#a6e22e">findViewById</span><span style="color:#f92672">(</span>id<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>通过上面我们对<code>setContentView()</code>的分析，可以直到getDecorView()其实就是返回页面上最顶端的ViewGroup对象，从上向下去findViewById(int id)找到指定的子控件</p>
+<h2 id="viewfindviewbyid">View.findViewById()</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">final</span> View <span style="color:#a6e22e">findViewById</span><span style="color:#f92672">(</span><span style="color:#a6e22e">@IdRes</span> <span style="color:#66d9ef">int</span> id<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>id <span style="color:#f92672">&lt;</span> 0<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+    <span style="color:#66d9ef">return</span> findViewTraversal<span style="color:#f92672">(</span>id<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>View.findViewById()实际上是调用findViewTraversal()方法。这个方法就是根据id决定返回的是View自身还是null</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">protected</span> View <span style="color:#a6e22e">findViewTraversal</span><span style="color:#f92672">(</span><span style="color:#a6e22e">@IdRes</span> <span style="color:#66d9ef">int</span> id<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>id <span style="color:#f92672">=</span><span style="color:#f92672">=</span> mID<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>我们已经知道，DecorView是FrameLayout的子类。所以向下遍历findViewById()的核心应该实在ViewGroup这个View的子类中。</p>
+<h2 id="viewgroupfindviewtraversalint-id">ViewGroup.findViewTraversal(int id)</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">protected</span> View <span style="color:#a6e22e">findViewTraversal</span><span style="color:#f92672">(</span><span style="color:#a6e22e">@IdRes</span> <span style="color:#66d9ef">int</span> id<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>id <span style="color:#f92672">=</span><span style="color:#f92672">=</span> mID<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
 
-<hr />
+    <span style="color:#66d9ef">final</span> View<span style="color:#f92672">[</span><span style="color:#f92672">]</span> where <span style="color:#f92672">=</span> mChildren<span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> len <span style="color:#f92672">=</span> mChildrenCount<span style="color:#f92672">;</span>
 
-<h1 id="activity-findviewbyid-int-id">Activity.findViewById(int id)</h1>
+    <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span> i <span style="color:#f92672">&lt;</span> len<span style="color:#f92672">;</span> i<span style="color:#f92672">+</span><span style="color:#f92672">+</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        View v <span style="color:#f92672">=</span> where<span style="color:#f92672">[</span>i<span style="color:#f92672">]</span><span style="color:#f92672">;</span>
 
-<pre><code class="language-java">public View findViewById(@IdRes int id) {
-    return getWindow().findViewById(id);
-}
-</code></pre>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">(</span>v<span style="color:#f92672">.</span><span style="color:#a6e22e">mPrivateFlags</span> <span style="color:#f92672">&amp;</span> PFLAG_IS_ROOT_NAMESPACE<span style="color:#f92672">)</span> <span style="color:#f92672">=</span><span style="color:#f92672">=</span> 0<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            v <span style="color:#f92672">=</span> v<span style="color:#f92672">.</span><span style="color:#a6e22e">findViewById</span><span style="color:#f92672">(</span>id<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-<p>看到<code>findViewById()</code>的源码我想你也会会心一笑，他跟<code>setContentView()</code>真的很像，同样是由Window这个类区来实现</p>
+            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>v <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">return</span> v<span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
 
-<h2 id="window-findviewbyid">Window.findViewById()</h2>
-
-<pre><code class="language-java">public View findViewById(@IdRes int id) {
-    return getDecorView().findViewById(id);
-}
-</code></pre>
-
-<p>通过上面我们对<code>setContentView()</code>的分析，可以直到getDecorView()其实就是返回页面上最顶端的ViewGroup对象，从上向下去findViewById(int id)找到指定的子控件</p>
-
-<h2 id="view-findviewbyid">View.findViewById()</h2>
-
-<pre><code class="language-java">public final View findViewById(@IdRes int id) {
-    if (id &lt; 0) {
-        return null;
-    }
-    return findViewTraversal(id);
-}
-</code></pre>
-
-<p>View.findViewById()实际上是调用findViewTraversal()方法。这个方法就是根据id决定返回的是View自身还是null</p>
-
-<pre><code class="language-java">protected View findViewTraversal(@IdRes int id) {
-    if (id == mID) {
-        return this;
-    }
-    return null;
-}
-</code></pre>
-
-<p>我们已经知道，DecorView是FrameLayout的子类。所以向下遍历findViewById()的核心应该实在ViewGroup这个View的子类中。</p>
-
-<h2 id="viewgroup-findviewtraversal-int-id">ViewGroup.findViewTraversal(int id)</h2>
-
-<pre><code class="language-java">protected View findViewTraversal(@IdRes int id) {
-    if (id == mID) {
-        return this;
-    }
-
-    final View[] where = mChildren;
-    final int len = mChildrenCount;
-
-    for (int i = 0; i &lt; len; i++) {
-        View v = where[i];
-
-        if ((v.mPrivateFlags &amp; PFLAG_IS_ROOT_NAMESPACE) == 0) {
-            v = v.findViewById(id);
-
-            if (v != null) {
-                return v;
-            }
-        }
-    }
-
-    return null;
-}
-</code></pre>
-
-<p>ViewGroup首先也是判断自身的mID与参数id是否相等，来决定是否需要返回自身。之后，可以看到在ViewGroup中维护了一个View[]数组，用来存储所有的子控件。遍历这些子控件，再调用子控件的findViewById()向下遍历，直到找到指定id的View对象。</p>
-
-<h2 id="小结-1">小结</h2>
-
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>ViewGroup首先也是判断自身的mID与参数id是否相等，来决定是否需要返回自身。之后，可以看到在ViewGroup中维护了一个View[]数组，用来存储所有的子控件。遍历这些子控件，再调用子控件的findViewById()向下遍历，直到找到指定id的View对象。</p>
+<h2 id="heading-1">小结</h2>
 <p><code>Activity.findViewById()</code>的流程相对简单很多</p>
-
 <ol>
 <li>首先获取Window对象，通过该对象得到DecorView对象</li>
 <li>由DecorView对象向下，通过ViewGroup.findViewById()（调用父类View方法） -&gt; ViewGroup.findViewTraversal() -&gt; View.findViewById() -&gt; View.findViewTraversal() 依次遍历整个View树，找到View对象</li>
@@ -394,7 +323,6 @@ protected ViewGroup generateLayout(DecorView decor) {
 
     </div>
 
-    
     <div class="post-copyright">
   <p class="copyright-item">
     <span class="item-title">文章作者</span>
@@ -402,38 +330,32 @@ protected ViewGroup generateLayout(DecorView decor) {
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
-    <span class="item-content">2016-03-08</span>
+    <span class="item-content">
+        2016-03-08
+        
+    </span>
   </p>
   
   
 </div>
-
-    
-    
-
-    <footer class="post-footer">
-      
-
+<footer class="post-footer">
       
       <nav class="post-nav">
-        
-          <a class="prev" href="/post/a-brief-analysis-on-aidl-of-binder/">
+        <a class="prev" href="/post/a-brief-analysis-on-aidl-of-binder/">
             <i class="iconfont icon-left"></i>
             <span class="prev-text nav-default">从AIDL浅析Binder机制</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
-        
-          <a class="next" href="/post/consum-behavior-to-response-coordinatorlayout-scroll/">
+        <a class="next" href="/post/consum-behavior-to-response-coordinatorlayout-scroll/">
             <span class="next-text nav-default">给 CoordinatorLayout 自定义 Behavior</span>
-            <span class="prev-text nav-mobile">下一篇</span>
+            <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
       </nav>
     </footer>
   </article>
         </div>
-        
-  <div id="disqus_thread"></div>
+        <div id="disqus_thread"></div>
     <script type="text/javascript">
     (function() {
       
@@ -447,6 +369,11 @@ protected ViewGroup generateLayout(DecorView decor) {
     })();
     </script>
     <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+  
+
       </div>
     </main>
 
@@ -473,8 +400,7 @@ protected ViewGroup generateLayout(DecorView decor) {
 
   <span class="copyright-year">
     &copy; 
-    
-      2016 - 
+    2016 - 
     2019
     <span class="heart">
       <i class="iconfont icon-heart"></i>
@@ -488,14 +414,12 @@ protected ViewGroup generateLayout(DecorView decor) {
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
-<script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script>
-<script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script>window.sequenceDiagramsOptions = simple;</script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+<script type="text/javascript" src="/dist/even.26188efa.min.js"></script>
 
 
 <script type="application/javascript">
@@ -503,7 +427,7 @@ var doNotTrack = false;
 if (!doNotTrack) {
 	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
 	ga('create', 'UA-106569198-1', 'auto');
-	
+	ga('set', 'anonymizeIp', true);
 	ga('send', 'pageview');
 }
 </script>

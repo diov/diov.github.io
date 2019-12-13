@@ -11,7 +11,8 @@
         "from_xml_to_view.md", 
         "consum-html-pattern.md", 
         "a-brief-analysis-on-aidl-of-binder.md", 
-        "knowledge-about-onmeasure-from-listview-height-problem.md"
+        "knowledge-about-onmeasure-from-listview-height-problem.md", 
+        "tips-for-golang-proxy-for-android.md"
     ], 
     "__positions": {
         "from-hexo-to-hugo.md": 7, 
@@ -22,10 +23,11 @@
         "a-practice-of-memory-leak.md": 2, 
         "analisis-of-touchevent-in-android.md": 6, 
         "view-background-anylysis-1.md": 5, 
+        "git-flow-based-on-phabricator.md": 3, 
         "a-brief-analysis-on-aidl-of-binder.md": 11, 
-        "consum-behavior-to-response-coordinatorlayout-scroll.md": 4, 
+        "tips-for-golang-proxy-for-android.md": 13, 
         "knowledge-about-onmeasure-from-listview-height-problem.md": 12, 
-        "git-flow-based-on-phabricator.md": 3
+        "consum-behavior-to-response-coordinatorlayout-scroll.md": 4
     }, 
     "__raw_positions": {
         "from-hexo-to-hugo.md": 7, 
@@ -33,6 +35,7 @@
         "from_xml_to_view.md": 9, 
         "enable-h264-codec-for-webrtc.md": 1, 
         "setcontentview-findviewbyid.md": 8, 
+        "tips-for-golang-proxy-for-android.md": 13, 
         "a-practice-of-memory-leak.md": 2, 
         "knowledge-about-onmeasure-from-listview-height-problem.md": 12, 
         "view-background-anylysis-1.md": 5, 

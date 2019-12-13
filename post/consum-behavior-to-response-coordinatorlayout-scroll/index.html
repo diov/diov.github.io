@@ -16,20 +16,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="Dio.Ye" /><meta name="description" content="自定义一个响应CoordinatorLayout滑动的Behavior" />
-
-  <meta name="keywords" content="WebRTC, Android, golang" />
+<meta name="author" content="Dio.Ye" /><meta name="description" content="自定义一个响应CoordinatorLayout滑动的Behavior" /><meta name="keywords" content="WebRTC, Android, Golang" />
 
 
 
 
 
 
-<meta name="generator" content="Hugo 0.54.0" />
+<meta name="generator" content="Hugo 0.61.0 with theme even" />
 
 
 <link rel="canonical" href="https://diov.github.io/post/consum-behavior-to-response-coordinatorlayout-scroll/" />
-
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -37,36 +34,25 @@
 <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
 
 
-
-
-
-
-
-<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link href="/dist/even.c2a46f00.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
-
-
 
 
 <meta property="og:title" content="给 CoordinatorLayout 自定义 Behavior" />
 <meta property="og:description" content="自定义一个响应CoordinatorLayout滑动的Behavior" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://diov.github.io/post/consum-behavior-to-response-coordinatorlayout-scroll/" />
-<meta property="article:published_time" content="2016-03-02T20:49:18&#43;08:00"/>
-<meta property="article:modified_time" content="2016-03-02T20:49:18&#43;08:00"/>
-
+<meta property="article:published_time" content="2016-03-02T20:49:18+08:00" />
+<meta property="article:modified_time" content="2016-03-02T20:49:18+08:00" />
 <meta itemprop="name" content="给 CoordinatorLayout 自定义 Behavior">
 <meta itemprop="description" content="自定义一个响应CoordinatorLayout滑动的Behavior">
-
-
 <meta itemprop="datePublished" content="2016-03-02T20:49:18&#43;08:00" />
 <meta itemprop="dateModified" content="2016-03-02T20:49:18&#43;08:00" />
-<meta itemprop="wordCount" content="1629">
+<meta itemprop="wordCount" content="1627">
 
 
 
-<meta itemprop="keywords" content="" />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="给 CoordinatorLayout 自定义 Behavior"/>
 <meta name="twitter:description" content="自定义一个响应CoordinatorLayout滑动的Behavior"/>
 
@@ -136,157 +122,119 @@
       <div class="post-meta">
         <span class="post-time"> 2016-03-02 </span>
         <div class="post-category">
-            
-              <a href="/categories/android/"> Android </a>
-            
-          </div>
-        
+            <a href="/categories/android/"> Android </a>
+            </div>
         
       </div>
     </header>
 
-    
-    
-<div class="post-toc" id="post-toc">
+    <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">文章目录</h2>
-  
   <div class="post-toc-content always-active">
-    <nav id="TableOfContents">
-<ul>
-<li><a href="#从coordinatorlayout开始">从CoordinatorLayout开始</a></li>
-<li><a href="#coordinatorlayout-behavior">CoordinatorLayout.Behavior</a></li>
-<li><a href="#自定义一个beahavior">自定义一个Beahavior</a></li>
-</ul>
-</nav>
+    <nav id="TableOfContents"></nav>
   </div>
 </div>
-
-    
     <div class="post-content">
-      
-
-<p>在Design Support Library中，Google为我们提供了一系列实现Material Design的控件：TextInputLayout、NavigationView、FloatingActionButton等。</p>
-
+      <p>在Design Support Library中，Google为我们提供了一系列实现Material Design的控件：TextInputLayout、NavigationView、FloatingActionButton等。</p>
 <p><a href="http://developer.android.com/reference/android/support/design/widget/CoordinatorLayout.html?utm_campaign=io15&amp;utm_source=dac&amp;utm_medium=blog">CoordinatorLayout</a>，为我们处理触摸事件提供了一种新的方式。在CoordinatorLayout的使用中，最为核心的就是CoordinatorLayout.Behavior这个内部类了</p>
-
-<!-- more -->
-
-<h1 id="从coordinatorlayout开始">从CoordinatorLayout开始</h1>
-
+<!-- raw HTML omitted -->
+<h1 id="coordinatorlayout">从CoordinatorLayout开始</h1>
 <blockquote>
 <p>CoordinatorLayout is a super-powered FrameLayout.
-CoordinatorLayout is intended for two primary use cases:<br />
-  1. As a top-level application decor or chrome layout<br />
-  2. As a container for a specific interaction with one or more child views</p>
+CoordinatorLayout is intended for two primary use cases:</p>
 </blockquote>
-
-<p>从开发者文档的描述中我们可以知道，CoordinatorLayout是一个加强版的FrameLayout，他有两个主要作用：</p>
-
 <ol>
-<li>作为根布局<br /></li>
+<li>As a top-level application decor or chrome layout</li>
+<li>As a container for a specific interaction with one or more child views</li>
+</ol>
+<p>从开发者文档的描述中我们可以知道，CoordinatorLayout是一个加强版的FrameLayout，他有两个主要作用：</p>
+<ol>
+<li>作为根布局</li>
 <li>用于处理一个或多个子控件之间特殊的交互的容器</li>
 </ol>
-
 <p>何为多个子控件之间的交互呢？在之前的博客（<a href="http://diov.github.io/2016/01/17/Analisis_of_Touchevent_in_Android/">ANDROID 触摸事件分发源码</a>）中有提及，在ViewGroup处理触摸事件时，只会在ACTION_DOWN的时候去判断哪一个子控件可以接收处理事件；当某一个子控件可以处理ACTION_DOWN事件时，后续的一系列手势会直接传递到该控件，其他子控件是无法直接响应触摸事件的。</p>
-
 <p>如果我们需要某个子控件监听另一个子控件、或者监听父控件的滚动，并做出响应？通常我们会定义一个接口，通过接口的回调在另一个控件中修改属性。</p>
-
 <p>而现在，可以直接通过CoordinatorLayout对这些控件进行包裹，来处理这些子控件之间的交互</p>
-
-<h1 id="coordinatorlayout-behavior">CoordinatorLayout.Behavior</h1>
-
+<h1 id="coordinatorlayoutbehavior">CoordinatorLayout.Behavior</h1>
 <p>那么，怎样才能在CoordinatorLayout中进行子控件之间的交互呢？这就需要我们来自定义不同的CoordinatorLayout.Behavior了</p>
-
 <p>Behavior是CoordinatorLayout的内部类，在这个类的内部提供了一系列的回调方法:</p>
-
 <ol>
-<li><code>layoutDependsOn()</code>：将两个控件绑定起来，child监听dependency<br /></li>
-<li><code>onDependentViewChanged()</code>：在dependency状态改变时回调<br /></li>
-<li><code>onStartNestedScroll ()</code>：根据返回值来决定是否要处理这次neast scroll<br /></li>
-<li><code>onNestedPreScroll()</code>： 在子控件响应滑动之前回调<br /></li>
-<li><code>onNestedScroll()</code>：子控件响应滑动时回调<br /></li>
+<li><code>layoutDependsOn()</code>：将两个控件绑定起来，child监听dependency</li>
+<li><code>onDependentViewChanged()</code>：在dependency状态改变时回调</li>
+<li><code>onStartNestedScroll ()</code>：根据返回值来决定是否要处理这次neast scroll</li>
+<li><code>onNestedPreScroll()</code>： 在子控件响应滑动之前回调</li>
+<li><code>onNestedScroll()</code>：子控件响应滑动时回调</li>
 <li><code>onNestedPreFling()</code>|<code>onNestedFling()</code>：惯性滑动</li>
 </ol>
-
 <p>主要需要重写的就是这些方法，通常</p>
-
 <ol>
 <li>如果需要让某个控件监听另一个控件的状态，需要重写<code>layoutDependsOn()</code>和<code>onDependentViewChanged()</code>方法</li>
 <li>如果需要让某个控件监听父控件的滑动，需要重写另外四个方法中的部分或全部</li>
 </ol>
-
-<h1 id="自定义一个beahavior">自定义一个Beahavior</h1>
-
+<h1 id="beahavior">自定义一个Beahavior</h1>
 <p>现在我们有这么一个需求，在CoordinatorLayout中有一个RecyclerView和一个FAB，需要在RecyclerView下滑时隐藏FAB、上滑时显示FAB。现在大多数使用Material Design的App都会有这么一个需求</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ScrollBehavior</span> <span style="color:#66d9ef">extends</span> CoordinatorLayout<span style="color:#f92672">.</span><span style="color:#a6e22e">Behavior</span><span style="color:#f92672">&lt;</span>FloatingActionButton<span style="color:#f92672">&gt;</span> <span style="color:#f92672">{</span>
 
-<pre><code class="language-java">public class ScrollBehavior extends CoordinatorLayout.Behavior&lt;FloatingActionButton&gt; {
+    <span style="color:#75715e">// 由于需要在布局文件中使用，所以必须重写这个构造函数
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">ScrollBehavior</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> AttributeSet attrs<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">super</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
 
-    // 由于需要在布局文件中使用，所以必须重写这个构造函数
-    public ScrollBehavior(Context context, AttributeSet attrs) {
-        super();
-    }
+    <span style="color:#a6e22e">@Override</span>
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">onStartNestedScroll</span><span style="color:#f92672">(</span><span style="color:#66d9ef">final</span> CoordinatorLayout coordinatorLayout<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> FloatingActionButton child<span style="color:#f92672">,</span>
+                                       <span style="color:#66d9ef">final</span> View directTargetChild<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> View target<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> nestedScrollAxes<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#75715e">// 对垂直方向的滑动进行处理
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">return</span> nestedScrollAxes <span style="color:#f92672">=</span><span style="color:#f92672">=</span> ViewCompat<span style="color:#f92672">.</span><span style="color:#a6e22e">SCROLL_AXIS_VERTICAL</span> <span style="color:#f92672">|</span><span style="color:#f92672">|</span>
+                <span style="color:#66d9ef">super</span><span style="color:#f92672">.</span><span style="color:#a6e22e">onStartNestedScroll</span><span style="color:#f92672">(</span>coordinatorLayout<span style="color:#f92672">,</span> child<span style="color:#f92672">,</span> directTargetChild<span style="color:#f92672">,</span>
+                        target<span style="color:#f92672">,</span> nestedScrollAxes<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
 
-    @Override
-    public boolean onStartNestedScroll(final CoordinatorLayout coordinatorLayout, final FloatingActionButton child,
-                                       final View directTargetChild, final View target, final int nestedScrollAxes) {
-        // 对垂直方向的滑动进行处理
-        return nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL ||
-                super.onStartNestedScroll(coordinatorLayout, child, directTargetChild,
-                        target, nestedScrollAxes);
-    }
+    <span style="color:#a6e22e">@Override</span>
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onNestedScroll</span><span style="color:#f92672">(</span><span style="color:#66d9ef">final</span> CoordinatorLayout coordinatorLayout<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> FloatingActionButton child<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span>
+    View target<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> dxConsumed<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> dyConsumed<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> dxUnconsumed<span style="color:#f92672">,</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> dyUnconsumed<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">super</span><span style="color:#f92672">.</span><span style="color:#a6e22e">onNestedScroll</span><span style="color:#f92672">(</span>coordinatorLayout<span style="color:#f92672">,</span> child<span style="color:#f92672">,</span> target<span style="color:#f92672">,</span> dxConsumed<span style="color:#f92672">,</span> dyConsumed<span style="color:#f92672">,</span>
+                dxUnconsumed<span style="color:#f92672">,</span> dyUnconsumed<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>dyConsumed <span style="color:#f92672">&gt;</span> 0 <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span>
+                child<span style="color:#f92672">.</span><span style="color:#a6e22e">getVisibility</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">=</span><span style="color:#f92672">=</span> View<span style="color:#f92672">.</span><span style="color:#a6e22e">VISIBLE</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// 用户向下滑，并且FAB是VISIBLE时 -&gt; hide the FAB
+</span><span style="color:#75715e"></span>            child<span style="color:#f92672">.</span><span style="color:#a6e22e">hide</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            child<span style="color:#f92672">.</span><span style="color:#a6e22e">setVisbility</span><span style="color:#f92672">(</span>View<span style="color:#f92672">.</span><span style="color:#a6e22e">GONE</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>dyConsumed <span style="color:#f92672">&lt;</span> 0 <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> child<span style="color:#f92672">.</span><span style="color:#a6e22e">getVisibility</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> View<span style="color:#f92672">.</span><span style="color:#a6e22e">VISIBLE</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// 用户向上滑，并且FAB当前不是VISIBLE时 -&gt; show the FAB
+</span><span style="color:#75715e"></span>            child<span style="color:#f92672">.</span><span style="color:#a6e22e">setVisbility</span><span style="color:#f92672">(</span>View<span style="color:#f92672">.</span><span style="color:#a6e22e">VISIBLE</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            child<span style="color:#f92672">.</span><span style="color:#a6e22e">show</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>自定义Behavior之后，在布局文件中给FloatingActionButton添加上属性，就可以实现想要的UI了</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;android.support.design.widget.CoordinatorLayout</span>
+    <span style="color:#a6e22e">android:id=</span><span style="color:#e6db74">&#34;@+id/main_content&#34;</span>
+    <span style="color:#a6e22e">xmlns:android=</span><span style="color:#e6db74">&#34;http://schemas.android.com/apk/res/android&#34;</span>
+    <span style="color:#a6e22e">xmlns:app=</span><span style="color:#e6db74">&#34;http://schemas.android.com/apk/res-auto&#34;</span>
+    <span style="color:#a6e22e">android:layout_width=</span><span style="color:#e6db74">&#34;match_parent&#34;</span>
+    <span style="color:#a6e22e">android:layout_height=</span><span style="color:#e6db74">&#34;match_parent&#34;</span><span style="color:#f92672">&gt;</span>
 
-    @Override
-    public void onNestedScroll(final CoordinatorLayout coordinatorLayout, final FloatingActionButton child, final
-    View target, final int dxConsumed, final int dyConsumed, final int dxUnconsumed, final int dyUnconsumed) {
-        super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed,
-                dxUnconsumed, dyUnconsumed);
-        if (dyConsumed &gt; 0 &amp;&amp;
-                child.getVisibility() == View.VISIBLE) {
-            // 用户向下滑，并且FAB是VISIBLE时 -&gt; hide the FAB
-            child.hide();
-            child.setVisbility(View.GONE);
-        } else if (dyConsumed &lt; 0 &amp;&amp; child.getVisibility() != View.VISIBLE) {
-            // 用户向上滑，并且FAB当前不是VISIBLE时 -&gt; show the FAB
-            child.setVisbility(View.VISIBLE);
-            child.show();
-        }
-    }
-}
-</code></pre>
+    <span style="color:#f92672">&lt;android.support.v7.widget.RecyclerView</span>
+        <span style="color:#a6e22e">android:id=</span><span style="color:#e6db74">&#34;@+id/recyclerView&#34;</span>
+        <span style="color:#a6e22e">android:layout_width=</span><span style="color:#e6db74">&#34;match_parent&#34;</span>
+        <span style="color:#a6e22e">android:layout_height=</span><span style="color:#e6db74">&#34;match_parent&#34;</span> <span style="color:#f92672">/&gt;</span>
 
-<p>自定义Behavior之后，在布局文件中给FloatingActionButton添加上属性，就可以实现想要的UI了</p>
-
-<pre><code class="language-xml">&lt;android.support.design.widget.CoordinatorLayout
-    android:id=&quot;@+id/main_content&quot;
-    xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
-    xmlns:app=&quot;http://schemas.android.com/apk/res-auto&quot;
-    android:layout_width=&quot;match_parent&quot;
-    android:layout_height=&quot;match_parent&quot;&gt;
-
-    &lt;android.support.v7.widget.RecyclerView
-        android:id=&quot;@+id/recyclerView&quot;
-        android:layout_width=&quot;match_parent&quot;
-        android:layout_height=&quot;match_parent&quot; /&gt;
-
-    &lt;android.support.design.widget.FloatingActionButton
-        android:id=&quot;@+id/fab&quot;
-        android:layout_width=&quot;wrap_content&quot;
-        android:layout_height=&quot;wrap_content&quot;
-        android:layout_gravity=&quot;bottom|right&quot;
-        android:layout_margin=&quot;16dp&quot;
-        android:src=&quot;@android:drawable/ic_dialog_email&quot;
-        app:layout_behavior=&quot;.ScrollBehavior&quot;/&gt;
-&lt;/android.support.design.widget.CoordinatorLayout&gt;
-</code></pre>
-
-<blockquote>
+    <span style="color:#f92672">&lt;android.support.design.widget.FloatingActionButton</span>
+        <span style="color:#a6e22e">android:id=</span><span style="color:#e6db74">&#34;@+id/fab&#34;</span>
+        <span style="color:#a6e22e">android:layout_width=</span><span style="color:#e6db74">&#34;wrap_content&#34;</span>
+        <span style="color:#a6e22e">android:layout_height=</span><span style="color:#e6db74">&#34;wrap_content&#34;</span>
+        <span style="color:#a6e22e">android:layout_gravity=</span><span style="color:#e6db74">&#34;bottom|right&#34;</span>
+        <span style="color:#a6e22e">android:layout_margin=</span><span style="color:#e6db74">&#34;16dp&#34;</span>
+        <span style="color:#a6e22e">android:src=</span><span style="color:#e6db74">&#34;@android:drawable/ic_dialog_email&#34;</span>
+        <span style="color:#a6e22e">app:layout_behavior=</span><span style="color:#e6db74">&#34;.ScrollBehavior&#34;</span><span style="color:#f92672">/&gt;</span>
+<span style="color:#f92672">&lt;/android.support.design.widget.CoordinatorLayout&gt;</span>
+</code></pre></div><blockquote>
 <p>要注意的是，在CoordinatorLayout中，使用ListView或者GridView作为传递滑动的控件是不能响应CoordinatorLayout.Behavior的。
 似乎是因为ListView和GridView中没有添加相关的代码。使用RecyclerView就可以了</p>
 </blockquote>
 
     </div>
 
-    
     <div class="post-copyright">
   <p class="copyright-item">
     <span class="item-title">文章作者</span>
@@ -294,38 +242,32 @@ CoordinatorLayout is intended for two primary use cases:<br />
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
-    <span class="item-content">2016-03-02</span>
+    <span class="item-content">
+        2016-03-02
+        
+    </span>
   </p>
   
   
 </div>
-
-    
-    
-
-    <footer class="post-footer">
-      
-
+<footer class="post-footer">
       
       <nav class="post-nav">
-        
-          <a class="prev" href="/post/setcontentview-findviewbyid/">
+        <a class="prev" href="/post/setcontentview-findviewbyid/">
             <i class="iconfont icon-left"></i>
             <span class="prev-text nav-default">setContentView和findViewById的源码解析</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
-        
-          <a class="next" href="/post/knowledge-about-onmeasure-from-listview-height-problem/">
+        <a class="next" href="/post/knowledge-about-onmeasure-from-listview-height-problem/">
             <span class="next-text nav-default">从ListView的嵌套来理解onMeasure方法</span>
-            <span class="prev-text nav-mobile">下一篇</span>
+            <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
       </nav>
     </footer>
   </article>
         </div>
-        
-  <div id="disqus_thread"></div>
+        <div id="disqus_thread"></div>
     <script type="text/javascript">
     (function() {
       
@@ -339,6 +281,11 @@ CoordinatorLayout is intended for two primary use cases:<br />
     })();
     </script>
     <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+  
+
       </div>
     </main>
 
@@ -365,8 +312,7 @@ CoordinatorLayout is intended for two primary use cases:<br />
 
   <span class="copyright-year">
     &copy; 
-    
-      2016 - 
+    2016 - 
     2019
     <span class="heart">
       <i class="iconfont icon-heart"></i>
@@ -380,14 +326,12 @@ CoordinatorLayout is intended for two primary use cases:<br />
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
-<script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script>
-<script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script>window.sequenceDiagramsOptions = simple;</script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+<script type="text/javascript" src="/dist/even.26188efa.min.js"></script>
 
 
 <script type="application/javascript">
@@ -395,7 +339,7 @@ var doNotTrack = false;
 if (!doNotTrack) {
 	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
 	ga('create', 'UA-106569198-1', 'auto');
-	
+	ga('set', 'anonymizeIp', true);
 	ga('send', 'pageview');
 }
 </script>

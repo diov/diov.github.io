@@ -16,20 +16,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="Dio.Ye" /><meta name="description" content="通过AIDL的使用，来简单分析一下Android中Binder的IPC机制" />
-
-  <meta name="keywords" content="WebRTC, Android, golang" />
+<meta name="author" content="Dio.Ye" /><meta name="description" content="通过AIDL的使用，来简单分析一下Android中Binder的IPC机制" /><meta name="keywords" content="WebRTC, Android, Golang" />
 
 
 
 
 
 
-<meta name="generator" content="Hugo 0.54.0" />
+<meta name="generator" content="Hugo 0.61.0 with theme even" />
 
 
 <link rel="canonical" href="https://diov.github.io/post/a-brief-analysis-on-aidl-of-binder/" />
-
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -37,36 +34,25 @@
 <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
 
 
-
-
-
-
-
-<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link href="/dist/even.c2a46f00.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
-
-
 
 
 <meta property="og:title" content="从AIDL浅析Binder机制" />
 <meta property="og:description" content="通过AIDL的使用，来简单分析一下Android中Binder的IPC机制" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://diov.github.io/post/a-brief-analysis-on-aidl-of-binder/" />
-<meta property="article:published_time" content="2016-03-20T13:38:44&#43;08:00"/>
-<meta property="article:modified_time" content="2016-03-20T13:38:44&#43;08:00"/>
-
+<meta property="article:published_time" content="2016-03-20T13:38:44+08:00" />
+<meta property="article:modified_time" content="2016-03-20T13:38:44+08:00" />
 <meta itemprop="name" content="从AIDL浅析Binder机制">
 <meta itemprop="description" content="通过AIDL的使用，来简单分析一下Android中Binder的IPC机制">
-
-
 <meta itemprop="datePublished" content="2016-03-20T13:38:44&#43;08:00" />
 <meta itemprop="dateModified" content="2016-03-20T13:38:44&#43;08:00" />
-<meta itemprop="wordCount" content="1873">
+<meta itemprop="wordCount" content="1871">
 
 
 
-<meta itemprop="keywords" content="" />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="从AIDL浅析Binder机制"/>
 <meta name="twitter:description" content="通过AIDL的使用，来简单分析一下Android中Binder的IPC机制"/>
 
@@ -136,249 +122,209 @@
       <div class="post-meta">
         <span class="post-time"> 2016-03-20 </span>
         <div class="post-category">
-            
-              <a href="/categories/android/"> Android </a>
-            
-          </div>
-        
+            <a href="/categories/android/"> Android </a>
+            </div>
         
       </div>
     </header>
 
-    
-    
-<div class="post-toc" id="post-toc">
+    <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">文章目录</h2>
-  
   <div class="post-toc-content always-active">
-    <nav id="TableOfContents">
-<ul>
-<li><a href="#aidl的使用">AIDL的使用</a></li>
-<li><a href="#aidl的实现原理">AIDL的实现原理</a></li>
-<li><a href="#binder机制">Binder机制</a></li>
-</ul>
-</nav>
+    <nav id="TableOfContents"></nav>
   </div>
 </div>
-
-    
     <div class="post-content">
-      
-
-<p>AIDL(Android Interface Defination Language),Android接口定义语言。是Google专门为Android中跨进程调用服务所设计的一种接口语言。<br />
+      <p>AIDL(Android Interface Defination Language),Android接口定义语言。是Google专门为Android中跨进程调用服务所设计的一种接口语言。<br>
 其本质是Android中特有的一种IPC机制：Binder机制。通过对AIDL的分析我们也可以对Binder机制有所了解</p>
-
-<!-- more -->
-
-<h1 id="aidl的使用">AIDL的使用</h1>
-
+<!-- raw HTML omitted -->
+<h1 id="aidl">AIDL的使用</h1>
 <p>首先让我们简单回顾一下AIDL是如何使用的。下面的操作基于Android Studio。</p>
-
 <ul>
-<li>创建AIDL文件<br />
+<li>创建AIDL文件<br>
 在Project视图下，在/src/main/下创建与java同级的aidl文件夹，并在该文件夹下创建包名(例:com.example.diov.testaidl),在该文件夹下创建AIDL文件</li>
 </ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#f92672">package</span> com.example.diov.testaidl<span style="color:#f92672">;</span>
 
-<pre><code class="language-java">package com.example.diov.testaidl;
-
-interface TestAidl {
-    void add(int i);
-}
-</code></pre>
-
-<p>在这个接口文件中定义Service需要实现的方法。</p>
-
+<span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">TestAidl</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">add</span><span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>在这个接口文件中定义Service需要实现的方法。</p>
 <ul>
-<li>实现AIDL中的方法<br />
-创建完AIDL文件后，通过Gradle编译。编译成功后可以在/generated/source/debug/{packagename}/下找到生成的TestAidl.java文件。<br />
+<li>实现AIDL中的方法<br>
+创建完AIDL文件后，通过Gradle编译。编译成功后可以在/generated/source/debug/{packagename}/下找到生成的TestAidl.java文件。 <br>
 然后我们回到Service中，实现AIDL接口中定义的方法</li>
 </ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">IRemoteService</span> <span style="color:#66d9ef">extends</span> Service<span style="color:#f92672">{</span>
 
-<pre><code class="language-java">public class IRemoteService extends Service{
+  <span style="color:#75715e">// 绑定服务时将IBinder对象返回出去
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">@Override</span>
+  <span style="color:#66d9ef">public</span> IBinder <span style="color:#a6e22e">onBind</span><span style="color:#f92672">(</span>Intent intent<span style="color:#f92672">)</span><span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> iBinder<span style="color:#f92672">;</span>
+  <span style="color:#f92672">}</span>
 
-  // 绑定服务时将IBinder对象返回出去
-  @Override
-  public IBinder onBind(Intent intent){
-    return iBinder;
-  }
+  <span style="color:#66d9ef">private</span> IBinder iBinder <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> TestAidl<span style="color:#f92672">.</span><span style="color:#a6e22e">Stub</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">{</span>
 
-  private IBinder iBinder = new TestAidl.Stub(){
-
-    @Override
-    public int add(int i, int j) throws RemoteException {
-      // 具体实现
-      return i + j;
-    }
-  }
-}
-</code></pre>
-
-<ul>
-<li>调用AIDL<br />
-在Client里按照第一步，把相同的AIDL文件创建出来。<br />
-绑定Service需要调用<code>bindService(Intent intent, ServiceConnection conn, int flag)</code>方法。<br />
-这里主要是实现ServiceConnection接口，在这个接口的回调方法中就可以得到对应的服务所提供IBinder对象了<br /></li>
+    <span style="color:#a6e22e">@Override</span>
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">add</span><span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i<span style="color:#f92672">,</span> <span style="color:#66d9ef">int</span> j<span style="color:#f92672">)</span> <span style="color:#66d9ef">throws</span> RemoteException <span style="color:#f92672">{</span>
+      <span style="color:#75715e">// 具体实现
+</span><span style="color:#75715e"></span>      <span style="color:#66d9ef">return</span> i <span style="color:#f92672">+</span> j<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+  <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><ul>
+<li>调用AIDL<br>
+在Client里按照第一步，把相同的AIDL文件创建出来。<br>
+绑定Service需要调用<code>bindService(Intent intent, ServiceConnection conn, int flag)</code>方法。<br>
+这里主要是实现ServiceConnection接口，在这个接口的回调方法中就可以得到对应的服务所提供IBinder对象了</li>
 </ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">private</span> TestAidl aidl<span style="color:#f92672">;</span>
+<span style="color:#66d9ef">private</span> ServiceConnection conn <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> ServiceConnection<span style="color:#f92672">{</span>
+  <span style="color:#75715e">// 绑定成功时回调
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">@Override</span>
+  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onServiceConnected</span><span style="color:#f92672">(</span>ComponentName name<span style="color:#f92672">,</span> IBinder service<span style="color:#f92672">)</span><span style="color:#f92672">{</span>
+    <span style="color:#75715e">// 获取到了远程服务
+</span><span style="color:#75715e"></span>    aidl <span style="color:#f92672">=</span> TestAidl<span style="color:#f92672">.</span><span style="color:#a6e22e">Stub</span><span style="color:#f92672">.</span><span style="color:#a6e22e">asInterface</span><span style="color:#f92672">(</span>service<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+  <span style="color:#f92672">}</span>
 
-<pre><code class="language-java">private TestAidl aidl;
-private ServiceConnection conn = new ServiceConnection{
-  // 绑定成功时回调
-  @Override
-  public void onServiceConnected(ComponentName name, IBinder service){
-    // 获取到了远程服务
-    aidl = TestAidl.Stub.asInterface(service);
-  }
-
-  // 解除绑定时回调
-  @Override
-  public void onServiceDisconnected(ComponentName name){
-    aidl = null;
-  }
-}
-</code></pre>
-
-<p>获取到IBinder对象后，就可以实现IPC，调用远程服务了。</p>
-
-<h1 id="aidl的实现原理">AIDL的实现原理</h1>
-
+  <span style="color:#75715e">// 解除绑定时回调
+</span><span style="color:#75715e"></span>  <span style="color:#a6e22e">@Override</span>
+  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">onServiceDisconnected</span><span style="color:#f92672">(</span>ComponentName name<span style="color:#f92672">)</span><span style="color:#f92672">{</span>
+    aidl <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
+  <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>获取到IBinder对象后，就可以实现IPC，调用远程服务了。</p>
+<h1 id="aidl-1">AIDL的实现原理</h1>
 <p>现在来看看AS自动帮我们生成的TestAdil.java这个文件</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#f92672">package</span> com.example.diov.testaidl<span style="color:#f92672">;</span>
 
-<pre><code class="language-java">package com.example.diov.testaidl;
+<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> <span style="color:#a6e22e">TestAidl</span> <span style="color:#66d9ef">extends</span> android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">IInterface</span> <span style="color:#f92672">{</span>
+    <span style="color:#75715e">/**
+</span><span style="color:#75715e">     * 存根类，实现了Binder和TestAidl接口(IInterface接口)
+</span><span style="color:#75715e">     */</span>
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">abstract</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Stub</span> <span style="color:#66d9ef">extends</span> android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Binder</span> <span style="color:#66d9ef">implements</span> com<span style="color:#f92672">.</span><span style="color:#a6e22e">example</span><span style="color:#f92672">.</span><span style="color:#a6e22e">dio_v</span><span style="color:#f92672">.</span><span style="color:#a6e22e">materialdemo</span><span style="color:#f92672">.</span><span style="color:#a6e22e">TestAidl</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> java<span style="color:#f92672">.</span><span style="color:#a6e22e">lang</span><span style="color:#f92672">.</span><span style="color:#a6e22e">String</span> DESCRIPTOR <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;com.example.dio_v.materialdemo.TestAidl&#34;</span><span style="color:#f92672">;</span>
 
-public interface TestAidl extends android.os.IInterface {
-    /**
-     * 存根类，实现了Binder和TestAidl接口(IInterface接口)
-     */
-    public static abstract class Stub extends android.os.Binder implements com.example.dio_v.materialdemo.TestAidl {
-        private static final java.lang.String DESCRIPTOR = &quot;com.example.dio_v.materialdemo.TestAidl&quot;;
+        <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">Stub</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">attachInterface</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> DESCRIPTOR<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
 
-        public Stub() {
-            this.attachInterface(this, DESCRIPTOR);
-        }
+        <span style="color:#75715e">/**
+</span><span style="color:#75715e">         * 将IBinder对象转换成com.example.diov.testaidl.TestAidl接口,
+</span><span style="color:#75715e">         * 如果需要的话生成一个代理.
+</span><span style="color:#75715e">         */</span>
+        <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> com<span style="color:#f92672">.</span><span style="color:#a6e22e">example</span><span style="color:#f92672">.</span><span style="color:#a6e22e">dio_v</span><span style="color:#f92672">.</span><span style="color:#a6e22e">materialdemo</span><span style="color:#f92672">.</span><span style="color:#a6e22e">TestAidl</span> <span style="color:#a6e22e">asInterface</span><span style="color:#f92672">(</span>android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">IBinder</span> obj<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">(</span>obj <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span>
+            android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">IInterface</span> iin <span style="color:#f92672">=</span> obj<span style="color:#f92672">.</span><span style="color:#a6e22e">queryLocalInterface</span><span style="color:#f92672">(</span>DESCRIPTOR<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">(</span><span style="color:#f92672">(</span>iin <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> <span style="color:#f92672">(</span>iin <span style="color:#66d9ef">instanceof</span> com<span style="color:#f92672">.</span><span style="color:#a6e22e">example</span><span style="color:#f92672">.</span><span style="color:#a6e22e">dio_v</span><span style="color:#f92672">.</span><span style="color:#a6e22e">materialdemo</span><span style="color:#f92672">.</span><span style="color:#a6e22e">TestAidl</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">return</span> <span style="color:#f92672">(</span><span style="color:#f92672">(</span>com<span style="color:#f92672">.</span><span style="color:#a6e22e">example</span><span style="color:#f92672">.</span><span style="color:#a6e22e">dio_v</span><span style="color:#f92672">.</span><span style="color:#a6e22e">materialdemo</span><span style="color:#f92672">.</span><span style="color:#a6e22e">TestAidl</span><span style="color:#f92672">)</span> iin<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span>
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> com<span style="color:#f92672">.</span><span style="color:#a6e22e">example</span><span style="color:#f92672">.</span><span style="color:#a6e22e">dio_v</span><span style="color:#f92672">.</span><span style="color:#a6e22e">materialdemo</span><span style="color:#f92672">.</span><span style="color:#a6e22e">TestAidl</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Stub</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Proxy</span><span style="color:#f92672">(</span>obj<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
 
-        /**
-         * 将IBinder对象转换成com.example.diov.testaidl.TestAidl接口,
-         * 如果需要的话生成一个代理.
-         */
-        public static com.example.dio_v.materialdemo.TestAidl asInterface(android.os.IBinder obj) {
-            if ((obj == null)) {
-                return null;
-            }
-            android.os.IInterface iin = obj.queryLocalInterface(DESCRIPTOR);
-            if (((iin != null) &amp;&amp; (iin instanceof com.example.dio_v.materialdemo.TestAidl))) {
-                return ((com.example.dio_v.materialdemo.TestAidl) iin);
-            }
-            return new com.example.dio_v.materialdemo.TestAidl.Stub.Proxy(obj);
-        }
+        <span style="color:#a6e22e">@Override</span>
+        <span style="color:#66d9ef">public</span> android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">IBinder</span> <span style="color:#a6e22e">asBinder</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
 
-        @Override
-        public android.os.IBinder asBinder() {
-            return this;
-        }
+        <span style="color:#75715e">// 当Client调用Service时，获取代理类发送过来的数据
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">@Override</span>
+        <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">onTransact</span><span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> code<span style="color:#f92672">,</span> android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Parcel</span> data<span style="color:#f92672">,</span> android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Parcel</span> reply<span style="color:#f92672">,</span> <span style="color:#66d9ef">int</span> flags<span style="color:#f92672">)</span> <span style="color:#66d9ef">throws</span>
+                android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">RemoteException</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">switch</span> <span style="color:#f92672">(</span>code<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">case</span> INTERFACE_TRANSACTION<span style="color:#f92672">:</span> <span style="color:#f92672">{</span>
+                    reply<span style="color:#f92672">.</span><span style="color:#a6e22e">writeString</span><span style="color:#f92672">(</span>DESCRIPTOR<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+                <span style="color:#f92672">}</span>
+                <span style="color:#66d9ef">case</span> TRANSACTION_add<span style="color:#f92672">:</span> <span style="color:#f92672">{</span>
+                    data<span style="color:#f92672">.</span><span style="color:#a6e22e">enforceInterface</span><span style="color:#f92672">(</span>DESCRIPTOR<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    <span style="color:#66d9ef">int</span> _arg0<span style="color:#f92672">;</span>
+                    _arg0 <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span><span style="color:#a6e22e">readInt</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    <span style="color:#66d9ef">int</span> _arg1<span style="color:#f92672">;</span>
+                    _arg1 <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span><span style="color:#a6e22e">readInt</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-        // 当Client调用Service时，获取代理类发送过来的数据
-        @Override
-        public boolean onTransact(int code, android.os.Parcel data, android.os.Parcel reply, int flags) throws
-                android.os.RemoteException {
-            switch (code) {
-                case INTERFACE_TRANSACTION: {
-                    reply.writeString(DESCRIPTOR);
-                    return true;
-                }
-                case TRANSACTION_add: {
-                    data.enforceInterface(DESCRIPTOR);
-                    int _arg0;
-                    _arg0 = data.readInt();
-                    int _arg1;
-                    _arg1 = data.readInt();
+                    <span style="color:#75715e">// 通过子类来实现方法中具体的操作，并将结果通过reply对象返回出去
+</span><span style="color:#75715e"></span>                    <span style="color:#66d9ef">int</span> _result <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">add</span><span style="color:#f92672">(</span>_arg0<span style="color:#f92672">,</span> _arg1<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    reply<span style="color:#f92672">.</span><span style="color:#a6e22e">writeNoException</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    reply<span style="color:#f92672">.</span><span style="color:#a6e22e">writeInt</span><span style="color:#f92672">(</span>_result<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+                <span style="color:#f92672">}</span>
+            <span style="color:#f92672">}</span>
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">super</span><span style="color:#f92672">.</span><span style="color:#a6e22e">onTransact</span><span style="color:#f92672">(</span>code<span style="color:#f92672">,</span> data<span style="color:#f92672">,</span> reply<span style="color:#f92672">,</span> flags<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
 
-                    // 通过子类来实现方法中具体的操作，并将结果通过reply对象返回出去
-                    int _result = this.add(_arg0, _arg1);
-                    reply.writeNoException();
-                    reply.writeInt(_result);
-                    return true;
-                }
-            }
-            return super.onTransact(code, data, reply, flags);
-        }
+        <span style="color:#75715e">// 代理类，实现了TestAidl接口(IInterface接口)
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Proxy</span> <span style="color:#66d9ef">implements</span> com<span style="color:#f92672">.</span><span style="color:#a6e22e">example</span><span style="color:#f92672">.</span><span style="color:#a6e22e">dio_v</span><span style="color:#f92672">.</span><span style="color:#a6e22e">materialdemo</span><span style="color:#f92672">.</span><span style="color:#a6e22e">TestAidl</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">private</span> android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">IBinder</span> mRemote<span style="color:#f92672">;</span>
 
-        // 代理类，实现了TestAidl接口(IInterface接口)
-        private static class Proxy implements com.example.dio_v.materialdemo.TestAidl {
-            private android.os.IBinder mRemote;
+            Proxy<span style="color:#f92672">(</span>android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">IBinder</span> remote<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                mRemote <span style="color:#f92672">=</span> remote<span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span>
 
-            Proxy(android.os.IBinder remote) {
-                mRemote = remote;
-            }
+            <span style="color:#a6e22e">@Override</span>
+            <span style="color:#66d9ef">public</span> android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">IBinder</span> <span style="color:#a6e22e">asBinder</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">return</span> mRemote<span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span>
 
-            @Override
-            public android.os.IBinder asBinder() {
-                return mRemote;
-            }
+            <span style="color:#66d9ef">public</span> java<span style="color:#f92672">.</span><span style="color:#a6e22e">lang</span><span style="color:#f92672">.</span><span style="color:#a6e22e">String</span> <span style="color:#a6e22e">getInterfaceDescriptor</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">return</span> DESCRIPTOR<span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span>
 
-            public java.lang.String getInterfaceDescriptor() {
-                return DESCRIPTOR;
-            }
+            <span style="color:#a6e22e">@Override</span>
+            <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">add</span><span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i<span style="color:#f92672">,</span> <span style="color:#66d9ef">int</span> j<span style="color:#f92672">)</span> <span style="color:#66d9ef">throws</span> android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">RemoteException</span> <span style="color:#f92672">{</span>
+                android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Parcel</span> _data <span style="color:#f92672">=</span> android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Parcel</span><span style="color:#f92672">.</span><span style="color:#a6e22e">obtain</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Parcel</span> _reply <span style="color:#f92672">=</span> android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">Parcel</span><span style="color:#f92672">.</span><span style="color:#a6e22e">obtain</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                <span style="color:#66d9ef">int</span> _result<span style="color:#f92672">;</span>
+                <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+                    <span style="color:#75715e">// 通过序列化将参数发送
+</span><span style="color:#75715e"></span>                    _data<span style="color:#f92672">.</span><span style="color:#a6e22e">writeInterfaceToken</span><span style="color:#f92672">(</span>DESCRIPTOR<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    _data<span style="color:#f92672">.</span><span style="color:#a6e22e">writeInt</span><span style="color:#f92672">(</span>i<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    _data<span style="color:#f92672">.</span><span style="color:#a6e22e">writeInt</span><span style="color:#f92672">(</span>j<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-            @Override
-            public int add(int i, int j) throws android.os.RemoteException {
-                android.os.Parcel _data = android.os.Parcel.obtain();
-                android.os.Parcel _reply = android.os.Parcel.obtain();
-                int _result;
-                try {
-                    // 通过序列化将参数发送
-                    _data.writeInterfaceToken(DESCRIPTOR);
-                    _data.writeInt(i);
-                    _data.writeInt(j);
+                    <span style="color:#75715e">// 通过Framework将序列化后的参数发送给IBinder对象
+</span><span style="color:#75715e"></span>                    mRemote<span style="color:#f92672">.</span><span style="color:#a6e22e">transact</span><span style="color:#f92672">(</span>Stub<span style="color:#f92672">.</span><span style="color:#a6e22e">TRANSACTION_add</span><span style="color:#f92672">,</span> _data<span style="color:#f92672">,</span> _reply<span style="color:#f92672">,</span> 0<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    _reply<span style="color:#f92672">.</span><span style="color:#a6e22e">readException</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-                    // 通过Framework将序列化后的参数发送给IBinder对象
-                    mRemote.transact(Stub.TRANSACTION_add, _data, _reply, 0);
-                    _reply.readException();
+                    <span style="color:#75715e">// 通过返回的reply将Service返回的结果解析出来
+</span><span style="color:#75715e"></span>                    _result <span style="color:#f92672">=</span> _reply<span style="color:#f92672">.</span><span style="color:#a6e22e">readInt</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                <span style="color:#f92672">}</span> <span style="color:#66d9ef">finally</span> <span style="color:#f92672">{</span>
+                    _reply<span style="color:#f92672">.</span><span style="color:#a6e22e">recycle</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    _data<span style="color:#f92672">.</span><span style="color:#a6e22e">recycle</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                <span style="color:#f92672">}</span>
+                <span style="color:#66d9ef">return</span> _result<span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span>
+        <span style="color:#f92672">}</span>
 
-                    // 通过返回的reply将Service返回的结果解析出来
-                    _result = _reply.readInt();
-                } finally {
-                    _reply.recycle();
-                    _data.recycle();
-                }
-                return _result;
-            }
-        }
+        <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> TRANSACTION_add <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">IBinder</span><span style="color:#f92672">.</span><span style="color:#a6e22e">FIRST_CALL_TRANSACTION</span> <span style="color:#f92672">+</span> 0<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
 
-        static final int TRANSACTION_add = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
-    }
-
-    // 接口中的方法
-    public int add(int i, int j) throws android.os.RemoteException;
-}
-</code></pre>
-
-<ol>
-<li>在Client中绑定Service，会通过<code>TestAdil.Stub.asInterface()</code>方法去转换返回的IBinder对象(Stub继承的Binder类是IBinder接口的实现类),得到的是一个Proxy类对象<br /></li>
-<li>Proxy类将参数序列化之后，通过Framework将参数发送给<code>Service.onBind()</code>返回的IBinder对象<br /></li>
-<li>Service中返回的IBinder对象(Stub对象)，通过具体实现来完成对参数的操作，并且将返回值封装在一个Parcel对象中<br /></li>
-<li>Framework层将封装后的Parcel对象再返回给Proxy对象<br /></li>
-<li>Proxy对象从Parcel对象中获取返回值<br /></li>
+    <span style="color:#75715e">// 接口中的方法
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">add</span><span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i<span style="color:#f92672">,</span> <span style="color:#66d9ef">int</span> j<span style="color:#f92672">)</span> <span style="color:#66d9ef">throws</span> android<span style="color:#f92672">.</span><span style="color:#a6e22e">os</span><span style="color:#f92672">.</span><span style="color:#a6e22e">RemoteException</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><ol>
+<li>在Client中绑定Service，会通过<code>TestAdil.Stub.asInterface()</code>方法去转换返回的IBinder对象(Stub继承的Binder类是IBinder接口的实现类),得到的是一个Proxy类对象</li>
+<li>Proxy类将参数序列化之后，通过Framework将参数发送给<code>Service.onBind()</code>返回的IBinder对象</li>
+<li>Service中返回的IBinder对象(Stub对象)，通过具体实现来完成对参数的操作，并且将返回值封装在一个Parcel对象中</li>
+<li>Framework层将封装后的Parcel对象再返回给Proxy对象</li>
+<li>Proxy对象从Parcel对象中获取返回值</li>
 </ol>
-
-<h1 id="binder机制">Binder机制</h1>
-
+<h1 id="binder">Binder机制</h1>
 <p>其实在Binder机制中存在一个重要的角色，ServiceManager，他是Service和Client中IPC交互的重要一环。ServiceManager负责在Framework层将参数传递、返回Proxy对象等等</p>
-
 <p>而在Client，并不是真正持有了Service中的对象，而是通过ServiceManager，借助Proxy对象来完成跨进程通信。所以说Binder机制使用的其实就是/代理模式/。</p>
-
 <p>对于Binder机制，我也还只是对概念有初步的了解。想要深入了解Binder机制，还需要继续学习。</p>
-
-<hr />
-
+<hr>
 <blockquote>
-<p>资料推荐：
-  1. <a href="http://blog.csdn.net/universus/article/details/6211589">Binder设计与实现</a>
-  2. <a href="http://blog.csdn.net/luoshengyang/article/details/6618363">Android进程间通信（IPC）机制Binder简要介绍和学习计划</a></p>
+<p>资料推荐：</p>
 </blockquote>
+<ol>
+<li><a href="http://blog.csdn.net/universus/article/details/6211589">Binder设计与实现</a></li>
+<li><a href="http://blog.csdn.net/luoshengyang/article/details/6618363">Android进程间通信（IPC）机制Binder简要介绍和学习计划</a></li>
+</ol>
 
     </div>
 
-    
     <div class="post-copyright">
   <p class="copyright-item">
     <span class="item-title">文章作者</span>
@@ -386,38 +332,32 @@ public interface TestAidl extends android.os.IInterface {
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
-    <span class="item-content">2016-03-20</span>
+    <span class="item-content">
+        2016-03-20
+        
+    </span>
   </p>
   
   
 </div>
-
-    
-    
-
-    <footer class="post-footer">
-      
-
+<footer class="post-footer">
       
       <nav class="post-nav">
-        
-          <a class="prev" href="/post/consum-html-pattern/">
+        <a class="prev" href="/post/consum-html-pattern/">
             <i class="iconfont icon-left"></i>
             <span class="prev-text nav-default">在TextView中自定义HTML样式</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
-        
-          <a class="next" href="/post/setcontentview-findviewbyid/">
+        <a class="next" href="/post/setcontentview-findviewbyid/">
             <span class="next-text nav-default">setContentView和findViewById的源码解析</span>
-            <span class="prev-text nav-mobile">下一篇</span>
+            <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
       </nav>
     </footer>
   </article>
         </div>
-        
-  <div id="disqus_thread"></div>
+        <div id="disqus_thread"></div>
     <script type="text/javascript">
     (function() {
       
@@ -431,6 +371,11 @@ public interface TestAidl extends android.os.IInterface {
     })();
     </script>
     <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+  
+
       </div>
     </main>
 
@@ -457,8 +402,7 @@ public interface TestAidl extends android.os.IInterface {
 
   <span class="copyright-year">
     &copy; 
-    
-      2016 - 
+    2016 - 
     2019
     <span class="heart">
       <i class="iconfont icon-heart"></i>
@@ -472,14 +416,12 @@ public interface TestAidl extends android.os.IInterface {
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
-<script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script>
-<script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script>window.sequenceDiagramsOptions = simple;</script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+<script type="text/javascript" src="/dist/even.26188efa.min.js"></script>
 
 
 <script type="application/javascript">
@@ -487,7 +429,7 @@ var doNotTrack = false;
 if (!doNotTrack) {
 	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
 	ga('create', 'UA-106569198-1', 'auto');
-	
+	ga('set', 'anonymizeIp', true);
 	ga('send', 'pageview');
 }
 </script>

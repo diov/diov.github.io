@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Workflow on Meow</title>
+    <title>WorkFlow on Meow</title>
     <link>https://diov.github.io/categories/workflow/</link>
-    <description>Recent content in Workflow on Meow</description>
+    <description>Recent content in WorkFlow on Meow</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Sat, 16 Sep 2017 10:54:24 +0200</lastBuildDate>

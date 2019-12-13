@@ -16,20 +16,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="Dio.Ye" /><meta name="description" content="如何将一个XML布局文件转换为一个View对象" />
-
-  <meta name="keywords" content="WebRTC, Android, golang" />
+<meta name="author" content="Dio.Ye" /><meta name="description" content="如何将一个XML布局文件转换为一个View对象" /><meta name="keywords" content="WebRTC, Android, Golang" />
 
 
 
 
 
 
-<meta name="generator" content="Hugo 0.54.0" />
+<meta name="generator" content="Hugo 0.61.0 with theme even" />
 
 
 <link rel="canonical" href="https://diov.github.io/post/from_xml_to_view/" />
-
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -37,36 +34,25 @@
 <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
 
 
-
-
-
-
-
-<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link href="/dist/even.c2a46f00.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
-
-
 
 
 <meta property="og:title" content="从XML到View" />
 <meta property="og:description" content="如何将一个XML布局文件转换为一个View对象" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://diov.github.io/post/from_xml_to_view/" />
-<meta property="article:published_time" content="2016-02-15T20:56:42&#43;08:00"/>
-<meta property="article:modified_time" content="2016-02-15T20:56:42&#43;08:00"/>
-
+<meta property="article:published_time" content="2016-02-15T20:56:42+08:00" />
+<meta property="article:modified_time" content="2016-02-15T20:56:42+08:00" />
 <meta itemprop="name" content="从XML到View">
 <meta itemprop="description" content="如何将一个XML布局文件转换为一个View对象">
-
-
 <meta itemprop="datePublished" content="2016-02-15T20:56:42&#43;08:00" />
 <meta itemprop="dateModified" content="2016-02-15T20:56:42&#43;08:00" />
-<meta itemprop="wordCount" content="2792">
+<meta itemprop="wordCount" content="2800">
 
 
 
-<meta itemprop="keywords" content="" />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="从XML到View"/>
 <meta name="twitter:description" content="如何将一个XML布局文件转换为一个View对象"/>
 
@@ -136,349 +122,287 @@
       <div class="post-meta">
         <span class="post-time"> 2016-02-15 </span>
         <div class="post-category">
-            
-              <a href="/categories/android/"> Android </a>
-            
-          </div>
-        
+            <a href="/categories/android/"> Android </a>
+            </div>
         
       </div>
     </header>
 
-    
-    
-<div class="post-toc" id="post-toc">
+    <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">文章目录</h2>
-  
   <div class="post-toc-content always-active">
     <nav id="TableOfContents">
-<ul>
-<li><a href="#获取layoutinflater实例">获取LayoutInflater实例</a></li>
-<li><a href="#从xml到view">从XML到View</a>
-<ul>
-<li><a href="#从inflate-开始">从inflate()开始</a></li>
-<li><a href="#createviewfromtag-的实现">createViewFromTag()的实现</a></li>
-<li><a href="#rinflatechildren-的实现">rInflateChildren()的实现</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li><a href="#inflate">从inflate()开始</a></li>
+    <li><a href="#createviewfromtag">createViewFromTag()的实现</a></li>
+    <li><a href="#rinflatechildren">rInflateChildren()的实现</a></li>
+  </ul>
 </nav>
   </div>
 </div>
-
-    
     <div class="post-content">
-      
-
-<p>通常，我们会将应用中需要展示的界面内容都写在XML文件中，通过<code>Activity</code>的<code>setContentView()</code>方法设置。<br />
+      <p>通常，我们会将应用中需要展示的界面内容都写在XML文件中，通过<code>Activity</code>的<code>setContentView()</code>方法设置。<br>
 当我们希望动态的添加一个没有被加载的xml布局文件，比如在<code>ViewPager</code>或者是<code>ListView</code>中，就需要使用到<code>View.inflate()</code>方法或者是<code>LayoutInflater</code>这个类。</p>
-
-<!-- more -->
-
-<hr />
-
-<h1 id="获取layoutinflater实例">获取LayoutInflater实例</h1>
-
+<!-- raw HTML omitted -->
+<hr>
+<h1 id="layoutinflater">获取LayoutInflater实例</h1>
 <p>先来看一下<code>View.inflate()</code>方法的实现：</p>
-
-<pre><code class="language-java">public static View inflate(Context context, @LayoutRes int resource, ViewGroup root) {
-    LayoutInflater factory = LayoutInflater.from(context);
-    return factory.inflate(resource, root);
-}
-</code></pre>
-
-<p>实际上是封装了<code>LayoutInflater</code>的<code>from(Context context)</code>方法，并通过获取的<code>LayoutInflater</code>实例来返回<code>View</code>对象</p>
-
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> View <span style="color:#a6e22e">inflate</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">,</span> <span style="color:#a6e22e">@LayoutRes</span> <span style="color:#66d9ef">int</span> resource<span style="color:#f92672">,</span> ViewGroup root<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    LayoutInflater factory <span style="color:#f92672">=</span> LayoutInflater<span style="color:#f92672">.</span><span style="color:#a6e22e">from</span><span style="color:#f92672">(</span>context<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">return</span> factory<span style="color:#f92672">.</span><span style="color:#a6e22e">inflate</span><span style="color:#f92672">(</span>resource<span style="color:#f92672">,</span> root<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>实际上是封装了<code>LayoutInflater</code>的<code>from(Context context)</code>方法，并通过获取的<code>LayoutInflater</code>实例来返回<code>View</code>对象</p>
 <p>那么如何能获取到<code>LayoutInflater</code>对象的实例呢？通常有三种方式：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">LayoutInflater layoutInflater <span style="color:#f92672">=</span> Activity<span style="color:#f92672">.</span><span style="color:#a6e22e">this</span><span style="color:#f92672">.</span><span style="color:#a6e22e">getLayoutInflater</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span> <span style="color:#75715e">// 该方法只能由Activity的实例来调用
+</span><span style="color:#75715e"></span>LayoutInflater layoutInflater <span style="color:#f92672">=</span> LayoutInflater<span style="color:#f92672">.</span><span style="color:#a6e22e">from</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+LayoutInflater layoutInflater <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>LayoutInflater<span style="color:#f92672">)</span> context<span style="color:#f92672">.</span><span style="color:#a6e22e">getSystemService</span><span style="color:#f92672">(</span>Context<span style="color:#f92672">.</span><span style="color:#a6e22e">LAYOUT_INFLATER_SERVICE</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+</code></pre></div><p>第一种方法只能由Activity的实例来调用，内部实际上是调用了<code>Window</code>接口的<code>getLayoutInflater()</code>方法：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> LayoutInflater <span style="color:#a6e22e">getLayoutInflater</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> getWindow<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">.</span><span style="color:#a6e22e">getLayoutInflater</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>具体的实现在<code>PhoneWindow</code>类中，通过<code>LayoutInflater.from(Context context)</code>来返回实例</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#a6e22e">PhoneWindow</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">super</span><span style="color:#f92672">(</span>context<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    mLayoutInflater <span style="color:#f92672">=</span> LayoutInflater<span style="color:#f92672">.</span><span style="color:#a6e22e">from</span><span style="color:#f92672">(</span>context<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
 
-<pre><code class="language-java">LayoutInflater layoutInflater = Activity.this.getLayoutInflater(); // 该方法只能由Activity的实例来调用
-LayoutInflater layoutInflater = LayoutInflater.from(Context context);
-LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-</code></pre>
-
-<p>第一种方法只能由Activity的实例来调用，内部实际上是调用了<code>Window</code>接口的<code>getLayoutInflater()</code>方法：</p>
-
-<pre><code class="language-java">public LayoutInflater getLayoutInflater() {
-    return getWindow().getLayoutInflater();
-}
-</code></pre>
-
-<p>具体的实现在<code>PhoneWindow</code>类中，通过<code>LayoutInflater.from(Context context)</code>来返回实例</p>
-
-<pre><code class="language-java">public PhoneWindow(Context context) {
-    super(context);
-    mLayoutInflater = LayoutInflater.from(context);
-}
-
-public LayoutInflater getLayoutInflater() {
-    return mLayoutInflater;
-}
-</code></pre>
-
-<p>第二种方法的实现：</p>
-
-<pre><code class="language-java">public static LayoutInflater from(Context context) {
-    LayoutInflater LayoutInflater =
-            (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    if (LayoutInflater == null) {
-        throw new AssertionError(&quot;LayoutInflater not found.&quot;);
-    }
-    return LayoutInflater;
-}
-</code></pre>
-
-<p>所以三种方法实际上是以同样的代码来实现的。</p>
-
-<h1 id="从xml到view">从XML到View</h1>
-
+<span style="color:#66d9ef">public</span> LayoutInflater <span style="color:#a6e22e">getLayoutInflater</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> mLayoutInflater<span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>第二种方法的实现：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> LayoutInflater <span style="color:#a6e22e">from</span><span style="color:#f92672">(</span>Context context<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    LayoutInflater LayoutInflater <span style="color:#f92672">=</span>
+            <span style="color:#f92672">(</span>LayoutInflater<span style="color:#f92672">)</span> context<span style="color:#f92672">.</span><span style="color:#a6e22e">getSystemService</span><span style="color:#f92672">(</span>Context<span style="color:#f92672">.</span><span style="color:#a6e22e">LAYOUT_INFLATER_SERVICE</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>LayoutInflater <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> AssertionError<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;LayoutInflater not found.&#34;</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+    <span style="color:#66d9ef">return</span> LayoutInflater<span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>所以三种方法实际上是以同样的代码来实现的。</p>
+<h1 id="xmlview">从XML到View</h1>
 <p>首先明确一下，一般在布局文件中，我们都必须给每一个控件添加两个属性：<code>layout_height</code>和<code>layout_width</code>，通过这两个属性来控制控件的宽高。但是为什么有时候，通过<code>inflate()</code>方法将其转换为View之后，两个属性就不起作用了呢？</p>
-
-<h2 id="从inflate-开始">从inflate()开始</h2>
-
+<h2 id="inflate">从inflate()开始</h2>
 <p>获取到<code>LayoutInflater</code>的实例之后，就可以调用<code>layoutInflater.inflate()</code>方法将XML布局文件转换成View对象了。</p>
-
 <p><code>inflate()</code>方法有多个重载，先来看看这些重载有什么不同：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> View <span style="color:#a6e22e">inflate</span><span style="color:#f92672">(</span><span style="color:#a6e22e">@LayoutRes</span> <span style="color:#66d9ef">int</span> resource<span style="color:#f92672">,</span> <span style="color:#a6e22e">@Nullable</span> ViewGroup root<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> inflate<span style="color:#f92672">(</span>resource<span style="color:#f92672">,</span> root<span style="color:#f92672">,</span> root <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
 
-<pre><code class="language-java">public View inflate(@LayoutRes int resource, @Nullable ViewGroup root) {
-    return inflate(resource, root, root != null);
-}
+<span style="color:#66d9ef">public</span> View <span style="color:#a6e22e">inflate</span><span style="color:#f92672">(</span><span style="color:#a6e22e">@LayoutRes</span> <span style="color:#66d9ef">int</span> resource<span style="color:#f92672">,</span> <span style="color:#a6e22e">@Nullable</span> ViewGroup root<span style="color:#f92672">,</span> <span style="color:#66d9ef">boolean</span> attachToRoot<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">final</span> Resources res <span style="color:#f92672">=</span> getContext<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">.</span><span style="color:#a6e22e">getResources</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-public View inflate(@LayoutRes int resource, @Nullable ViewGroup root, boolean attachToRoot) {
-    final Resources res = getContext().getResources();
+    <span style="color:#66d9ef">final</span> XmlResourceParser parser <span style="color:#f92672">=</span> res<span style="color:#f92672">.</span><span style="color:#a6e22e">getLayout</span><span style="color:#f92672">(</span>resource<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">return</span> inflate<span style="color:#f92672">(</span>parser<span style="color:#f92672">,</span> root<span style="color:#f92672">,</span> attachToRoot<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span> <span style="color:#66d9ef">finally</span> <span style="color:#f92672">{</span>
+        parser<span style="color:#f92672">.</span><span style="color:#a6e22e">close</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>最终这些重载的方法都调用了<code>inflate(XmlPullParser parser, ViewGroup root, boolean attachToRoot)</code>的代码：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">//删掉了一些不关心的代码
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> View <span style="color:#a6e22e">inflate</span><span style="color:#f92672">(</span>XmlPullParser parser<span style="color:#f92672">,</span> <span style="color:#a6e22e">@Nullable</span> ViewGroup root<span style="color:#f92672">,</span> <span style="color:#66d9ef">boolean</span> attachToRoot<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">synchronized</span> <span style="color:#f92672">(</span>mConstructorArgs<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">final</span> Context inflaterContext <span style="color:#f92672">=</span> mContext<span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">final</span> AttributeSet attrs <span style="color:#f92672">=</span> Xml<span style="color:#f92672">.</span><span style="color:#a6e22e">asAttributeSet</span><span style="color:#f92672">(</span>parser<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        Context lastContext <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>Context<span style="color:#f92672">)</span> mConstructorArgs<span style="color:#f92672">[</span>0<span style="color:#f92672">]</span><span style="color:#f92672">;</span>
+        mConstructorArgs<span style="color:#f92672">[</span>0<span style="color:#f92672">]</span> <span style="color:#f92672">=</span> inflaterContext<span style="color:#f92672">;</span>
+        <span style="color:#75715e">// 1. 先将rootView赋值给result
+</span><span style="color:#75715e"></span>        View result <span style="color:#f92672">=</span> root<span style="color:#f92672">;</span>
 
-    final XmlResourceParser parser = res.getLayout(resource);
-    try {
-        return inflate(parser, root, attachToRoot);
-    } finally {
-        parser.close();
-    }
-}
-</code></pre>
+        <span style="color:#75715e">//2. 开始通过Pull解析对XML文件进行解析
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// 解析根节点，从START_TAG开始解析
+</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">int</span> type<span style="color:#f92672">;</span>
+            <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span><span style="color:#f92672">(</span>type <span style="color:#f92672">=</span> parser<span style="color:#f92672">.</span><span style="color:#a6e22e">next</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> XmlPullParser<span style="color:#f92672">.</span><span style="color:#a6e22e">START_TAG</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> type <span style="color:#f92672">!</span><span style="color:#f92672">=</span> XmlPullParser<span style="color:#f92672">.</span><span style="color:#a6e22e">END_DOCUMENT</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#f92672">}</span>
 
-<p>最终这些重载的方法都调用了<code>inflate(XmlPullParser parser, ViewGroup root, boolean attachToRoot)</code>的代码：</p>
+            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>type <span style="color:#f92672">!</span><span style="color:#f92672">=</span> XmlPullParser<span style="color:#f92672">.</span><span style="color:#a6e22e">START_TAG</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> InflateException<span style="color:#f92672">(</span>parser<span style="color:#f92672">.</span><span style="color:#a6e22e">getPositionDescription</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;: No start tag found!&#34;</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span>
 
-<pre><code class="language-java">//删掉了一些不关心的代码
-public View inflate(XmlPullParser parser, @Nullable ViewGroup root, boolean attachToRoot) {
-    synchronized (mConstructorArgs) {
-        final Context inflaterContext = mContext;
-        final AttributeSet attrs = Xml.asAttributeSet(parser);
-        Context lastContext = (Context) mConstructorArgs[0];
-        mConstructorArgs[0] = inflaterContext;
-        // 1. 先将rootView赋值给result
-        View result = root;
+            <span style="color:#66d9ef">final</span> String name <span style="color:#f92672">=</span> parser<span style="color:#f92672">.</span><span style="color:#a6e22e">getName</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-        //2. 开始通过Pull解析对XML文件进行解析
-        try {
-            // 解析根节点，从START_TAG开始解析
-            int type;
-            while ((type = parser.next()) != XmlPullParser.START_TAG &amp;&amp; type != XmlPullParser.END_DOCUMENT) {
-            }
+            <span style="color:#75715e">// XML根标签为&lt;merge&gt;，优化XML时使用
+</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>TAG_MERGE<span style="color:#f92672">.</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span>name<span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>root <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">|</span><span style="color:#f92672">|</span> <span style="color:#f92672">!</span>attachToRoot<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                    <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> InflateException<span style="color:#f92672">(</span><span style="color:#e6db74">&#34;&lt;merge /&gt; can be used only with a valid &#34;</span>
+                            <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;ViewGroup root and attachToRoot=true&#34;</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                <span style="color:#f92672">}</span>
 
-            if (type != XmlPullParser.START_TAG) {
-                throw new InflateException(parser.getPositionDescription() + &quot;: No start tag found!&quot;);
-            }
+                rInflate<span style="color:#f92672">(</span>parser<span style="color:#f92672">,</span> root<span style="color:#f92672">,</span> inflaterContext<span style="color:#f92672">,</span> attrs<span style="color:#f92672">,</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+                <span style="color:#75715e">// 将XML文件的根节点转化为View对象，赋值给temp
+</span><span style="color:#75715e"></span>                <span style="color:#66d9ef">final</span> View temp <span style="color:#f92672">=</span> createViewFromTag<span style="color:#f92672">(</span>root<span style="color:#f92672">,</span> name<span style="color:#f92672">,</span> inflaterContext<span style="color:#f92672">,</span> attrs<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-            final String name = parser.getName();
+                ViewGroup<span style="color:#f92672">.</span><span style="color:#a6e22e">LayoutParams</span> params <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
 
-            // XML根标签为&lt;merge&gt;，优化XML时使用
-            if (TAG_MERGE.equals(name)) {
-                if (root == null || !attachToRoot) {
-                    throw new InflateException(&quot;&lt;merge /&gt; can be used only with a valid &quot;
-                            + &quot;ViewGroup root and attachToRoot=true&quot;);
-                }
+                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>root <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                    <span style="color:#75715e">// 如果root不为null，就根据父控件及XML中配置的属性来生成LayoutParams
+</span><span style="color:#75715e"></span>                    params <span style="color:#f92672">=</span> root<span style="color:#f92672">.</span><span style="color:#a6e22e">generateLayoutParams</span><span style="color:#f92672">(</span>attrs<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">!</span>attachToRoot<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                        <span style="color:#75715e">// 如果不需要将当前View添加到父控件中，就直接设置参数
+</span><span style="color:#75715e"></span>                        temp<span style="color:#f92672">.</span><span style="color:#a6e22e">setLayoutParams</span><span style="color:#f92672">(</span>params<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    <span style="color:#f92672">}</span>
+                <span style="color:#f92672">}</span>
 
-                rInflate(parser, root, inflaterContext, attrs, false);
-            } else {
-                // 将XML文件的根节点转化为View对象，赋值给temp
-                final View temp = createViewFromTag(root, name, inflaterContext, attrs);
+                <span style="color:#75715e">// 依次遍历，将XML中所有的控件转换为View对象
+</span><span style="color:#75715e"></span>                rInflateChildren<span style="color:#f92672">(</span>parser<span style="color:#f92672">,</span> temp<span style="color:#f92672">,</span> attrs<span style="color:#f92672">,</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-                ViewGroup.LayoutParams params = null;
+                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>root <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> attachToRoot<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                    <span style="color:#75715e">// 如果root不为null，并且要将转换后的View对象添加到父控件中，就直接调用addView()方法
+</span><span style="color:#75715e"></span>                    root<span style="color:#f92672">.</span><span style="color:#a6e22e">addView</span><span style="color:#f92672">(</span>temp<span style="color:#f92672">,</span> params<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                <span style="color:#f92672">}</span>
 
-                if (root != null) {
-                    // 如果root不为null，就根据父控件及XML中配置的属性来生成LayoutParams
-                    params = root.generateLayoutParams(attrs);
-                    if (!attachToRoot) {
-                        // 如果不需要将当前View添加到父控件中，就直接设置参数
-                        temp.setLayoutParams(params);
-                    }
-                }
+                <span style="color:#75715e">// 决定返回的View时root(父控件)或者是XML中换换后的控件
+</span><span style="color:#75715e"></span>                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>root <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">|</span><span style="color:#f92672">|</span> <span style="color:#f92672">!</span>attachToRoot<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                    result <span style="color:#f92672">=</span> temp<span style="color:#f92672">;</span>
+                <span style="color:#f92672">}</span>
+            <span style="color:#f92672">}</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span><span style="color:#f92672">(</span>Exception e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+          <span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>
+        <span style="color:#f92672">}</span>
 
-                // 依次遍历，将XML中所有的控件转换为View对象
-                rInflateChildren(parser, temp, attrs, true);
-
-                if (root != null &amp;&amp; attachToRoot) {
-                    // 如果root不为null，并且要将转换后的View对象添加到父控件中，就直接调用addView()方法
-                    root.addView(temp, params);
-                }
-
-                // 决定返回的View时root(父控件)或者是XML中换换后的控件
-                if (root == null || !attachToRoot) {
-                    result = temp;
-                }
-            }
-        } catch(Exception e) {
-          ...
-        }
-
-        // 3. 返回View对象
-        return result;
-    }
-}
-</code></pre>
-
-<p>熟悉整个源码之后，我们再回头来看一看就清晰明了了：</p>
-
+        <span style="color:#75715e">// 3. 返回View对象
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">return</span> result<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>熟悉整个源码之后，我们再回头来看一看就清晰明了了：</p>
 <ol>
 <li><code>inflate(resource, null)</code> : 如果root为null，那么不论第三个参数存在与否、是否为true，在XML文件中设置的关于布局的属性就都不会生效</li>
 <li><code>inflate(resource, root, false)</code> : 如果root不为null，但是不将XML转换的View添加到root下，那么XML文件中设置的属性生效，返回的是XML的根节点生成的View对象</li>
-<li><code>inflate(resource, root, true)</code> : 如果root不为null，并且将转换的View添加到root下，那么返回的是添加View对象后的root<br /></li>
+<li><code>inflate(resource, root, true)</code> : 如果root不为null，并且将转换的View添加到root下，那么返回的是添加View对象后的root</li>
 </ol>
-
 <p>此外，从源码中我们可以知道，如果在一个XML布局文件中，我们将根节点设置为<code>&lt;merge&gt;</code>的话，必须存在一个父控件将其包裹，否则就会抛出异常</p>
-
-<h2 id="createviewfromtag-的实现">createViewFromTag()的实现</h2>
-
+<h2 id="createviewfromtag">createViewFromTag()的实现</h2>
 <p>在<code>inflate()</code>中，是通过<code>createViewFromTag()</code>将XML中的标签转换为一个View对象的，那么他是如何实现的呢？</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 删掉了一些不关心的代码
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">private</span> View <span style="color:#a6e22e">createViewFromTag</span><span style="color:#f92672">(</span>View parent<span style="color:#f92672">,</span> String name<span style="color:#f92672">,</span> Context context<span style="color:#f92672">,</span> AttributeSet attrs<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> createViewFromTag<span style="color:#f92672">(</span>parent<span style="color:#f92672">,</span> name<span style="color:#f92672">,</span> context<span style="color:#f92672">,</span> attrs<span style="color:#f92672">,</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
 
-<pre><code class="language-java">// 删掉了一些不关心的代码
-private View createViewFromTag(View parent, String name, Context context, AttributeSet attrs) {
-    return createViewFromTag(parent, name, context, attrs, false);
-}
+View <span style="color:#a6e22e">createViewFromTag</span><span style="color:#f92672">(</span>View parent<span style="color:#f92672">,</span> String name<span style="color:#f92672">,</span> Context context<span style="color:#f92672">,</span> AttributeSet attrs<span style="color:#f92672">,</span> <span style="color:#66d9ef">boolean</span> ignoreThemeAttr<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#75715e">// 在布局文件中我们可以将标签设置为&lt;view&gt;，通过class属性设置具体的控件
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>name<span style="color:#f92672">.</span><span style="color:#a6e22e">equals</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;view&#34;</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            name <span style="color:#f92672">=</span> attrs<span style="color:#f92672">.</span><span style="color:#a6e22e">getAttributeValue</span><span style="color:#f92672">(</span><span style="color:#66d9ef">null</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;class&#34;</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
 
-View createViewFromTag(View parent, String name, Context context, AttributeSet attrs, boolean ignoreThemeAttr) {
-        // 在布局文件中我们可以将标签设置为&lt;view&gt;，通过class属性设置具体的控件
-        if (name.equals(&quot;view&quot;)) {
-            name = attrs.getAttributeValue(null, &quot;class&quot;);
-        }
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">!</span>ignoreThemeAttr<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// 从Theme中获取属性
+</span><span style="color:#75715e"></span>        <span style="color:#f92672">}</span>
 
-        if (!ignoreThemeAttr) {
-            // 从Theme中获取属性
-        }
+        <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+            View view<span style="color:#f92672">;</span>
+            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>view <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">final</span> Object lastContext <span style="color:#f92672">=</span> mConstructorArgs<span style="color:#f92672">[</span>0<span style="color:#f92672">]</span><span style="color:#f92672">;</span>
+                mConstructorArgs<span style="color:#f92672">[</span>0<span style="color:#f92672">]</span> <span style="color:#f92672">=</span> context<span style="color:#f92672">;</span>
+                <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+                    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">-</span>1 <span style="color:#f92672">=</span><span style="color:#f92672">=</span> name<span style="color:#f92672">.</span><span style="color:#a6e22e">indexOf</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#39;.&#39;</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                        <span style="color:#75715e">// 如果控件名中不包含&#39;.&#39;，表明是系统的控件
+</span><span style="color:#75715e"></span>                        view <span style="color:#f92672">=</span> onCreateView<span style="color:#f92672">(</span>parent<span style="color:#f92672">,</span> name<span style="color:#f92672">,</span> attrs<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+                        <span style="color:#75715e">// 否则为自定义的控件
+</span><span style="color:#75715e"></span>                        view <span style="color:#f92672">=</span> createView<span style="color:#f92672">(</span>name<span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">,</span> attrs<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    <span style="color:#f92672">}</span>
+                <span style="color:#f92672">}</span> <span style="color:#66d9ef">finally</span> <span style="color:#f92672">{</span>
+                    mConstructorArgs<span style="color:#f92672">[</span>0<span style="color:#f92672">]</span> <span style="color:#f92672">=</span> lastContext<span style="color:#f92672">;</span>
+                <span style="color:#f92672">}</span>
+            <span style="color:#f92672">}</span>
 
-        try {
-            View view;
-            if (view == null) {
-                final Object lastContext = mConstructorArgs[0];
-                mConstructorArgs[0] = context;
-                try {
-                    if (-1 == name.indexOf('.')) {
-                        // 如果控件名中不包含'.'，表明是系统的控件
-                        view = onCreateView(parent, name, attrs);
-                    } else {
-                        // 否则为自定义的控件
-                        view = createView(name, null, attrs);
-                    }
-                } finally {
-                    mConstructorArgs[0] = lastContext;
-                }
-            }
+            <span style="color:#66d9ef">return</span> view<span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>分别调用了<code>onCreateView()</code>和<code>createView()</code>方法，而最终调用的是<code>createView(String name, String prefix, AttributeSet attrs)</code>中的代码：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 删掉了一些不关心的代码
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">protected</span> View <span style="color:#a6e22e">onCreateView</span><span style="color:#f92672">(</span>View parent<span style="color:#f92672">,</span> String name<span style="color:#f92672">,</span> AttributeSet attrs<span style="color:#f92672">)</span>
+        <span style="color:#66d9ef">throws</span> ClassNotFoundException <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> onCreateView<span style="color:#f92672">(</span>name<span style="color:#f92672">,</span> attrs<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
 
-            return view;
-        } catch (Exception e) {
-            ...
-        }
-    }
-</code></pre>
+<span style="color:#66d9ef">protected</span> View <span style="color:#a6e22e">onCreateView</span><span style="color:#f92672">(</span>String name<span style="color:#f92672">,</span> AttributeSet attrs<span style="color:#f92672">)</span>
+        <span style="color:#66d9ef">throws</span> ClassNotFoundException <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> createView<span style="color:#f92672">(</span>name<span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;android.view.&#34;</span><span style="color:#f92672">,</span> attrs<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
 
-<p>分别调用了<code>onCreateView()</code>和<code>createView()</code>方法，而最终调用的是<code>createView(String name, String prefix, AttributeSet attrs)</code>中的代码：</p>
+<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">final</span> View <span style="color:#a6e22e">createView</span><span style="color:#f92672">(</span>String name<span style="color:#f92672">,</span> String prefix<span style="color:#f92672">,</span> AttributeSet attrs<span style="color:#f92672">)</span>
+        <span style="color:#66d9ef">throws</span> ClassNotFoundException<span style="color:#f92672">,</span> InflateException <span style="color:#f92672">{</span>
+    Constructor<span style="color:#f92672">&lt;</span><span style="color:#f92672">?</span> <span style="color:#66d9ef">extends</span> View<span style="color:#f92672">&gt;</span> constructor <span style="color:#f92672">=</span> sConstructorMap<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">(</span>name<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    Class<span style="color:#f92672">&lt;</span><span style="color:#f92672">?</span> <span style="color:#66d9ef">extends</span> View<span style="color:#f92672">&gt;</span> clazz <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
 
-<pre><code class="language-java">// 删掉了一些不关心的代码
-protected View onCreateView(View parent, String name, AttributeSet attrs)
-        throws ClassNotFoundException {
-    return onCreateView(name, attrs);
-}
+    <span style="color:#66d9ef">try</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>constructor <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            clazz <span style="color:#f92672">=</span> mContext<span style="color:#f92672">.</span><span style="color:#a6e22e">getClassLoader</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">.</span><span style="color:#a6e22e">loadClass</span><span style="color:#f92672">(</span>prefix <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">?</span> <span style="color:#f92672">(</span>prefix <span style="color:#f92672">+</span> name<span style="color:#f92672">)</span> <span style="color:#f92672">:</span> name<span style="color:#f92672">)</span><span style="color:#f92672">.</span><span style="color:#a6e22e">asSubclass</span><span style="color:#f92672">(</span>View<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-protected View onCreateView(String name, AttributeSet attrs)
-        throws ClassNotFoundException {
-    return createView(name, &quot;android.view.&quot;, attrs);
-}
+            constructor <span style="color:#f92672">=</span> clazz<span style="color:#f92672">.</span><span style="color:#a6e22e">getConstructor</span><span style="color:#f92672">(</span>mConstructorSignature<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            constructor<span style="color:#f92672">.</span><span style="color:#a6e22e">setAccessible</span><span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            sConstructorMap<span style="color:#f92672">.</span><span style="color:#a6e22e">put</span><span style="color:#f92672">(</span>name<span style="color:#f92672">,</span> constructor<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+            <span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>
+        <span style="color:#f92672">}</span>
 
-public final View createView(String name, String prefix, AttributeSet attrs)
-        throws ClassNotFoundException, InflateException {
-    Constructor&lt;? extends View&gt; constructor = sConstructorMap.get(name);
-    Class&lt;? extends View&gt; clazz = null;
+        Object<span style="color:#f92672">[</span><span style="color:#f92672">]</span> args <span style="color:#f92672">=</span> mConstructorArgs<span style="color:#f92672">;</span>
+        args<span style="color:#f92672">[</span>1<span style="color:#f92672">]</span> <span style="color:#f92672">=</span> attrs<span style="color:#f92672">;</span>
 
-    try {
-        if (constructor == null) {
-            clazz = mContext.getClassLoader().loadClass(prefix != null ? (prefix + name) : name).asSubclass(View.class);
+        <span style="color:#66d9ef">final</span> View view <span style="color:#f92672">=</span> constructor<span style="color:#f92672">.</span><span style="color:#a6e22e">newInstance</span><span style="color:#f92672">(</span>args<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>view <span style="color:#66d9ef">instanceof</span> ViewStub<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">final</span> ViewStub viewStub <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>ViewStub<span style="color:#f92672">)</span> view<span style="color:#f92672">;</span>
+            viewStub<span style="color:#f92672">.</span><span style="color:#a6e22e">setLayoutInflater</span><span style="color:#f92672">(</span>cloneInContext<span style="color:#f92672">(</span><span style="color:#f92672">(</span>Context<span style="color:#f92672">)</span> args<span style="color:#f92672">[</span>0<span style="color:#f92672">]</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+        <span style="color:#66d9ef">return</span> view<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span> <span style="color:#66d9ef">catch</span> <span style="color:#f92672">(</span>Exception e<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
 
-            constructor = clazz.getConstructor(mConstructorSignature);
-            constructor.setAccessible(true);
-            sConstructorMap.put(name, constructor);
-        } else {
-            ...
-        }
-
-        Object[] args = mConstructorArgs;
-        args[1] = attrs;
-
-        final View view = constructor.newInstance(args);
-        if (view instanceof ViewStub) {
-            final ViewStub viewStub = (ViewStub) view;
-            viewStub.setLayoutInflater(cloneInContext((Context) args[0]));
-        }
-        return view;
-    } catch (Exception e) {
-        ...
-    }
-}
-
-static final Class&lt;?&gt;[] mConstructorSignature = new Class[] {Context.class, AttributeSet.class};
-</code></pre>
-
-<p>其实核心代码还是比较简单的，就是通过反射来获取两个参数（mConstructorSignature）的构造器，再调用<code>newInstance()</code>方法构造出需要的<code>View</code>对象。这也是为什么如果我们使用自定义控件时，如果需要通过XML文件来使用必须复写有两个参数的构造函数的原因。</p>
-
-<h2 id="rinflatechildren-的实现">rInflateChildren()的实现</h2>
-
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> Class<span style="color:#f92672">&lt;</span><span style="color:#f92672">?</span><span style="color:#f92672">&gt;</span><span style="color:#f92672">[</span><span style="color:#f92672">]</span> mConstructorSignature <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Class<span style="color:#f92672">[</span><span style="color:#f92672">]</span> <span style="color:#f92672">{</span>Context<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">,</span> AttributeSet<span style="color:#f92672">.</span><span style="color:#a6e22e">class</span><span style="color:#f92672">}</span><span style="color:#f92672">;</span>
+</code></pre></div><p>其实核心代码还是比较简单的，就是通过反射来获取两个参数（mConstructorSignature）的构造器，再调用<code>newInstance()</code>方法构造出需要的<code>View</code>对象。这也是为什么如果我们使用自定义控件时，如果需要通过XML文件来使用必须复写有两个参数的构造函数的原因。</p>
+<h2 id="rinflatechildren">rInflateChildren()的实现</h2>
 <p>通过<code>createViewFromTag()</code>将XML文件中的标签转换为<code>View</code>对象后，就要调用<code>rInflateChildren()</code>将布局文件中其他子控件转换为<code>View</code>：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// 删掉了一些不关心的代码
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">final</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">rInflateChildren</span><span style="color:#f92672">(</span>XmlPullParser parser<span style="color:#f92672">,</span> View parent<span style="color:#f92672">,</span> AttributeSet attrs<span style="color:#f92672">,</span>
+        <span style="color:#66d9ef">boolean</span> finishInflate<span style="color:#f92672">)</span> <span style="color:#66d9ef">throws</span> XmlPullParserException<span style="color:#f92672">,</span> IOException <span style="color:#f92672">{</span>
+    rInflate<span style="color:#f92672">(</span>parser<span style="color:#f92672">,</span> parent<span style="color:#f92672">,</span> parent<span style="color:#f92672">.</span><span style="color:#a6e22e">getContext</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">,</span> attrs<span style="color:#f92672">,</span> finishInflate<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
 
-<pre><code class="language-java">// 删掉了一些不关心的代码
-final void rInflateChildren(XmlPullParser parser, View parent, AttributeSet attrs,
-        boolean finishInflate) throws XmlPullParserException, IOException {
-    rInflate(parser, parent, parent.getContext(), attrs, finishInflate);
-}
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">rInflate</span><span style="color:#f92672">(</span>XmlPullParser parser<span style="color:#f92672">,</span> View parent<span style="color:#f92672">,</span> Context context<span style="color:#f92672">,</span>
+        AttributeSet attrs<span style="color:#f92672">,</span> <span style="color:#66d9ef">boolean</span> finishInflate<span style="color:#f92672">)</span> <span style="color:#66d9ef">throws</span> XmlPullParserException<span style="color:#f92672">,</span> IOException <span style="color:#f92672">{</span>
 
-void rInflate(XmlPullParser parser, View parent, Context context,
-        AttributeSet attrs, boolean finishInflate) throws XmlPullParserException, IOException {
+    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> depth <span style="color:#f92672">=</span> parser<span style="color:#f92672">.</span><span style="color:#a6e22e">getDepth</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">int</span> type<span style="color:#f92672">;</span>
 
-    final int depth = parser.getDepth();
-    int type;
+    <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span><span style="color:#f92672">(</span><span style="color:#f92672">(</span>type <span style="color:#f92672">=</span> parser<span style="color:#f92672">.</span><span style="color:#a6e22e">next</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> XmlPullParser<span style="color:#f92672">.</span><span style="color:#a6e22e">END_TAG</span> <span style="color:#f92672">|</span><span style="color:#f92672">|</span>
+            parser<span style="color:#f92672">.</span><span style="color:#a6e22e">getDepth</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">&gt;</span> depth<span style="color:#f92672">)</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> type <span style="color:#f92672">!</span><span style="color:#f92672">=</span> XmlPullParser<span style="color:#f92672">.</span><span style="color:#a6e22e">END_DOCUMENT</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
 
-    while (((type = parser.next()) != XmlPullParser.END_TAG ||
-            parser.getDepth() &gt; depth) &amp;&amp; type != XmlPullParser.END_DOCUMENT) {
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>type <span style="color:#f92672">!</span><span style="color:#f92672">=</span> XmlPullParser<span style="color:#f92672">.</span><span style="color:#a6e22e">START_TAG</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">continue</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
 
-        if (type != XmlPullParser.START_TAG) {
-            continue;
-        }
+        <span style="color:#66d9ef">final</span> String name <span style="color:#f92672">=</span> parser<span style="color:#f92672">.</span><span style="color:#a6e22e">getName</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-        final String name = parser.getName();
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#f92672">.</span><span style="color:#f92672">.</span><span style="color:#f92672">.</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// 调用 createViewFromTag()
+</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">final</span> View view <span style="color:#f92672">=</span> createViewFromTag<span style="color:#f92672">(</span>parent<span style="color:#f92672">,</span> name<span style="color:#f92672">,</span> context<span style="color:#f92672">,</span> attrs<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            <span style="color:#66d9ef">final</span> ViewGroup viewGroup <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>ViewGroup<span style="color:#f92672">)</span> parent<span style="color:#f92672">;</span>
+            <span style="color:#66d9ef">final</span> ViewGroup<span style="color:#f92672">.</span><span style="color:#a6e22e">LayoutParams</span> params <span style="color:#f92672">=</span> viewGroup<span style="color:#f92672">.</span><span style="color:#a6e22e">generateLayoutParams</span><span style="color:#f92672">(</span>attrs<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            <span style="color:#75715e">// 调用rInflateChildren()
+</span><span style="color:#75715e"></span>            rInflateChildren<span style="color:#f92672">(</span>parser<span style="color:#f92672">,</span> view<span style="color:#f92672">,</span> attrs<span style="color:#f92672">,</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            <span style="color:#75715e">// 将生成的View添加父控件中
+</span><span style="color:#75715e"></span>            viewGroup<span style="color:#f92672">.</span><span style="color:#a6e22e">addView</span><span style="color:#f92672">(</span>view<span style="color:#f92672">,</span> params<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
 
-        if (...) {
-            ...
-        } else {
-            // 调用 createViewFromTag()
-            final View view = createViewFromTag(parent, name, context, attrs);
-            final ViewGroup viewGroup = (ViewGroup) parent;
-            final ViewGroup.LayoutParams params = viewGroup.generateLayoutParams(attrs);
-            // 调用rInflateChildren()
-            rInflateChildren(parser, view, attrs, true);
-            // 将生成的View添加父控件中
-            viewGroup.addView(view, params);
-        }
-    }
-
-    if (finishInflate) {
-        parent.onFinishInflate();
-    }
-}
-</code></pre>
-
-<p>可以清楚的看到，由<code>rInflateChildren</code>开始，形成了一个循环：<code>rInflateChildren</code> -&gt; <code>rInflate</code> -&gt; <code>createViewFromTag</code> -&gt; <code>rInflateChildren</code>。通过循环遍历所有的子控件，直到整个布局文件结束</p>
-
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>finishInflate<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        parent<span style="color:#f92672">.</span><span style="color:#a6e22e">onFinishInflate</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>可以清楚的看到，由<code>rInflateChildren</code>开始，形成了一个循环：<code>rInflateChildren</code> -&gt; <code>rInflate</code> -&gt; <code>createViewFromTag</code> -&gt; <code>rInflateChildren</code>。通过循环遍历所有的子控件，直到整个布局文件结束</p>
 <p>此外，在最后可以看到，当<code>rInflate()</code>方法执行到最后时，会回调<code>parent.onFinishInflate()</code>方法，我们可以在重写这个回调方法获取View的属性</p>
 
     </div>
 
-    
     <div class="post-copyright">
   <p class="copyright-item">
     <span class="item-title">文章作者</span>
@@ -486,38 +410,32 @@ void rInflate(XmlPullParser parser, View parent, Context context,
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
-    <span class="item-content">2016-02-15</span>
+    <span class="item-content">
+        2016-02-15
+        
+    </span>
   </p>
   
   
 </div>
-
-    
-    
-
-    <footer class="post-footer">
-      
-
+<footer class="post-footer">
       
       <nav class="post-nav">
-        
-          <a class="prev" href="/post/knowledge-about-onmeasure-from-listview-height-problem/">
+        <a class="prev" href="/post/knowledge-about-onmeasure-from-listview-height-problem/">
             <i class="iconfont icon-left"></i>
             <span class="prev-text nav-default">从ListView的嵌套来理解onMeasure方法</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
-        
-          <a class="next" href="/post/analisis-of-touchevent-in-android/">
+        <a class="next" href="/post/analisis-of-touchevent-in-android/">
             <span class="next-text nav-default">Android 触摸事件分发源码</span>
-            <span class="prev-text nav-mobile">下一篇</span>
+            <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
       </nav>
     </footer>
   </article>
         </div>
-        
-  <div id="disqus_thread"></div>
+        <div id="disqus_thread"></div>
     <script type="text/javascript">
     (function() {
       
@@ -531,6 +449,11 @@ void rInflate(XmlPullParser parser, View parent, Context context,
     })();
     </script>
     <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+  
+
       </div>
     </main>
 
@@ -557,8 +480,7 @@ void rInflate(XmlPullParser parser, View parent, Context context,
 
   <span class="copyright-year">
     &copy; 
-    
-      2016 - 
+    2016 - 
     2019
     <span class="heart">
       <i class="iconfont icon-heart"></i>
@@ -572,14 +494,12 @@ void rInflate(XmlPullParser parser, View parent, Context context,
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
-<script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script>
-<script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script>window.sequenceDiagramsOptions = simple;</script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+<script type="text/javascript" src="/dist/even.26188efa.min.js"></script>
 
 
 <script type="application/javascript">
@@ -587,7 +507,7 @@ var doNotTrack = false;
 if (!doNotTrack) {
 	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
 	ga('create', 'UA-106569198-1', 'auto');
-	
+	ga('set', 'anonymizeIp', true);
 	ga('send', 'pageview');
 }
 </script>

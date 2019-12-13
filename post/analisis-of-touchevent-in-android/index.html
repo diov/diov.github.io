@@ -16,20 +16,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="Dio.Ye" /><meta name="description" content="对于View中触摸事件分发的源码(android-23)分析" />
-
-  <meta name="keywords" content="WebRTC, Android, golang" />
+<meta name="author" content="Dio.Ye" /><meta name="description" content="对于View中触摸事件分发的源码(android-23)分析" /><meta name="keywords" content="WebRTC, Android, Golang" />
 
 
 
 
 
 
-<meta name="generator" content="Hugo 0.54.0" />
+<meta name="generator" content="Hugo 0.61.0 with theme even" />
 
 
 <link rel="canonical" href="https://diov.github.io/post/analisis-of-touchevent-in-android/" />
-
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -37,36 +34,25 @@
 <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
 
 
-
-
-
-
-
-<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link href="/dist/even.c2a46f00.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
-
-
 
 
 <meta property="og:title" content="Android 触摸事件分发源码" />
 <meta property="og:description" content="对于View中触摸事件分发的源码(android-23)分析" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://diov.github.io/post/analisis-of-touchevent-in-android/" />
-<meta property="article:published_time" content="2016-01-17T19:41:49&#43;08:00"/>
-<meta property="article:modified_time" content="2016-01-17T19:41:49&#43;08:00"/>
-
+<meta property="article:published_time" content="2016-01-17T19:41:49+08:00" />
+<meta property="article:modified_time" content="2016-01-17T19:41:49+08:00" />
 <meta itemprop="name" content="Android 触摸事件分发源码">
 <meta itemprop="description" content="对于View中触摸事件分发的源码(android-23)分析">
-
-
 <meta itemprop="datePublished" content="2016-01-17T19:41:49&#43;08:00" />
 <meta itemprop="dateModified" content="2016-01-17T19:41:49&#43;08:00" />
-<meta itemprop="wordCount" content="5623">
+<meta itemprop="wordCount" content="5598">
 
 
 
-<meta itemprop="keywords" content="" />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Android 触摸事件分发源码"/>
 <meta name="twitter:description" content="对于View中触摸事件分发的源码(android-23)分析"/>
 
@@ -136,243 +122,226 @@
       <div class="post-meta">
         <span class="post-time"> 2016-01-17 </span>
         <div class="post-category">
-            
-              <a href="/categories/android/"> Android </a>
-            
-          </div>
-        
+            <a href="/categories/android/"> Android </a>
+            </div>
         
       </div>
     </header>
 
-    
-    
-<div class="post-toc" id="post-toc">
+    <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">文章目录</h2>
-  
   <div class="post-toc-content always-active">
     <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#viewgroup事件的分发拦截和处理">ViewGroup事件的分发拦截和处理</a>
-<ul>
-<li><a href="#事件分发-dispatchtouchevent">事件分发(dispatchTouchEvent)</a></li>
-<li><a href="#viewgroup中事件的拦截">ViewGroup中事件的拦截</a></li>
-<li><a href="#viewgroup中事件的处理">ViewGroup中事件的处理</a></li>
-</ul></li>
-<li><a href="#view中事件的分发和处理">View中事件的分发和处理</a>
-<ul>
-<li><a href="#事件分发">事件分发</a></li>
-<li><a href="#事件处理">事件处理</a></li>
-</ul></li>
-</ul></li>
-</ul>
+  <ul>
+    <li><a href="#viewgroup">ViewGroup事件的分发拦截和处理</a>
+      <ul>
+        <li><a href="#dispatchtouchevent">事件分发(dispatchTouchEvent)</a></li>
+        <li><a href="#viewgroup-1">ViewGroup中事件的拦截</a></li>
+        <li><a href="#viewgroup-2">ViewGroup中事件的处理</a></li>
+      </ul>
+    </li>
+    <li><a href="#view">View中事件的分发和处理</a>
+      <ul>
+        <li><a href="#heading-6">事件分发</a></li>
+        <li><a href="#heading-9">事件处理</a></li>
+      </ul>
+    </li>
+  </ul>
 </nav>
   </div>
 </div>
-
-    
     <div class="post-content">
-      
-
-<p>参考：<a href="http://trinea.github.io/download/pdf/android/PRE_andevcon_mastering-the-android-touch-system.pdf">Mastering   the Android Touch   System</a></p>
-
+      <p>参考：<a href="http://trinea.github.io/download/pdf/android/PRE_andevcon_mastering-the-android-touch-system.pdf">Mastering	the	Android Touch	System</a></p>
 <p>作为以触摸作为主要交互的系统，触摸事件是我们在写代码时无可避免的。不论是对触摸事件进行响应，还是拦截一些不需要关心的事件，都需要我们对View中触摸事件的分发机制进行了解。</p>
-
-<!-- more -->
-
-<h2 id="viewgroup事件的分发拦截和处理">ViewGroup事件的分发拦截和处理</h2>
-
+<!-- raw HTML omitted -->
+<h2 id="viewgroup">ViewGroup事件的分发拦截和处理</h2>
 <p>触摸事件一般是从Activity开始分发，但是这里我们就跳过Activity，直接从根布局也就是ViewGroup开始了。</p>
-
-<h3 id="事件分发-dispatchtouchevent">事件分发(dispatchTouchEvent)</h3>
-
+<h3 id="dispatchtouchevent">事件分发(dispatchTouchEvent)</h3>
 <ul>
-<li>#### 源码 ####</li>
+<li>
+<h4 id="heading">源码</h4>
+</li>
 </ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">dispatchTouchEvent</span><span style="color:#f92672">(</span>MotionEvent ev<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
 
-<pre><code class="language-java">public boolean dispatchTouchEvent(MotionEvent ev) {
+    <span style="color:#75715e">/*...省略...*/</span>
+    <span style="color:#66d9ef">boolean</span> handled <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>onFilterTouchEventForSecurity<span style="color:#f92672">(</span>ev<span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> action <span style="color:#f92672">=</span> ev<span style="color:#f92672">.</span><span style="color:#a6e22e">getAction</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> actionMasked <span style="color:#f92672">=</span> action <span style="color:#f92672">&amp;</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_MASK</span><span style="color:#f92672">;</span>
 
-    /*...省略...*/
-    boolean handled = false;
-    if (onFilterTouchEventForSecurity(ev)) {
-        final int action = ev.getAction();
-        final int actionMasked = action &amp; MotionEvent.ACTION_MASK;
+        <span style="color:#75715e">/*...省略...*/</span>
+        <span style="color:#75715e">// 1. 将ACTION_DOWN事件作为一系列触摸事件的起始，对事件进行初始化.
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>actionMasked <span style="color:#f92672">=</span><span style="color:#f92672">=</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_DOWN</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// 在开始一系列新的手势时清除之前的所有状态（可能由于app切换、ANR所遗留下来）
+</span><span style="color:#75715e"></span>            <span style="color:#75715e">// 将mFirstTouchTarget重置为null(在clearTouchTargets()中)，并且回收事件
+</span><span style="color:#75715e"></span>            cancelAndClearTouchTargets<span style="color:#f92672">(</span>ev<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            resetTouchState<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span><span style="color:#75715e">// 重置所有的触摸状态
+</span><span style="color:#75715e"></span>        <span style="color:#f92672">}</span>
 
-        /*...省略...*/
-        // 1. 将ACTION_DOWN事件作为一系列触摸事件的起始，对事件进行初始化.
-        if (actionMasked == MotionEvent.ACTION_DOWN) {
-            // 在开始一系列新的手势时清除之前的所有状态（可能由于app切换、ANR所遗留下来）
-            // 将mFirstTouchTarget重置为null(在clearTouchTargets()中)，并且回收事件
-            cancelAndClearTouchTargets(ev);
-            resetTouchState();// 重置所有的触摸状态
-        }
+        <span style="color:#75715e">// 2. 检测是否需要拦截.
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">boolean</span> intercepted<span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>actionMasked <span style="color:#f92672">=</span><span style="color:#f92672">=</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_DOWN</span> <span style="color:#f92672">|</span><span style="color:#f92672">|</span> mFirstTouchTarget <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// 当触摸事件为ACTION_DOWN或者mFirstTouchTarget不为null时（也就是已经找到接受事件并可以接受后续事件的子View）
+</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">boolean</span> disallowIntercept <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>mGroupFlags <span style="color:#f92672">&amp;</span> FLAG_DISALLOW_INTERCEPT<span style="color:#f92672">)</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span>
+            <span style="color:#75715e">// 通过requestDisallowInterceptTouchEvent(boolean disallowIntercept)可以设置ViewGroup是否禁用拦截
+</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">!</span>disallowIntercept<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                <span style="color:#75715e">// 如果没有禁用拦截，那么就调用当前ViewGroup的onInterceptTouchEvent()方法。对是否拦截进行判断
+</span><span style="color:#75715e"></span>                intercepted <span style="color:#f92672">=</span> onInterceptTouchEvent<span style="color:#f92672">(</span>ev<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                ev<span style="color:#f92672">.</span><span style="color:#a6e22e">setAction</span><span style="color:#f92672">(</span>action<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+                <span style="color:#75715e">// 如果禁用拦截，那么直接返回false
+</span><span style="color:#75715e"></span>                intercepted <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// 触摸事件不是初始的ACTION_DOWN事件，并且没有接收后续事件的View控件。ViewGroup会继续拦截触摸事件
+</span><span style="color:#75715e"></span>            intercepted <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
 
-        // 2. 检测是否需要拦截.
-        final boolean intercepted;
-        if (actionMasked == MotionEvent.ACTION_DOWN || mFirstTouchTarget != null) {
-            // 当触摸事件为ACTION_DOWN或者mFirstTouchTarget不为null时（也就是已经找到接受事件并可以接受后续事件的子View）
-            final boolean disallowIntercept = (mGroupFlags &amp; FLAG_DISALLOW_INTERCEPT) != 0;
-            // 通过requestDisallowInterceptTouchEvent(boolean disallowIntercept)可以设置ViewGroup是否禁用拦截
-            if (!disallowIntercept) {
-                // 如果没有禁用拦截，那么就调用当前ViewGroup的onInterceptTouchEvent()方法。对是否拦截进行判断
-                intercepted = onInterceptTouchEvent(ev);
-                ev.setAction(action);
-            } else {
-                // 如果禁用拦截，那么直接返回false
-                intercepted = false;
-            }
-        } else {
-            // 触摸事件不是初始的ACTION_DOWN事件，并且没有接收后续事件的View控件。ViewGroup会继续拦截触摸事件
-            intercepted = true;
-        }
+        <span style="color:#75715e">// 如果对事件进行了拦截，或者已经有一个控件对手势进行处理。那么进行normal的事件分发（这里不太明白）
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>intercepted <span style="color:#f92672">|</span><span style="color:#f92672">|</span> mFirstTouchTarget <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            ev<span style="color:#f92672">.</span><span style="color:#a6e22e">setTargetAccessibilityFocus</span><span style="color:#f92672">(</span><span style="color:#66d9ef">false</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
 
-        // 如果对事件进行了拦截，或者已经有一个控件对手势进行处理。那么进行normal的事件分发（这里不太明白）
-        if (intercepted || mFirstTouchTarget != null) {
-            ev.setTargetAccessibilityFocus(false);
-        }
+        <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">boolean</span> canceled <span style="color:#f92672">=</span> resetCancelNextUpFlag<span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">)</span> <span style="color:#f92672">|</span><span style="color:#f92672">|</span> actionMasked <span style="color:#f92672">=</span><span style="color:#f92672">=</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_CANCEL</span><span style="color:#f92672">;</span>
+        <span style="color:#75715e">// 判断事件是否是ACTION_CANCEL或者之前的手势遗留的
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">boolean</span> split <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>mGroupFlags <span style="color:#f92672">&amp;</span> FLAG_SPLIT_MOTION_EVENTS<span style="color:#f92672">)</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span><span style="color:#75715e">// 判断VIewGroup是否可以分发事件
+</span><span style="color:#75715e"></span>
+        TouchTarget newTouchTarget <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">boolean</span> alreadyDispatchedToNewTouchTarget <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">!</span>canceled <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> <span style="color:#f92672">!</span>intercepted<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// 如果事件不是ACTION_CANCEL并且没有进行拦截
+</span><span style="color:#75715e"></span>
+            View childWithAccessibilityFocus <span style="color:#f92672">=</span> ev<span style="color:#f92672">.</span><span style="color:#a6e22e">isTargetAccessibilityFocus</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">?</span> findChildWithAccessibilityFocus<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
+            <span style="color:#75715e">// 3. 当事件为ACTION_DOWN时进入该方法（另两个条件不太明白）
+</span><span style="color:#75715e"></span>            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>actionMasked <span style="color:#f92672">=</span><span style="color:#f92672">=</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_DOWN</span> <span style="color:#f92672">|</span><span style="color:#f92672">|</span> <span style="color:#f92672">(</span>split <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> actionMasked <span style="color:#f92672">=</span><span style="color:#f92672">=</span> MotionEvent
+                    <span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_POINTER_DOWN</span><span style="color:#f92672">)</span>
+                    <span style="color:#f92672">|</span><span style="color:#f92672">|</span> actionMasked <span style="color:#f92672">=</span><span style="color:#f92672">=</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_HOVER_MOVE</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
 
-        final boolean canceled = resetCancelNextUpFlag(this) || actionMasked == MotionEvent.ACTION_CANCEL;
-        // 判断事件是否是ACTION_CANCEL或者之前的手势遗留的
-        final boolean split = (mGroupFlags &amp; FLAG_SPLIT_MOTION_EVENTS) != 0;// 判断VIewGroup是否可以分发事件
+                <span style="color:#75715e">/*...省略...*/</span>
+                <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> childrenCount <span style="color:#f92672">=</span> mChildrenCount<span style="color:#f92672">;</span>
+                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>newTouchTarget <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> childrenCount <span style="color:#f92672">!</span><span style="color:#f92672">=</span> 0<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                    <span style="color:#75715e">// 获取触摸的位置
+</span><span style="color:#75715e"></span>                    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">float</span> x <span style="color:#f92672">=</span> ev<span style="color:#f92672">.</span><span style="color:#a6e22e">getX</span><span style="color:#f92672">(</span>actionIndex<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">float</span> y <span style="color:#f92672">=</span> ev<span style="color:#f92672">.</span><span style="color:#a6e22e">getY</span><span style="color:#f92672">(</span>actionIndex<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-        TouchTarget newTouchTarget = null;
-        boolean alreadyDispatchedToNewTouchTarget = false;
-        if (!canceled &amp;&amp; !intercepted) {
-            // 如果事件不是ACTION_CANCEL并且没有进行拦截
+                    <span style="color:#75715e">/*...省略...*/</span>
+                    <span style="color:#75715e">// 按照从前到后的顺序遍历子View，找到可以接收事件的子View
+</span><span style="color:#75715e"></span>                    <span style="color:#66d9ef">final</span> View<span style="color:#f92672">[</span><span style="color:#f92672">]</span> children <span style="color:#f92672">=</span> mChildren<span style="color:#f92672">;</span>
+                    <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> childrenCount <span style="color:#f92672">-</span> 1<span style="color:#f92672">;</span> i <span style="color:#f92672">&gt;</span><span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span> i<span style="color:#f92672">-</span><span style="color:#f92672">-</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                        <span style="color:#75715e">// 后添加的View覆盖在最上层，从集合的最后向前遍历
+</span><span style="color:#75715e"></span>                        <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> childIndex <span style="color:#f92672">=</span> customOrder <span style="color:#f92672">?</span> getChildDrawingOrder<span style="color:#f92672">(</span>childrenCount<span style="color:#f92672">,</span> i<span style="color:#f92672">)</span> <span style="color:#f92672">:</span> i<span style="color:#f92672">;</span>
+                        <span style="color:#66d9ef">final</span> View child <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>preorderedList <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">?</span> children<span style="color:#f92672">[</span>childIndex<span style="color:#f92672">]</span> <span style="color:#f92672">:</span> preorderedList<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span>
+                                <span style="color:#f92672">(</span>childIndex<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-            View childWithAccessibilityFocus = ev.isTargetAccessibilityFocus() ? findChildWithAccessibilityFocus(): null;
-            // 3. 当事件为ACTION_DOWN时进入该方法（另两个条件不太明白）
-            if (actionMasked == MotionEvent.ACTION_DOWN || (split &amp;&amp; actionMasked == MotionEvent
-                    .ACTION_POINTER_DOWN)
-                    || actionMasked == MotionEvent.ACTION_HOVER_MOVE) {
+                        <span style="color:#75715e">/*...省略...*/</span>
+                        <span style="color:#75715e">// 如果子View不能接收事件，或者Transformed(不太明白)后的触摸点不在子View中，continue。加速查找
+</span><span style="color:#75715e"></span>                        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">!</span>canViewReceivePointerEvents<span style="color:#f92672">(</span>child<span style="color:#f92672">)</span> <span style="color:#f92672">|</span><span style="color:#f92672">|</span> <span style="color:#f92672">!</span>isTransformedTouchPointInView<span style="color:#f92672">(</span>x<span style="color:#f92672">,</span> y<span style="color:#f92672">,</span> child<span style="color:#f92672">,</span>
+                                <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                            ev<span style="color:#f92672">.</span><span style="color:#a6e22e">setTargetAccessibilityFocus</span><span style="color:#f92672">(</span><span style="color:#66d9ef">false</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                            <span style="color:#66d9ef">continue</span><span style="color:#f92672">;</span>
+                        <span style="color:#f92672">}</span>
 
-                /*...省略...*/
-                final int childrenCount = mChildrenCount;
-                if (newTouchTarget == null &amp;&amp; childrenCount != 0) {
-                    // 获取触摸的位置
-                    final float x = ev.getX(actionIndex);
-                    final float y = ev.getY(actionIndex);
+                        <span style="color:#75715e">// 如果没有可以接收事件的子View就返回null，否则返回子View
+</span><span style="color:#75715e"></span>                        newTouchTarget <span style="color:#f92672">=</span> getTouchTarget<span style="color:#f92672">(</span>child<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>newTouchTarget <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                            <span style="color:#75715e">// 如果已经找到了接收事件的子View，就跳出循环
+</span><span style="color:#75715e"></span>                            newTouchTarget<span style="color:#f92672">.</span><span style="color:#a6e22e">pointerIdBits</span> <span style="color:#f92672">|</span><span style="color:#f92672">=</span> idBitsToAssign<span style="color:#f92672">;</span>
+                            <span style="color:#66d9ef">break</span><span style="color:#f92672">;</span>
+                        <span style="color:#f92672">}</span>
 
-                    /*...省略...*/
-                    // 按照从前到后的顺序遍历子View，找到可以接收事件的子View
-                    final View[] children = mChildren;
-                    for (int i = childrenCount - 1; i &gt;= 0; i--) {
-                        // 后添加的View覆盖在最上层，从集合的最后向前遍历
-                        final int childIndex = customOrder ? getChildDrawingOrder(childrenCount, i) : i;
-                        final View child = (preorderedList == null) ? children[childIndex] : preorderedList.get
-                                (childIndex);
+                        resetCancelNextUpFlag<span style="color:#f92672">(</span>child<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-                        /*...省略...*/
-                        // 如果子View不能接收事件，或者Transformed(不太明白)后的触摸点不在子View中，continue。加速查找
-                        if (!canViewReceivePointerEvents(child) || !isTransformedTouchPointInView(x, y, child,
-                                null)) {
-                            ev.setTargetAccessibilityFocus(false);
-                            continue;
-                        }
+                        <span style="color:#75715e">// 通过dispatchTransformedTouchEvent()方法，递归遍历所有子View。
+</span><span style="color:#75715e"></span>                        <span style="color:#75715e">// 如果返回true，说明事件被子View消费了
+</span><span style="color:#75715e"></span>                        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>dispatchTransformedTouchEvent<span style="color:#f92672">(</span>ev<span style="color:#f92672">,</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">,</span> child<span style="color:#f92672">,</span> idBitsToAssign<span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                            mLastTouchDownTime <span style="color:#f92672">=</span> ev<span style="color:#f92672">.</span><span style="color:#a6e22e">getDownTime</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>preorderedList <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                                <span style="color:#66d9ef">for</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span> j <span style="color:#f92672">&lt;</span> childrenCount<span style="color:#f92672">;</span> j<span style="color:#f92672">+</span><span style="color:#f92672">+</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                                    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>children<span style="color:#f92672">[</span>childIndex<span style="color:#f92672">]</span> <span style="color:#f92672">=</span><span style="color:#f92672">=</span> mChildren<span style="color:#f92672">[</span>j<span style="color:#f92672">]</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                                        mLastTouchDownIndex <span style="color:#f92672">=</span> j<span style="color:#f92672">;</span>
+                                        <span style="color:#66d9ef">break</span><span style="color:#f92672">;</span>
+                                    <span style="color:#f92672">}</span>
+                                <span style="color:#f92672">}</span>
+                            <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+                                mLastTouchDownIndex <span style="color:#f92672">=</span> childIndex<span style="color:#f92672">;</span>
+                            <span style="color:#f92672">}</span>
+                            mLastTouchDownX <span style="color:#f92672">=</span> ev<span style="color:#f92672">.</span><span style="color:#a6e22e">getX</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                            mLastTouchDownY <span style="color:#f92672">=</span> ev<span style="color:#f92672">.</span><span style="color:#a6e22e">getY</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                            <span style="color:#75715e">//将接收并消费ACTION_DOWN事件的子View其赋值给newTouchTarget，作为后续事件的接受者。跳出循环
+</span><span style="color:#75715e"></span>                            newTouchTarget <span style="color:#f92672">=</span> addTouchTarget<span style="color:#f92672">(</span>child<span style="color:#f92672">,</span> idBitsToAssign<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                            alreadyDispatchedToNewTouchTarget <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+                            <span style="color:#66d9ef">break</span><span style="color:#f92672">;</span>
+                        <span style="color:#f92672">}</span>
 
-                        // 如果没有可以接收事件的子View就返回null，否则返回子View
-                        newTouchTarget = getTouchTarget(child);
-                        if (newTouchTarget != null) {
-                            // 如果已经找到了接收事件的子View，就跳出循环
-                            newTouchTarget.pointerIdBits |= idBitsToAssign;
-                            break;
-                        }
+                        ev<span style="color:#f92672">.</span><span style="color:#a6e22e">setTargetAccessibilityFocus</span><span style="color:#f92672">(</span><span style="color:#66d9ef">false</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    <span style="color:#f92672">}</span>
+                    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>preorderedList <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> preorderedList<span style="color:#f92672">.</span><span style="color:#a6e22e">clear</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                <span style="color:#f92672">}</span>
 
-                        resetCancelNextUpFlag(child);
+                    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>newTouchTarget <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> mFirstTouchTarget <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                        <span style="color:#75715e">// 没有找到可以接收事件的子View，但是之前某个子View消费过触摸事件。那么将该子View赋值给newTouchTarget
+</span><span style="color:#75715e"></span>                        newTouchTarget <span style="color:#f92672">=</span> mFirstTouchTarget<span style="color:#f92672">;</span>
+                        <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span>newTouchTarget<span style="color:#f92672">.</span><span style="color:#a6e22e">next</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                            newTouchTarget <span style="color:#f92672">=</span> newTouchTarget<span style="color:#f92672">.</span><span style="color:#a6e22e">next</span><span style="color:#f92672">;</span>
+                        <span style="color:#f92672">}</span>
+                    newTouchTarget<span style="color:#f92672">.</span><span style="color:#a6e22e">pointerIdBits</span> <span style="color:#f92672">|</span><span style="color:#f92672">=</span> idBitsToAssign<span style="color:#f92672">;</span>
+                <span style="color:#f92672">}</span>
+            <span style="color:#f92672">}</span>
+        <span style="color:#f92672">}</span>
 
-                        // 通过dispatchTransformedTouchEvent()方法，递归遍历所有子View。
-                        // 如果返回true，说明事件被子View消费了
-                        if (dispatchTransformedTouchEvent(ev, false, child, idBitsToAssign)) {
-                            mLastTouchDownTime = ev.getDownTime();
-                            if (preorderedList != null) {
-                                for (int j = 0; j &lt; childrenCount; j++) {
-                                    if (children[childIndex] == mChildren[j]) {
-                                        mLastTouchDownIndex = j;
-                                        break;
-                                    }
-                                }
-                            } else {
-                                mLastTouchDownIndex = childIndex;
-                            }
-                            mLastTouchDownX = ev.getX();
-                            mLastTouchDownY = ev.getY();
-                            //将接收并消费ACTION_DOWN事件的子View其赋值给newTouchTarget，作为后续事件的接受者。跳出循环
-                            newTouchTarget = addTouchTarget(child, idBitsToAssign);
-                            alreadyDispatchedToNewTouchTarget = true;
-                            break;
-                        }
+        <span style="color:#75715e">// 4. 如果触摸事件不是ACTION_DOWN时，处理事件.
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>mFirstTouchTarget <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// a. 没有哪个子View能够消费ACTION_DOWN事件，或者后续的事件被拦截了
+</span><span style="color:#75715e"></span>            <span style="color:#75715e">// 将ViewGroup作为一般的View，调用dispatchTransformedTouchEvent()对事件进行处理(参数传入null)
+</span><span style="color:#75715e"></span>            handled <span style="color:#f92672">=</span> dispatchTransformedTouchEvent<span style="color:#f92672">(</span>ev<span style="color:#f92672">,</span> canceled<span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">,</span> TouchTarget<span style="color:#f92672">.</span><span style="color:#a6e22e">ALL_POINTER_IDS</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// b. 存在某个子View能够消费ACTION_DOWN事件
+</span><span style="color:#75715e"></span>            TouchTarget predecessor <span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">;</span>
+            TouchTarget target <span style="color:#f92672">=</span> mFirstTouchTarget<span style="color:#f92672">;</span>
+            <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span>target <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">final</span> TouchTarget next <span style="color:#f92672">=</span> target<span style="color:#f92672">.</span><span style="color:#a6e22e">next</span><span style="color:#f92672">;</span>
+                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>alreadyDispatchedToNewTouchTarget <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> target <span style="color:#f92672">=</span><span style="color:#f92672">=</span> newTouchTarget<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                    <span style="color:#75715e">// 如果能消费ACTION_DOWN的子View，同时也在这次触摸事件中消费ACTION_DOWN事件，也就是第一次消费事件。(瞎猜的:P)
+</span><span style="color:#75715e"></span>                    handled <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>中
+                <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+                    <span style="color:#75715e">// 对于ACTION_DOWN后续的事件，根据onInterceptTouchEvent()的返回值决定是否想子View发送ACTION_CANCEL
+</span><span style="color:#75715e"></span>                    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">boolean</span> cancelChild <span style="color:#f92672">=</span> resetCancelNextUpFlag<span style="color:#f92672">(</span>target<span style="color:#f92672">.</span><span style="color:#a6e22e">child</span><span style="color:#f92672">)</span> <span style="color:#f92672">|</span><span style="color:#f92672">|</span> intercepted<span style="color:#f92672">;</span>
+                    <span style="color:#75715e">// 再将事件通过dispatchTransformedTouchEvent()交由子View处理
+</span><span style="color:#75715e"></span>                    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>dispatchTransformedTouchEvent<span style="color:#f92672">(</span>ev<span style="color:#f92672">,</span> cancelChild<span style="color:#f92672">,</span> target<span style="color:#f92672">.</span><span style="color:#a6e22e">child</span><span style="color:#f92672">,</span> target<span style="color:#f92672">.</span><span style="color:#a6e22e">pointerIdBits</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                        handled <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+                    <span style="color:#f92672">}</span>
+                    <span style="color:#75715e">/*...省略...*/</span>
+                <span style="color:#f92672">}</span>
+            <span style="color:#f92672">}</span>
+            <span style="color:#75715e">/*...省略...*/</span>
+        <span style="color:#f92672">}</span>
 
-                        ev.setTargetAccessibilityFocus(false);
-                    }
-                    if (preorderedList != null) preorderedList.clear();
-                }
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>canceled <span style="color:#f92672">|</span><span style="color:#f92672">|</span> actionMasked <span style="color:#f92672">=</span><span style="color:#f92672">=</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_UP</span> <span style="color:#f92672">|</span><span style="color:#f92672">|</span> actionMasked <span style="color:#f92672">=</span><span style="color:#f92672">=</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_HOVER_MOVE</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// 如果对后续的事件设置了CANCEL或者事件是ACTION_UP.重置事件状态
+</span><span style="color:#75715e"></span>            resetTouchState<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>split <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> actionMasked <span style="color:#f92672">=</span><span style="color:#f92672">=</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_POINTER_UP</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> actionIndex <span style="color:#f92672">=</span> ev<span style="color:#f92672">.</span><span style="color:#a6e22e">getActionIndex</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> idBitsToRemove <span style="color:#f92672">=</span> 1 <span style="color:#f92672">&lt;</span><span style="color:#f92672">&lt;</span> ev<span style="color:#f92672">.</span><span style="color:#a6e22e">getPointerId</span><span style="color:#f92672">(</span>actionIndex<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            removePointersFromTouchTargets<span style="color:#f92672">(</span>idBitsToRemove<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
 
-                    if (newTouchTarget == null &amp;&amp; mFirstTouchTarget != null) {
-                        // 没有找到可以接收事件的子View，但是之前某个子View消费过触摸事件。那么将该子View赋值给newTouchTarget
-                        newTouchTarget = mFirstTouchTarget;
-                        while (newTouchTarget.next != null) {
-                            newTouchTarget = newTouchTarget.next;
-                        }
-                    newTouchTarget.pointerIdBits |= idBitsToAssign;
-                }
-            }
-        }
-
-        // 4. 如果触摸事件不是ACTION_DOWN时，处理事件.
-        if (mFirstTouchTarget == null) {
-            // a. 没有哪个子View能够消费ACTION_DOWN事件，或者后续的事件被拦截了
-            // 将ViewGroup作为一般的View，调用dispatchTransformedTouchEvent()对事件进行处理(参数传入null)
-            handled = dispatchTransformedTouchEvent(ev, canceled, null, TouchTarget.ALL_POINTER_IDS);
-        } else {
-            // b. 存在某个子View能够消费ACTION_DOWN事件
-            TouchTarget predecessor = null;
-            TouchTarget target = mFirstTouchTarget;
-            while (target != null) {
-                final TouchTarget next = target.next;
-                if (alreadyDispatchedToNewTouchTarget &amp;&amp; target == newTouchTarget) {
-                    // 如果能消费ACTION_DOWN的子View，同时也在这次触摸事件中消费ACTION_DOWN事件，也就是第一次消费事件。(瞎猜的:P)
-                    handled = true;中
-                } else {
-                    // 对于ACTION_DOWN后续的事件，根据onInterceptTouchEvent()的返回值决定是否想子View发送ACTION_CANCEL
-                    final boolean cancelChild = resetCancelNextUpFlag(target.child) || intercepted;
-                    // 再将事件通过dispatchTransformedTouchEvent()交由子View处理
-                    if (dispatchTransformedTouchEvent(ev, cancelChild, target.child, target.pointerIdBits)) {
-                        handled = true;
-                    }
-                    /*...省略...*/
-                }
-            }
-            /*...省略...*/
-        }
-
-        if (canceled || actionMasked == MotionEvent.ACTION_UP || actionMasked == MotionEvent.ACTION_HOVER_MOVE) {
-            // 如果对后续的事件设置了CANCEL或者事件是ACTION_UP.重置事件状态
-            resetTouchState();
-        } else if (split &amp;&amp; actionMasked == MotionEvent.ACTION_POINTER_UP) {
-            final int actionIndex = ev.getActionIndex();
-            final int idBitsToRemove = 1 &lt;&lt; ev.getPointerId(actionIndex);
-            removePointersFromTouchTargets(idBitsToRemove);
-        }
-    }
-
-    /*...省略...*/
-    return handled;
-}
-</code></pre>
-
-<ul>
-<li>#### 源码分析 ####</li>
+    <span style="color:#75715e">/*...省略...*/</span>
+    <span style="color:#66d9ef">return</span> handled<span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><ul>
+<li>
+<h4 id="heading-1">源码分析</h4>
+</li>
 </ul>
-
 <blockquote>
 <ol>
 <li>将ACTION_DOWN事件作为一系列触摸事件的起始，对事件进行初始化.
 这个步骤最重要的一点就是<strong>将mFirstTouchTarget置为null</strong></li>
 <li>检测是否需要拦截
 先判断当前ViewGroup是否禁用了拦截。如果禁用了，直接返回false
-如果没有禁用，当触摸事件为ACTION_DOWN或着是接收后续事件时会调用<strong>onInterceptTouchEvent()</strong>进行判断</li>
+如果没有禁用，当触摸事件为ACTION_DOWN或着是接收后续事件时会调用**onInterceptTouchEvent()**进行判断</li>
 <li>如果不进行拦截，当触摸事件为ACTION_DOWN时(触摸事件的起始)进行特殊的判断
 递归遍历子View，找到能够消费事件的子View。在这个过程中多次调用dispatchTransformedTouchEvent()方法以递归的形式将事件依次发送给子View
 这个步骤最重要的一点就是是否<strong>给mFirstTouchTarget赋值</strong></li>
@@ -382,316 +351,303 @@
 如果当前事件为ACTION_DOWN的后续事件，根据onInterceptTouchEvent()的返回值决定向下分发的时ACTION_CANCEL还是当前事件。通过dispatchTransformedTouchEvent()由子View处理，返回结果</li>
 </ol>
 </blockquote>
-
-<hr />
-
-<h3 id="viewgroup中事件的拦截">ViewGroup中事件的拦截</h3>
-
+<hr>
+<h3 id="viewgroup-1">ViewGroup中事件的拦截</h3>
 <ul>
-<li>#### 源码 ####</li>
+<li>
+<h4 id="heading-2">源码</h4>
+</li>
 </ul>
-
-<pre><code class="language-java">public boolean onInterceptTouchEvent(MotionEvent ev) {
-    return false;
-}
-</code></pre>
-
-<ul>
-<li>#### 源码分析 ####</li>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">onInterceptTouchEvent</span><span style="color:#f92672">(</span>MotionEvent ev<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><ul>
+<li>
+<h4 id="heading-3">源码分析</h4>
+</li>
 </ul>
-
 <blockquote>
 <p>ViewGroup中对事件是不进行拦截的，将其向下传送</p>
 </blockquote>
-
-<hr />
-
-<h3 id="viewgroup中事件的处理">ViewGroup中事件的处理</h3>
-
+<hr>
+<h3 id="viewgroup-2">ViewGroup中事件的处理</h3>
 <ul>
-<li>#### 源码 ####</li>
+<li>
+<h4 id="heading-4">源码</h4>
+</li>
 </ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">
+<span style="color:#66d9ef">private</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">dispatchTransformedTouchEvent</span><span style="color:#f92672">(</span>MotionEvent event<span style="color:#f92672">,</span> <span style="color:#66d9ef">boolean</span> cancel<span style="color:#f92672">,</span>
+        View child<span style="color:#f92672">,</span> <span style="color:#66d9ef">int</span> desiredPointerIdBits<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">boolean</span> handled<span style="color:#f92672">;</span>
 
-<pre><code class="language-java">
-private boolean dispatchTransformedTouchEvent(MotionEvent event, boolean cancel,
-        View child, int desiredPointerIdBits) {
-    final boolean handled;
+    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> oldAction <span style="color:#f92672">=</span> event<span style="color:#f92672">.</span><span style="color:#a6e22e">getAction</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>cancel <span style="color:#f92672">|</span><span style="color:#f92672">|</span> oldAction <span style="color:#f92672">=</span><span style="color:#f92672">=</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_CANCEL</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#75715e">// 1. 根据传入的参数cancel或者事件决定发送的事件是否时ACTION_CANCEL
+</span><span style="color:#75715e"></span>        event<span style="color:#f92672">.</span><span style="color:#a6e22e">setAction</span><span style="color:#f92672">(</span>MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_CANCEL</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#75715e">// 2. 根据传入的参数child决定是将事件交由父ViewGroup还是交由子View处理
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>child <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            handled <span style="color:#f92672">=</span> <span style="color:#66d9ef">super</span><span style="color:#f92672">.</span><span style="color:#a6e22e">dispatchTouchEvent</span><span style="color:#f92672">(</span>event<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+            handled <span style="color:#f92672">=</span> child<span style="color:#f92672">.</span><span style="color:#a6e22e">dispatchTouchEvent</span><span style="color:#f92672">(</span>event<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+        event<span style="color:#f92672">.</span><span style="color:#a6e22e">setAction</span><span style="color:#f92672">(</span>oldAction<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">return</span> handled<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
 
-    final int oldAction = event.getAction();
-    if (cancel || oldAction == MotionEvent.ACTION_CANCEL) {
-        // 1. 根据传入的参数cancel或者事件决定发送的事件是否时ACTION_CANCEL
-        event.setAction(MotionEvent.ACTION_CANCEL);
-        // 2. 根据传入的参数child决定是将事件交由父ViewGroup还是交由子View处理
-        if (child == null) {
-            handled = super.dispatchTouchEvent(event);
-        } else {
-            handled = child.dispatchTouchEvent(event);
-        }
-        event.setAction(oldAction);
-        return handled;
-    }
+    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> oldPointerIdBits <span style="color:#f92672">=</span> event<span style="color:#f92672">.</span><span style="color:#a6e22e">getPointerIdBits</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> newPointerIdBits <span style="color:#f92672">=</span> oldPointerIdBits <span style="color:#f92672">&amp;</span> dcancelesiredPointerIdBits<span style="color:#f92672">;</span>
 
-    final int oldPointerIdBits = event.getPointerIdBits();
-    final int newPointerIdBits = oldPointerIdBits &amp; dcancelesiredPointerIdBits;
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>newPointerIdBits <span style="color:#f92672">=</span><span style="color:#f92672">=</span> 0<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
 
-    if (newPointerIdBits == 0) {
-        return false;
-    }
+    <span style="color:#66d9ef">final</span> MotionEvent transformedEvent<span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>newPointerIdBits <span style="color:#f92672">=</span><span style="color:#f92672">=</span> oldPointerIdBits<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>child <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">|</span><span style="color:#f92672">|</span> child<span style="color:#f92672">.</span><span style="color:#a6e22e">hasIdentityMatrix</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>child <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                handled <span style="color:#f92672">=</span> <span style="color:#66d9ef">super</span><span style="color:#f92672">.</span><span style="color:#a6e22e">dispatchTouchEvent</span><span style="color:#f92672">(</span>event<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+                <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">float</span> offsetX <span style="color:#f92672">=</span> mScrollX <span style="color:#f92672">-</span> child<span style="color:#f92672">.</span><span style="color:#a6e22e">mLeft</span><span style="color:#f92672">;</span>
+                <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">float</span> offsetY <span style="color:#f92672">=</span> mScrollY <span style="color:#f92672">-</span> child<span style="color:#f92672">.</span><span style="color:#a6e22e">mTop</span><span style="color:#f92672">;</span>
+                event<span style="color:#f92672">.</span><span style="color:#a6e22e">offsetLocation</span><span style="color:#f92672">(</span>offsetX<span style="color:#f92672">,</span> offsetY<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-    final MotionEvent transformedEvent;
-    if (newPointerIdBits == oldPointerIdBits) {
-        if (child == null || child.hasIdentityMatrix()) {
-            if (child == null) {
-                handled = super.dispatchTouchEvent(event);
-            } else {
-                final float offsetX = mScrollX - child.mLeft;
-                final float offsetY = mScrollY - child.mTop;
-                event.offsetLocation(offsetX, offsetY);
+                handled <span style="color:#f92672">=</span> child<span style="color:#f92672">.</span><span style="color:#a6e22e">dispatchTouchEvent</span><span style="color:#f92672">(</span>event<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-                handled = child.dispatchTouchEvent(event);
+                event<span style="color:#f92672">.</span><span style="color:#a6e22e">offsetLocation</span><span style="color:#f92672">(</span><span style="color:#f92672">-</span>offsetX<span style="color:#f92672">,</span> <span style="color:#f92672">-</span>offsetY<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+            <span style="color:#f92672">}</span>
+            <span style="color:#66d9ef">return</span> handled<span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+        transformedEvent <span style="color:#f92672">=</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">obtain</span><span style="color:#f92672">(</span>event<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+        transformedEvent <span style="color:#f92672">=</span> event<span style="color:#f92672">.</span><span style="color:#a6e22e">split</span><span style="color:#f92672">(</span>newPointerIdBits<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
 
-                event.offsetLocation(-offsetX, -offsetY);
-            }
-            return handled;
-        }
-        transformedEvent = MotionEvent.obtain(event);
-    } else {
-        transformedEvent = event.split(newPointerIdBits);
-    }
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>child <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        handled <span style="color:#f92672">=</span> <span style="color:#66d9ef">super</span><span style="color:#f92672">.</span><span style="color:#a6e22e">dispatchTouchEvent</span><span style="color:#f92672">(</span>transformedEvent<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">float</span> offsetX <span style="color:#f92672">=</span> mScrollX <span style="color:#f92672">-</span> child<span style="color:#f92672">.</span><span style="color:#a6e22e">mLeft</span><span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">float</span> offsetY <span style="color:#f92672">=</span> mScrollY <span style="color:#f92672">-</span> child<span style="color:#f92672">.</span><span style="color:#a6e22e">mTop</span><span style="color:#f92672">;</span>
+        transformedEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">offsetLocation</span><span style="color:#f92672">(</span>offsetX<span style="color:#f92672">,</span> offsetY<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">!</span> child<span style="color:#f92672">.</span><span style="color:#a6e22e">hasIdentityMatrix</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            transformedEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">transform</span><span style="color:#f92672">(</span>child<span style="color:#f92672">.</span><span style="color:#a6e22e">getInverseMatrix</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
 
-    if (child == null) {
-        handled = super.dispatchTouchEvent(transformedEvent);
-    } else {
-        final float offsetX = mScrollX - child.mLeft;
-        final float offsetY = mScrollY - child.mTop;
-        transformedEvent.offsetLocation(offsetX, offsetY);
-        if (! child.hasIdentityMatrix()) {
-            transformedEvent.transform(child.getInverseMatrix());
-        }
+        handled <span style="color:#f92672">=</span> child<span style="color:#f92672">.</span><span style="color:#a6e22e">dispatchTouchEvent</span><span style="color:#f92672">(</span>transformedEvent<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
 
-        handled = child.dispatchTouchEvent(transformedEvent);
-    }
+    transformedEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">recycle</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">return</span> handled<span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
 
-    transformedEvent.recycle();
-    return handled;
-}
-
-</code></pre>
-
-<ul>
-<li>#### 源码分析 ####</li>
+</code></pre></div><ul>
+<li>
+<h4 id="heading-5">源码分析</h4>
+</li>
 </ul>
-
 <blockquote>
-<p>虽然这个方法很长，但是其实我们只需要关注两个参数：<code>boolean cancel</code>和<code>View child</code>
-1. boolean cancel控制了发送的事件是否是ACTION_CANCEL
-2. View child控制了事件是发送给子View还是交由父ViewGroup处理</p>
-
+<p>虽然这个方法很长，但是其实我们只需要关注两个参数：<code>boolean cancel</code>和<code>View child</code></p>
+<ol>
+<li>boolean cancel控制了发送的事件是否是ACTION_CANCEL</li>
+<li>View child控制了事件是发送给子View还是交由父ViewGroup处理</li>
+</ol>
 <p>事件是否被消费决定了最后的返回值。</p>
 </blockquote>
-
 <ul>
 <li>ViewGroup是View的子类，他并没有重写View的onTouchEvent()方法。所以如果事件交由父ViewGroup处理，实际调用的是<code>super.dispatchTouchEvent()</code></li>
 </ul>
-
-<hr />
-
+<hr>
 <p>将触摸事件从ACTION_DOWN -&gt; ACTION_MOVE -&gt; ACTION_UP看做一系列触摸事件的整体。当ViewGroup处理这一系列事件的过程中，我们需要特别注意一个变量：mFirstTouchTarget。
-在ACTION_DOWN事件中mFirstTouchTarget被置为了null。那么mFirstTouchTarget的最终值就意味着是否找到了能够消费触摸事件的子View。来看一下mFirstTouchTarget在那些情况下可以被赋值：
-1. 在ACTION_DOWN事件中：a).父ViewGroup不对事件进行拦截；2).点击点位于某个子View上；3). 被点击的子View消费了ACTION_DOWN事件
-2. 在ACTION_DOWN的后续事件中：a). 首先必须存在可以消费ACTION_DOWN事件的子View，否则后续事件都无法向下分发；b). 在分发后续事件时，父ViewGroup不对事件进行拦截</p>
-
-<hr />
-
-<h2 id="view中事件的分发和处理">View中事件的分发和处理</h2>
-
+在ACTION_DOWN事件中mFirstTouchTarget被置为了null。那么mFirstTouchTarget的最终值就意味着是否找到了能够消费触摸事件的子View。来看一下mFirstTouchTarget在那些情况下可以被赋值：</p>
+<ol>
+<li>在ACTION_DOWN事件中：a).父ViewGroup不对事件进行拦截；2).点击点位于某个子View上；3). 被点击的子View消费了ACTION_DOWN事件</li>
+<li>在ACTION_DOWN的后续事件中：a). 首先必须存在可以消费ACTION_DOWN事件的子View，否则后续事件都无法向下分发；b). 在分发后续事件时，父ViewGroup不对事件进行拦截</li>
+</ol>
+<hr>
+<h2 id="view">View中事件的分发和处理</h2>
 <p>上面我们说到了当ViewGroup中所有的子View都无法消费触摸事件时，会把事件返回给ViewGroup，再调用View的<code>dispatchTouchEvent()</code>方法，那么就来看看具体的实现吧</p>
-
-<h3 id="事件分发">事件分发</h3>
-
+<h3 id="heading-6">事件分发</h3>
 <ul>
-<li>#### 源码 ####</li>
+<li>
+<h4 id="heading-7">源码</h4>
+</li>
 </ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">dispatchTouchEvent</span><span style="color:#f92672">(</span>MotionEvent event<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
 
-<pre><code class="language-java">public boolean dispatchTouchEvent(MotionEvent event) {
+    <span style="color:#75715e">/*...省略...*/</span>
+    <span style="color:#66d9ef">boolean</span> result <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">;</span>
 
-    /*...省略...*/
-    boolean result = false;
+    <span style="color:#75715e">/*...省略...*/</span>
+    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> actionMasked <span style="color:#f92672">=</span> event<span style="color:#f92672">.</span><span style="color:#a6e22e">getActionMasked</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>actionMasked <span style="color:#f92672">=</span><span style="color:#f92672">=</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_DOWN</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#75715e">// NestedScroll是Lolipop之后添加的嵌套滚动机制，用于解决子View不处理滑动事件时，父View也无法处理的该事件的问题
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// 这里我们只要看作是触摸事件时清除掉之前的触摸事件的状态就可以了
+</span><span style="color:#75715e"></span>        stopNestedScroll<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
 
-    /*...省略...*/
-    final int actionMasked = event.getActionMasked();
-    if (actionMasked == MotionEvent.ACTION_DOWN) {
-        // NestedScroll是Lolipop之后添加的嵌套滚动机制，用于解决子View不处理滑动事件时，父View也无法处理的该事件的问题
-        // 这里我们只要看作是触摸事件时清除掉之前的触摸事件的状态就可以了
-        stopNestedScroll();
-    }
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>onFilterTouchEventForSecurity<span style="color:#f92672">(</span>event<span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#75715e">// ListenerInfo是封装了一系列监听器的类
+</span><span style="color:#75715e"></span>        ListenerInfo li <span style="color:#f92672">=</span> mListenerInfo<span style="color:#f92672">;</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>li <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> li<span style="color:#f92672">.</span><span style="color:#a6e22e">mOnTouchListener</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> <span style="color:#f92672">(</span>mViewFlags <span style="color:#f92672">&amp;</span> ENABLED_MASK<span style="color:#f92672">)</span> <span style="color:#f92672">=</span><span style="color:#f92672">=</span> ENABLED <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> li<span style="color:#f92672">.</span><span style="color:#a6e22e">mOnTouchListener</span><span style="color:#f92672">.</span><span style="color:#a6e22e">onTouch</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">,</span> event<span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// 1. 首先判断是否给View添加了onTouchListener监听器；mViewFlags是在View构造时传入的一系列状态值，这里用来判断View是否是enabled的。
+</span><span style="color:#75715e"></span>            <span style="color:#75715e">// 如果前面都为true，最后执行监听器的onTouch()方法，并根据其返回值决定result的值
+</span><span style="color:#75715e"></span>            result <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
 
-    if (onFilterTouchEventForSecurity(event)) {
-        // ListenerInfo是封装了一系列监听器的类
-        ListenerInfo li = mListenerInfo;
-        if (li != null &amp;&amp; li.mOnTouchListener != null &amp;&amp; (mViewFlags &amp; ENABLED_MASK) == ENABLED &amp;&amp; li.mOnTouchListener.onTouch(this, event)) {
-            // 1. 首先判断是否给View添加了onTouchListener监听器；mViewFlags是在View构造时传入的一系列状态值，这里用来判断View是否是enabled的。
-            // 如果前面都为true，最后执行监听器的onTouch()方法，并根据其返回值决定result的值
-            result = true;
-        }
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">!</span>result <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> onTouchEvent<span style="color:#f92672">(</span>event<span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// 2. 当未设置onTouchListener或者onTouch()方法返回false（表示事件未被消费），则会调用onTouchEvent()方法并决定result的值
+</span><span style="color:#75715e"></span>            result <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
 
-        if (!result &amp;&amp; onTouchEvent(event)) {
-            // 2. 当未设置onTouchListener或者onTouch()方法返回false（表示事件未被消费），则会调用onTouchEvent()方法并决定result的值
-            result = true;
-        }
-    }
-
-    /*...省略...*/
-    return result;
-}
-</code></pre>
-
-<ul>
-<li>#### 源码分析 ####</li>
+    <span style="color:#75715e">/*...省略...*/</span>
+    <span style="color:#66d9ef">return</span> result<span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><ul>
+<li>
+<h4 id="heading-8">源码分析</h4>
+</li>
 </ul>
-
 <blockquote>
-<p>相比起ViewGroup，View的dispatchTouchEvent()方法就简单多了。重点主要有两点：
-1. 判断View是否设置了onTouchListener，相信设置监听器的方法大家应该都知道了——setOnTouchListener()。如果设置了监听器，就调用监听器的<code>onTouch()</code>方法
-2. 如果没有设置监听器或者onTouch()返回false时，会调用<code>onTouchEvent()</code>方法</p>
+<p>相比起ViewGroup，View的dispatchTouchEvent()方法就简单多了。重点主要有两点：</p>
+<ol>
+<li>判断View是否设置了onTouchListener，相信设置监听器的方法大家应该都知道了——setOnTouchListener()。如果设置了监听器，就调用监听器的<code>onTouch()</code>方法</li>
+<li>如果没有设置监听器或者onTouch()返回false时，会调用<code>onTouchEvent()</code>方法</li>
+</ol>
 </blockquote>
-
-<hr />
-
-<h3 id="事件处理">事件处理</h3>
-
+<hr>
+<h3 id="heading-9">事件处理</h3>
 <ul>
-<li>#### 源码 ####</li>
+<li>
+<h4 id="heading-10">源码</h4>
+</li>
 </ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">onTouchEvent</span><span style="color:#f92672">(</span>MotionEvent event<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#75715e">//获取点击的位置
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">float</span> x <span style="color:#f92672">=</span> event<span style="color:#f92672">.</span><span style="color:#a6e22e">getX</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">float</span> y <span style="color:#f92672">=</span> event<span style="color:#f92672">.</span><span style="color:#a6e22e">getY</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> viewFlags <span style="color:#f92672">=</span> mViewFlags<span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">int</span> action <span style="color:#f92672">=</span> event<span style="color:#f92672">.</span><span style="color:#a6e22e">getAction</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-<pre><code class="language-java">public boolean onTouchEvent(MotionEvent event) {
-    //获取点击的位置
-    final float x = event.getX();
-    final float y = event.getY();
-    final int viewFlags = mViewFlags;
-    final int action = event.getAction();
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">(</span>viewFlags <span style="color:#f92672">&amp;</span> ENABLED_MASK<span style="color:#f92672">)</span> <span style="color:#f92672">=</span><span style="color:#f92672">=</span> DISABLED<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>action <span style="color:#f92672">=</span><span style="color:#f92672">=</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_UP</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> <span style="color:#f92672">(</span>mPrivateFlags <span style="color:#f92672">&amp;</span> PFLAG_PRESSED<span style="color:#f92672">)</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> 0<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#75715e">// 当触摸事件为ACTION_UP并且View未设定pressed属性时，设置pressed状态未false
+</span><span style="color:#75715e"></span>            setPressed<span style="color:#f92672">(</span><span style="color:#66d9ef">false</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+        <span style="color:#75715e">// 1. 如果当前View同时具有clickable和disabled两个属性，返回true(消费事件但不作出响应)
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">return</span> <span style="color:#f92672">(</span><span style="color:#f92672">(</span><span style="color:#f92672">(</span>viewFlags <span style="color:#f92672">&amp;</span> CLICKABLE<span style="color:#f92672">)</span> <span style="color:#f92672">=</span><span style="color:#f92672">=</span> CLICKABLE
+                <span style="color:#f92672">|</span><span style="color:#f92672">|</span> <span style="color:#f92672">(</span>viewFlags <span style="color:#f92672">&amp;</span> LONG_CLICKABLE<span style="color:#f92672">)</span> <span style="color:#f92672">=</span><span style="color:#f92672">=</span> LONG_CLICKABLE<span style="color:#f92672">)</span>
+                <span style="color:#f92672">|</span><span style="color:#f92672">|</span> <span style="color:#f92672">(</span>viewFlags <span style="color:#f92672">&amp;</span> CONTEXT_CLICKABLE<span style="color:#f92672">)</span> <span style="color:#f92672">=</span><span style="color:#f92672">=</span> CONTEXT_CLICKABLE<span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
 
-    if ((viewFlags &amp; ENABLED_MASK) == DISABLED) {
-        if (action == MotionEvent.ACTION_UP &amp;&amp; (mPrivateFlags &amp; PFLAG_PRESSED) != 0) {
-            // 当触摸事件为ACTION_UP并且View未设定pressed属性时，设置pressed状态未false
-            setPressed(false);
-        }
-        // 1. 如果当前View同时具有clickable和disabled两个属性，返回true(消费事件但不作出响应)
-        return (((viewFlags &amp; CLICKABLE) == CLICKABLE
-                || (viewFlags &amp; LONG_CLICKABLE) == LONG_CLICKABLE)
-                || (viewFlags &amp; CONTEXT_CLICKABLE) == CONTEXT_CLICKABLE);
-    }
+    <span style="color:#75715e">// 2. 将事件委托给一个代理进行处理，如果代理的onTouchEvent()返回true，表示事件被消费（不懂）
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>mTouchDelegate <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>mTouchDelegate<span style="color:#f92672">.</span><span style="color:#a6e22e">onTouchEvent</span><span style="color:#f92672">(</span>event<span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
 
-    // 2. 将事件委托给一个代理进行处理，如果代理的onTouchEvent()返回true，表示事件被消费（不懂）
-    if (mTouchDelegate != null) {
-        if (mTouchDelegate.onTouchEvent(event)) {
-            return true;
-        }
-    }
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">(</span><span style="color:#f92672">(</span>viewFlags <span style="color:#f92672">&amp;</span> CLICKABLE<span style="color:#f92672">)</span> <span style="color:#f92672">=</span><span style="color:#f92672">=</span> CLICKABLE <span style="color:#f92672">|</span><span style="color:#f92672">|</span>
+            <span style="color:#f92672">(</span>viewFlags <span style="color:#f92672">&amp;</span> LONG_CLICKABLE<span style="color:#f92672">)</span> <span style="color:#f92672">=</span><span style="color:#f92672">=</span> LONG_CLICKABLE<span style="color:#f92672">)</span> <span style="color:#f92672">|</span><span style="color:#f92672">|</span>
+            <span style="color:#f92672">(</span>viewFlags <span style="color:#f92672">&amp;</span> CONTEXT_CLICKABLE<span style="color:#f92672">)</span> <span style="color:#f92672">=</span><span style="color:#f92672">=</span> CONTEXT_CLICKABLE<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">switch</span> <span style="color:#f92672">(</span>action<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+            <span style="color:#66d9ef">case</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_UP</span><span style="color:#f92672">:</span>
+                <span style="color:#66d9ef">boolean</span> prepressed <span style="color:#f92672">=</span> <span style="color:#f92672">(</span>mPrivateFlags <span style="color:#f92672">&amp;</span> PFLAG_PREPRESSED<span style="color:#f92672">)</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> 0<span style="color:#f92672">;</span>
 
-    if (((viewFlags &amp; CLICKABLE) == CLICKABLE ||
-            (viewFlags &amp; LONG_CLICKABLE) == LONG_CLICKABLE) ||
-            (viewFlags &amp; CONTEXT_CLICKABLE) == CONTEXT_CLICKABLE) {
-        switch (action) {
-            case MotionEvent.ACTION_UP:
-                boolean prepressed = (mPrivateFlags &amp; PFLAG_PREPRESSED) != 0;
+                <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">(</span>mPrivateFlags <span style="color:#f92672">&amp;</span> PFLAG_PRESSED<span style="color:#f92672">)</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> 0 <span style="color:#f92672">|</span><span style="color:#f92672">|</span> prepressed<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
 
-                if ((mPrivateFlags &amp; PFLAG_PRESSED) != 0 || prepressed) {
+                    <span style="color:#75715e">/*...省略...*/</span>
+                    <span style="color:#75715e">//做了一系列判断，设置按下状态并迅速弹起
+</span><span style="color:#75715e"></span>                    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">!</span>mHasPerformedLongPress <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> <span style="color:#f92672">!</span>mIgnoreNextUpEvent<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                        <span style="color:#75715e">// 判断未tap（轻触）状态，移除长按的回调
+</span><span style="color:#75715e"></span>                        removeLongPressCallback<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
 
-                    /*...省略...*/
-                    //做了一系列判断，设置按下状态并迅速弹起
-                    if (!mHasPerformedLongPress &amp;&amp; !mIgnoreNextUpEvent) {
-                        // 判断未tap（轻触）状态，移除长按的回调
-                        removeLongPressCallback();
+                        <span style="color:#75715e">// 如果View没有夺取焦点
+</span><span style="color:#75715e"></span>                        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">!</span>focusTaken<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                            <span style="color:#75715e">// 调用一个处理Click事件的Runnable对象进行异步的处理
+</span><span style="color:#75715e"></span>                            <span style="color:#75715e">// 最终调用了onClickListener的onClick()方法
+</span><span style="color:#75715e"></span>                            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>mPerformClick <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                                mPerformClick <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> PerformClick<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                            <span style="color:#f92672">}</span>
+                            <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span><span style="color:#f92672">!</span>post<span style="color:#f92672">(</span>mPerformClick<span style="color:#f92672">)</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                                performClick<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                            <span style="color:#f92672">}</span>
+                        <span style="color:#f92672">}</span>
+                    <span style="color:#f92672">}</span>
 
-                        // 如果View没有夺取焦点
-                        if (!focusTaken) {
-                            // 调用一个处理Click事件的Runnable对象进行异步的处理
-                            // 最终调用了onClickListener的onClick()方法
-                            if (mPerformClick == null) {
-                                mPerformClick = new PerformClick();
-                            }
-                            if (!post(mPerformClick)) {
-                                performClick();
-                            }
-                        }
-                    }
+                    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>mUnsetPressedState <span style="color:#f92672">=</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+                        mUnsetPressedState <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> UnsetPressedState<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+                    <span style="color:#f92672">}</span>
+                    <span style="color:#75715e">/*...省略...*/</span>
+                <span style="color:#f92672">}</span>
+                <span style="color:#66d9ef">break</span><span style="color:#f92672">;</span>
 
-                    if (mUnsetPressedState == null) {
-                        mUnsetPressedState = new UnsetPressedState();
-                    }
-                    /*...省略...*/
-                }
-                break;
+            <span style="color:#66d9ef">case</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_DOWN</span><span style="color:#f92672">:</span>
 
-            case MotionEvent.ACTION_DOWN:
+                <span style="color:#75715e">/*...省略...*/</span>
+                <span style="color:#75715e">// 处理长按事件等
+</span><span style="color:#75715e"></span>                <span style="color:#66d9ef">break</span><span style="color:#f92672">;</span>
 
-                /*...省略...*/
-                // 处理长按事件等
-                break;
+            <span style="color:#66d9ef">case</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_CANCEL</span><span style="color:#f92672">:</span>
+                <span style="color:#75715e">/*...省略...*/</span>
+                <span style="color:#75715e">//移除回调、清除状态
+</span><span style="color:#75715e"></span>                <span style="color:#66d9ef">break</span><span style="color:#f92672">;</span>
 
-            case MotionEvent.ACTION_CANCEL:
-                /*...省略...*/
-                //移除回调、清除状态
-                break;
+            <span style="color:#66d9ef">case</span> MotionEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">ACTION_MOVE</span><span style="color:#f92672">:</span>
+                <span style="color:#75715e">/*...省略...*/</span>
+                <span style="color:#66d9ef">break</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+        <span style="color:#75715e">// 3. 只要View是clickable、longclickable或者contextclickable的，不论触摸事件是什么都消费事件
+</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
 
-            case MotionEvent.ACTION_MOVE:
-                /*...省略...*/
-                break;
-        }
-        // 3. 只要View是clickable、longclickable或者contextclickable的，不论触摸事件是什么都消费事件
-        return true;
-    }
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
 
-    return false;
-}
+<span style="color:#75715e">//PerformClick类中执行的还是performClick()方法
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">private</span> <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PerformClick</span> <span style="color:#66d9ef">implements</span> Runnable <span style="color:#f92672">{</span>
+    <span style="color:#a6e22e">@Override</span>
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        performClick<span style="color:#f92672">(</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
 
-//PerformClick类中执行的还是performClick()方法
-private final class PerformClick implements Runnable {
-    @Override
-    public void run() {
-        performClick();
-    }
-}
+<span style="color:#75715e">//处理Click事件的方法
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">performClick</span><span style="color:#f92672">(</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">final</span> <span style="color:#66d9ef">boolean</span> result<span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">final</span> ListenerInfo li <span style="color:#f92672">=</span> mListenerInfo<span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>li <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">&amp;</span><span style="color:#f92672">&amp;</span> li<span style="color:#f92672">.</span><span style="color:#a6e22e">mOnClickListener</span> <span style="color:#f92672">!</span><span style="color:#f92672">=</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+        playSoundEffect<span style="color:#f92672">(</span>SoundEffectConstants<span style="color:#f92672">.</span><span style="color:#a6e22e">CLICK</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        <span style="color:#75715e">// 调用onClickListener的onClick()方法
+</span><span style="color:#75715e"></span>        li<span style="color:#f92672">.</span><span style="color:#a6e22e">mOnClickListener</span><span style="color:#f92672">.</span><span style="color:#a6e22e">onClick</span><span style="color:#f92672">(</span><span style="color:#66d9ef">this</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+        result <span style="color:#f92672">=</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+        result <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
 
-//处理Click事件的方法
-public boolean performClick() {
-    final boolean result;
-    final ListenerInfo li = mListenerInfo;
-    if (li != null &amp;&amp; li.mOnClickListener != null) {
-        playSoundEffect(SoundEffectConstants.CLICK);
-        // 调用onClickListener的onClick()方法
-        li.mOnClickListener.onClick(this);
-        result = true;
-    } else {
-        result = false;
-    }
-
-   sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_CLICKED);
-    return result;
-}
-</code></pre>
-
-<ul>
-<li>#### 源码分析 ####</li>
+   sendAccessibilityEvent<span style="color:#f92672">(</span>AccessibilityEvent<span style="color:#f92672">.</span><span style="color:#a6e22e">TYPE_VIEW_CLICKED</span><span style="color:#f92672">)</span><span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">return</span> result<span style="color:#f92672">;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><ul>
+<li>
+<h4 id="heading-11">源码分析</h4>
+</li>
 </ul>
-
 <blockquote>
-<p>对onTouchEvent()的分析，我们主要关注其返回值
-1. View同时具有clickable和disabled两个属性，返回true(消费事件但不作出响应)
-2. 只要View是clickable、longclickable或者contextclickable的，不论触摸事件是什么都消费事件
-3. 如果不是上面的情况，返回false</p>
-
+<p>对onTouchEvent()的分析，我们主要关注其返回值</p>
+<ol>
+<li>View同时具有clickable和disabled两个属性，返回true(消费事件但不作出响应)</li>
+<li>只要View是clickable、longclickable或者contextclickable的，不论触摸事件是什么都消费事件</li>
+<li>如果不是上面的情况，返回false</li>
+</ol>
 <p>要注意的是，在第二种情况下，当触摸事件是ACTION_DOWN时，创建了一个处理Click事件的Runnable对象并将其加入消息队列
 这个Runnable对象内部执行的是performClick()方法。而我们可以看到，如果Runnable对象添加到消息队列失败的话时会直接调用这个方法的
 在performClick()中，判断了是否设置了onClickListener，最终调用了onClickListener的onClick()方法</p>
 </blockquote>
-
-<hr />
+<hr>
 
     </div>
 
-    
     <div class="post-copyright">
   <p class="copyright-item">
     <span class="item-title">文章作者</span>
@@ -699,22 +655,18 @@ public boolean performClick() {
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
-    <span class="item-content">2016-01-17</span>
+    <span class="item-content">
+        2016-01-17
+        
+    </span>
   </p>
   
   
 </div>
-
-    
-    
-
-    <footer class="post-footer">
-      
-
+<footer class="post-footer">
       
       <nav class="post-nav">
-        
-          <a class="prev" href="/post/from_xml_to_view/">
+        <a class="prev" href="/post/from_xml_to_view/">
             <i class="iconfont icon-left"></i>
             <span class="prev-text nav-default">从XML到View</span>
             <span class="prev-text nav-mobile">上一篇</span>
@@ -724,8 +676,7 @@ public boolean performClick() {
     </footer>
   </article>
         </div>
-        
-  <div id="disqus_thread"></div>
+        <div id="disqus_thread"></div>
     <script type="text/javascript">
     (function() {
       
@@ -739,6 +690,11 @@ public boolean performClick() {
     })();
     </script>
     <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+  
+
       </div>
     </main>
 
@@ -765,8 +721,7 @@ public boolean performClick() {
 
   <span class="copyright-year">
     &copy; 
-    
-      2016 - 
+    2016 - 
     2019
     <span class="heart">
       <i class="iconfont icon-heart"></i>
@@ -780,14 +735,12 @@ public boolean performClick() {
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
-<script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script>
-<script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script>window.sequenceDiagramsOptions = simple;</script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+<script type="text/javascript" src="/dist/even.26188efa.min.js"></script>
 
 
 <script type="application/javascript">
@@ -795,7 +748,7 @@ var doNotTrack = false;
 if (!doNotTrack) {
 	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
 	ga('create', 'UA-106569198-1', 'auto');
-	
+	ga('set', 'anonymizeIp', true);
 	ga('send', 'pageview');
 }
 </script>

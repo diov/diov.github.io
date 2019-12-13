@@ -16,20 +16,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="Dio.Ye" /><meta name="description" content="使用命令行工具 arc 及 git 在 Phabricator 上实现 Git Flow 工作流" />
-
-  <meta name="keywords" content="WebRTC, Android, golang" />
+<meta name="author" content="Dio.Ye" /><meta name="description" content="使用命令行工具 arc 及 git 在 Phabricator 上实现 Git Flow 工作流" /><meta name="keywords" content="WebRTC, Android, Golang" />
 
 
 
 
 
 
-<meta name="generator" content="Hugo 0.54.0" />
+<meta name="generator" content="Hugo 0.61.0 with theme even" />
 
 
 <link rel="canonical" href="https://diov.github.io/post/git-flow-based-on-phabricator/" />
-
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -37,36 +34,25 @@
 <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
 
 
-
-
-
-
-
-<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link href="/dist/even.c2a46f00.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
-
-
 
 
 <meta property="og:title" content="基于 Phabricator 的 Git Flow 最佳实践" />
 <meta property="og:description" content="使用命令行工具 arc 及 git 在 Phabricator 上实现 Git Flow 工作流" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://diov.github.io/post/git-flow-based-on-phabricator/" />
-<meta property="article:published_time" content="2017-09-16T10:54:24&#43;02:00"/>
-<meta property="article:modified_time" content="2017-09-16T10:54:24&#43;02:00"/>
-
+<meta property="article:published_time" content="2017-09-16T10:54:24+02:00" />
+<meta property="article:modified_time" content="2017-09-16T10:54:24+02:00" />
 <meta itemprop="name" content="基于 Phabricator 的 Git Flow 最佳实践">
 <meta itemprop="description" content="使用命令行工具 arc 及 git 在 Phabricator 上实现 Git Flow 工作流">
-
-
 <meta itemprop="datePublished" content="2017-09-16T10:54:24&#43;02:00" />
 <meta itemprop="dateModified" content="2017-09-16T10:54:24&#43;02:00" />
 <meta itemprop="wordCount" content="612">
 
 
 
-<meta itemprop="keywords" content="" />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="基于 Phabricator 的 Git Flow 最佳实践"/>
 <meta name="twitter:description" content="使用命令行工具 arc 及 git 在 Phabricator 上实现 Git Flow 工作流"/>
 
@@ -136,96 +122,63 @@
       <div class="post-meta">
         <span class="post-time"> 2017-09-16 </span>
         <div class="post-category">
-            
-              <a href="/categories/workflow/"> WorkFlow </a>
-            
-          </div>
-        
+            <a href="/categories/workflow/"> WorkFlow </a>
+            </div>
         
       </div>
     </header>
 
-    
-    
-<div class="post-toc" id="post-toc">
+    <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">文章目录</h2>
-  
   <div class="post-toc-content always-active">
     <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#配置工程文件">配置工程文件</a></li>
-</ul></li>
-<li><a href="#feature-开发">Feature 开发</a></li>
-<li><a href="#release-开发">Release 开发</a></li>
-<li><a href="#hotfix-开发">Hotfix 开发</a></li>
-</ul>
+  <ul>
+    <li><a href="#heading">配置工程文件</a></li>
+  </ul>
 </nav>
   </div>
 </div>
-
-    
     <div class="post-content">
-      
-
-<p><code>Phabricator</code> : Facebook 出品的一个开发协作平台，可以方便的进行任务的指派、code review 等。<br />
-<code>Git Flow</code>: 基于git，适用于客户端的开发，围绕着版本发布(release)为基础的一套工作流。<br />
+      <p><code>Phabricator</code> : Facebook 出品的一个开发协作平台，可以方便的进行任务的指派、code review 等。<br>
+<code>Git Flow</code>: 基于git，适用于客户端的开发，围绕着版本发布(release)为基础的一套工作流。<br>
 <code>Arcanist</code>: Phabricator 提供的 differential(code review)命令行工具。</p>
-
 <p><code>Phabricator</code> 本身使用的是 post-review 的工作流，对于 Git Flow 并没有很好的支持。想要在<code>Phabricator</code> 上实现 <code>Git Flow</code> 需要做一些配置。另外，使用 <code>arc land</code> 合并代码时会将本地的分支直接删除，所以在实现 <code>Git Flow</code> 时我们会需要一些额外的 <code>git</code> 操作。</p>
-
-<h2 id="配置工程文件">配置工程文件</h2>
-
+<h2 id="heading">配置工程文件</h2>
 <p>在工程的文件夹下创建文件 <code>.arcconfig</code>，添加配置</p>
-
 <pre><code>{
     &quot;phabricator.uri&quot; : &quot;https://phabricator.example.com/&quot;,
     &quot;base&quot;: &quot;git:merge-base(origin/develop), arc:prompt&quot;,
     &quot;arc.land.onto.default&quot;: &quot;develop&quot;
 }
-</code></pre>
-
-<p>因为 <code>Git Flow</code> 的默认分支应该是<code>develop</code>，所以我们需要调整<code>arc diff</code>和<code>arc land</code>的默认分支为<code>develop</code></p>
-
-<h1 id="feature-开发">Feature 开发</h1>
-
+</code></pre><p>因为 <code>Git Flow</code> 的默认分支应该是<code>develop</code>，所以我们需要调整<code>arc diff</code>和<code>arc land</code>的默认分支为<code>develop</code></p>
+<h1 id="feature-">Feature 开发</h1>
 <p>功能开发可以使用正常的<code>Git Flow</code>流程。</p>
-
 <ol>
-<li>基于 <code>develop</code> 检出 <code>feature</code> 分支<br /></li>
-<li>完成开发之后使用 <code>arc diff</code> 提交 code review<br /></li>
-<li>code review 之后使用 <code>arc land</code> 合并代码至 <code>develop</code><br /></li>
+<li>基于 <code>develop</code> 检出 <code>feature</code> 分支</li>
+<li>完成开发之后使用 <code>arc diff</code> 提交 code review</li>
+<li>code review 之后使用 <code>arc land</code> 合并代码至 <code>develop</code></li>
 </ol>
-
-<h1 id="release-开发">Release 开发</h1>
-
+<h1 id="release-">Release 开发</h1>
 <p>Release 基于 <code>develop</code> ，但是最终必须合并到 <code>master</code> 分支上，所以除了在命令行里使用 <code>arc</code> 外还要手动操作 <code>git</code>。</p>
-
 <ol>
-<li>基于 <code>develop</code> 检出 <code>release</code> 分支<br /></li>
-<li>开发完成之后使用 <code>arc diff</code> 提交 code review<br /></li>
-<li>code review 并且 <strong>测试完成</strong> 之后使用 <code>arc land</code> 合并代码至 <code>develop</code><br /></li>
-<li>使用 <code>git</code> 将 <code>develop</code> 分支合并到 <code>master</code>，基于合并的 <code>commit</code> 添加 Tag<br /></li>
+<li>基于 <code>develop</code> 检出 <code>release</code> 分支</li>
+<li>开发完成之后使用 <code>arc diff</code> 提交 code review</li>
+<li>code review 并且 <strong>测试完成</strong> 之后使用 <code>arc land</code> 合并代码至 <code>develop</code></li>
+<li>使用 <code>git</code> 将 <code>develop</code> 分支合并到 <code>master</code>，基于合并的 <code>commit</code> 添加 Tag</li>
 </ol>
-
-<h1 id="hotfix-开发">Hotfix 开发</h1>
-
+<h1 id="hotfix-">Hotfix 开发</h1>
 <p>Hotfix 是基于 <code>master</code> 分支的修复分支。</p>
-
 <ol>
-<li>基于 <code>master</code> (上一个发布版本)检出 <code>hotfix</code> 分支<br /></li>
-<li>开发完成之后使用 <code>arc diff master</code> 提交 code review (此时 diff 的内容为 <code>hotfix</code> 和 <code>master</code> 分支)<br /></li>
-<li>code review 并且 <strong>测试完成</strong> 之后使用 <code>arc land --onto master</code> 合并代码至 <code>master</code><br /></li>
-<li>在合并的 <code>commit</code> 上添加 Tag<br /></li>
-<li>将 <code>master</code> 合并到 <code>develop</code> 分支<br /></li>
+<li>基于 <code>master</code> (上一个发布版本)检出 <code>hotfix</code> 分支</li>
+<li>开发完成之后使用 <code>arc diff master</code> 提交 code review (此时 diff 的内容为 <code>hotfix</code> 和 <code>master</code> 分支)</li>
+<li>code review 并且 <strong>测试完成</strong> 之后使用 <code>arc land --onto master</code> 合并代码至 <code>master</code></li>
+<li>在合并的 <code>commit</code> 上添加 Tag</li>
+<li>将 <code>master</code> 合并到 <code>develop</code> 分支</li>
 </ol>
-
 <p><code>Phabricator</code> 提供了完善的 code review 流程，我们只需要基于这一流程略加修改就可以在项目中实现<code>Git Flow</code> 了。</p>
 
     </div>
 
-    
     <div class="post-copyright">
   <p class="copyright-item">
     <span class="item-title">文章作者</span>
@@ -233,38 +186,32 @@
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
-    <span class="item-content">2017-09-16</span>
+    <span class="item-content">
+        2017-09-16
+        
+    </span>
   </p>
   
   
 </div>
-
-    
-    
-
-    <footer class="post-footer">
-      
-
+<footer class="post-footer">
       
       <nav class="post-nav">
-        
-          <a class="prev" href="/post/enable-h264-codec-for-webrtc/">
+        <a class="prev" href="/post/enable-h264-codec-for-webrtc/">
             <i class="iconfont icon-left"></i>
             <span class="prev-text nav-default">为 WebRTC Android (M70) 添加 H.264 编解码</span>
             <span class="prev-text nav-mobile">上一篇</span>
           </a>
-        
-          <a class="next" href="/post/a-practice-of-memory-leak/">
+        <a class="next" href="/post/a-practice-of-memory-leak/">
             <span class="next-text nav-default">利用 StrictMode 和 MAT 解决内存泄漏</span>
-            <span class="prev-text nav-mobile">下一篇</span>
+            <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
       </nav>
     </footer>
   </article>
         </div>
-        
-  <div id="disqus_thread"></div>
+        <div id="disqus_thread"></div>
     <script type="text/javascript">
     (function() {
       
@@ -278,6 +225,11 @@
     })();
     </script>
     <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+  
+
       </div>
     </main>
 
@@ -304,8 +256,7 @@
 
   <span class="copyright-year">
     &copy; 
-    
-      2016 - 
+    2016 - 
     2019
     <span class="heart">
       <i class="iconfont icon-heart"></i>
@@ -319,14 +270,12 @@
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
-<script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script>
-<script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script>window.sequenceDiagramsOptions = simple;</script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+<script type="text/javascript" src="/dist/even.26188efa.min.js"></script>
 
 
 <script type="application/javascript">
@@ -334,7 +283,7 @@ var doNotTrack = false;
 if (!doNotTrack) {
 	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
 	ga('create', 'UA-106569198-1', 'auto');
-	
+	ga('set', 'anonymizeIp', true);
 	ga('send', 'pageview');
 }
 </script>

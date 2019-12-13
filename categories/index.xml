@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Categories on Meow</title>
@@ -6,10 +6,37 @@
     <description>Recent content in Categories on Meow</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 10 Mar 2017 15:06:19 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 30 Nov 2019 17:02:35 +0800</lastBuildDate>
     
 	<atom:link href="https://diov.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Golang</title>
+      <link>https://diov.github.io/categories/golang/</link>
+      <pubDate>Sat, 30 Nov 2019 17:02:35 +0800</pubDate>
+      
+      <guid>https://diov.github.io/categories/golang/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>WebRTC</title>
+      <link>https://diov.github.io/categories/webrtc/</link>
+      <pubDate>Mon, 18 Feb 2019 17:02:35 +0800</pubDate>
+      
+      <guid>https://diov.github.io/categories/webrtc/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>WorkFlow</title>
+      <link>https://diov.github.io/categories/workflow/</link>
+      <pubDate>Sat, 16 Sep 2017 10:54:24 +0200</pubDate>
+      
+      <guid>https://diov.github.io/categories/workflow/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>Android</title>
@@ -26,24 +53,6 @@
       <pubDate>Mon, 27 Feb 2017 15:06:19 +0800</pubDate>
       
       <guid>https://diov.github.io/categories/other/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Webrtc</title>
-      <link>https://diov.github.io/categories/webrtc/</link>
-      <pubDate>Mon, 18 Feb 2019 17:02:35 +0800</pubDate>
-      
-      <guid>https://diov.github.io/categories/webrtc/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Workflow</title>
-      <link>https://diov.github.io/categories/workflow/</link>
-      <pubDate>Sat, 16 Sep 2017 10:54:24 +0200</pubDate>
-      
-      <guid>https://diov.github.io/categories/workflow/</guid>
       <description></description>
     </item>
     

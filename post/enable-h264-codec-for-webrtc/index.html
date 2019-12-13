@@ -16,20 +16,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="Dio.Ye" /><meta name="description" content="WebRTC Android 添加 H.264 编解码" />
-
-  <meta name="keywords" content="WebRTC, Android, golang" />
+<meta name="author" content="Dio.Ye" /><meta name="description" content="WebRTC Android 添加 H.264 编解码" /><meta name="keywords" content="WebRTC, Android, Golang" />
 
 
 
 
 
 
-<meta name="generator" content="Hugo 0.54.0" />
+<meta name="generator" content="Hugo 0.61.0 with theme even" />
 
 
 <link rel="canonical" href="https://diov.github.io/post/enable-h264-codec-for-webrtc/" />
-
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -37,36 +34,25 @@
 <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
 
 
-
-
-
-
-
-<link href="/dist/even.min.css?v=3.1.1" rel="stylesheet">
+<link href="/dist/even.c2a46f00.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
-
-
 
 
 <meta property="og:title" content="为 WebRTC Android (M70) 添加 H.264 编解码" />
 <meta property="og:description" content="WebRTC Android 添加 H.264 编解码" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://diov.github.io/post/enable-h264-codec-for-webrtc/" />
-<meta property="article:published_time" content="2019-02-18T17:02:35&#43;08:00"/>
-<meta property="article:modified_time" content="2019-02-18T17:02:35&#43;08:00"/>
-
+<meta property="article:published_time" content="2019-02-18T17:02:35+08:00" />
+<meta property="article:modified_time" content="2019-02-18T17:02:35+08:00" />
 <meta itemprop="name" content="为 WebRTC Android (M70) 添加 H.264 编解码">
 <meta itemprop="description" content="WebRTC Android 添加 H.264 编解码">
-
-
 <meta itemprop="datePublished" content="2019-02-18T17:02:35&#43;08:00" />
 <meta itemprop="dateModified" content="2019-02-18T17:02:35&#43;08:00" />
 <meta itemprop="wordCount" content="1066">
 
 
 
-<meta itemprop="keywords" content="" />
-<meta name="twitter:card" content="summary"/>
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="为 WebRTC Android (M70) 添加 H.264 编解码"/>
 <meta name="twitter:description" content="WebRTC Android 添加 H.264 编解码"/>
 
@@ -136,103 +122,69 @@
       <div class="post-meta">
         <span class="post-time"> 2019-02-18 </span>
         <div class="post-category">
-            
-              <a href="/categories/webrtc/"> WebRTC </a>
-            
-          </div>
-        
+            <a href="/categories/webrtc/"> WebRTC </a>
+            </div>
         
       </div>
     </header>
 
-    
-    
-<div class="post-toc" id="post-toc">
+    <div class="post-toc" id="post-toc">
   <h2 class="post-toc-title">文章目录</h2>
-  
   <div class="post-toc-content always-active">
     <nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#完善硬编解列表">完善硬编解列表</a></li>
-<li><a href="#ffmpeg-开启-h-264-软解">FFmpeg 开启 H.264 软解</a></li>
-<li><a href="#webrtc-开启-h-264-软编解">WebRTC 开启 H.264 软编解</a></li>
-<li><a href="#收个尾">收个尾</a></li>
-</ul></li>
-</ul>
+  <ul>
+    <li><a href="#heading">完善硬编解列表</a></li>
+    <li><a href="#ffmpeg--h264-">FFmpeg 开启 H.264 软解</a></li>
+    <li><a href="#webrtc--h264-">WebRTC 开启 H.264 软编解</a></li>
+    <li><a href="#heading-1">收个尾</a></li>
+  </ul>
 </nav>
   </div>
 </div>
-
-    
     <div class="post-content">
-      
-
-<p>作为 Google 的 p2p 音视频方案，WebRTC 在很长时间里都会优先选择同样是 Google 自家的 VP8/VP9 作为编解码方案。但是不可否认，H.264 才是现在业界里更加主流的方案。所以在最近的几个版本中，WebRTC 也开始逐渐<a href="http://webrtcbydralex.com/index.php/2018/06/21/h-264-finally-a-first-class-citizen-in-webrtc-stacks/">将 H.264 添加到默认的编解码方案中</a>来了。</p>
-
+      <p>作为 Google 的 p2p 音视频方案，WebRTC 在很长时间里都会优先选择同样是 Google 自家的 VP8/VP9 作为编解码方案。但是不可否认，H.264 才是现在业界里更加主流的方案。所以在最近的几个版本中，WebRTC 也开始逐渐<a href="http://webrtcbydralex.com/index.php/2018/06/21/h-264-finally-a-first-class-citizen-in-webrtc-stacks/">将 H.264 添加到默认的编解码方案中</a>来了。</p>
 <p>Android 上 WebRTC 只针对少量的设备提供了硬编解的支持，而软解则是完全不支持。幸运的是，WebRTC 使用 openH264 来实现软编码，FFmpeg 实现软解码，而这两部分代码都包含在了 <code>src/third_party</code> 中，我们只需要修改部分代码及编译的脚本就可以把这部分能力集成进来了。</p>
-
 <p>针对 Android 平台，我们要完整的支持 H.264 的编解码，需要完成这些目标：</p>
-
 <ol>
-<li>完善硬编解列表<br /></li>
-<li>FFmpeg 开启 H.264 软解<br /></li>
-<li>WebRTC 开启 H.264 软编解<br /></li>
+<li>完善硬编解列表</li>
+<li>FFmpeg 开启 H.264 软解</li>
+<li>WebRTC 开启 H.264 软编解</li>
 </ol>
-
 <blockquote>
 <p>本文基于 M70 版本</p>
 </blockquote>
-
-<h2 id="完善硬编解列表">完善硬编解列表</h2>
-
+<h2 id="heading">完善硬编解列表</h2>
 <p>不同于早期的版本，M70 移除了默认的编解码，必须在创建 <code>PeerConnectionFactory</code> 的时候显式的传入 <code>VideoDecoderFactory</code> 和 <code>VideoEncoderFactory</code>，通常来说，可以按照官方的 <a href="https://groups.google.com/forum/#!topic/discuss-webrtc/SKSkOUHXB2A/discussion">PSA</a> 配置默认的工厂类。</p>
-
 <p>配置硬编(解)码的代码在 <code>sdk/android/api/org/webrtc/HardwareVideoEncoderFactory.java</code> 和 <code>sdk/android/api/org/webrtc/HardwareVideoDecoderFactory.java</code> 中。两个类对于编(解)码实例创建的逻辑是相似的，都需要先根据 <code>MediaCodecInfo</code> 和 <code>VideoCodecType</code> 判断当前设备是否支持。仅以 <code>HardwareVideoEncoderFactory</code> 为例：</p>
-
-<pre><code class="language-flowchart">op1=&gt;operation: HardwareVideoEncoderFactory::createEncoder
+<pre><code class="language-flowchart" data-lang="flowchart">op1=&gt;operation: HardwareVideoEncoderFactory::createEncoder
 op2=&gt;operation: HardwareVideoEncoderFactory::findCodecForType
 op3=&gt;operation: HardwareVideoEncoderFactory::isSupportedCodec
 op4=&gt;operation: HardwareVideoEncoderFactory::isHardwareSupportedInCurrentSdk
 op5=&gt;operation: HardwareVideoEncoderFactory::isHardwareSupportedInCurrentSdkH264
 op1-&gt;op2-&gt;op3-&gt;op4-&gt;op5
-</code></pre>
-
-<p>默认只支持 <code>OMX.qcom.</code> 和 <code>OMX.Exynos.</code>，可以根据业务需求把 <code>OMX.hisi.</code>、<code>OMX.MTK.</code> 添加进来，当然也可以根据黑名单排除一些设备。</p>
-
-<h2 id="ffmpeg-开启-h-264-软解">FFmpeg 开启 H.264 软解</h2>
-
+</code></pre><p>默认只支持 <code>OMX.qcom.</code> 和 <code>OMX.Exynos.</code>，可以根据业务需求把 <code>OMX.hisi.</code>、<code>OMX.MTK.</code> 添加进来，当然也可以根据黑名单排除一些设备。</p>
+<h2 id="ffmpeg--h264-">FFmpeg 开启 H.264 软解</h2>
 <p>为 FFmpeg 开启 H.264 的编译选项，需要修改 <code>third_party/ffmpeg</code> 下的脚本。</p>
-
 <ol>
-<li><code>third_party/ffmpeg/ffmpeg_generated.gni</code> 将 h264 相关的源码添加到  ffmpeg_c_sources 中<br /></li>
-<li>修改 <code>third_party/ffmpeg/chromium/config/Chromium/{ABI}/config.h</code> 中 <code>#define CONFIG_H264_DECODER</code> 的宏定义<br /></li>
-<li>由于 FFmpeg 废弃了 <code>av_register_all</code>，所以需要静态的注册 H.264。<code>third_party/ffmpeg/chromium/config/Chromium/android/{ABI}/libavcodec/parser_list.c</code> 和 <code>third_party/ffmpeg/chromium/config/Chromium/android/{ABI}/libavcodec/codec_list.c</code> 分别添加 h264 的 parser 和 decoder<br /></li>
+<li><code>third_party/ffmpeg/ffmpeg_generated.gni</code> 将 h264 相关的源码添加到  ffmpeg_c_sources 中</li>
+<li>修改 <code>third_party/ffmpeg/chromium/config/Chromium/{ABI}/config.h</code> 中 <code>#define CONFIG_H264_DECODER</code> 的宏定义</li>
+<li>由于 FFmpeg 废弃了 <code>av_register_all</code>，所以需要静态的注册 H.264。<code>third_party/ffmpeg/chromium/config/Chromium/android/{ABI}/libavcodec/parser_list.c</code> 和 <code>third_party/ffmpeg/chromium/config/Chromium/android/{ABI}/libavcodec/codec_list.c</code> 分别添加 h264 的 parser 和 decoder</li>
 </ol>
-
-<h2 id="webrtc-开启-h-264-软编解">WebRTC 开启 H.264 软编解</h2>
-
-<p>尽管我们已经将 H.264 的软解添加到 FFmpeg 中了，但是 WebRTC 还是没有调用到这些代码。这里我们可以参考源码中对于 VP8/VP9 的处理，依样画葫芦。</p>
-
+<h2 id="webrtc--h264-">WebRTC 开启 H.264 软编解</h2>
+<p>尽管我们已经将 H.264 的软解添加到 FFmpeg 中了，但是 WebRTC 还是没有调用到这些代码。这里我们可以参考源码中对于 VP9 的处理，依样画葫芦。</p>
 <ol>
-<li>参照 <code>sdk/android/src/java/org/webrtc/VP8Decoder.java</code> 和 <code>sdk/android/src/java/org/webrtc/VP8Encoder.java</code> 实现 H.264 的 Java 层 Wrapper<br /></li>
-<li>参照 <code>sdk/android/jni/vp8codec.cc</code> 实现 H.264 的 native 代码<br /></li>
-<li><code>sdk/android/BUILD.gn</code> 中分别添加 <code>generate_jni</code> 和 <code>rtc_static_library</code> 任务，并添加对应的 java 和 cpp 文件<br /></li>
-<li>在 <code>sdk/android/api/org/webrtc/SoftwareVideoDecoderFacoty.java</code> 和 <code>sdk/android/api/org/webrtc/SoftwareVideoEncoderFacoty.java</code> 中分别注册 H.264 并添加创建 codec 的代码<br /></li>
+<li>参照 <code>sdk/android/src/java/org/webrtc/VP9Decoder.java</code> 和 <code>sdk/android/src/java/org/webrtc/VP9Encoder.java</code> 实现 H.264 的 Java 层 Wrapper</li>
+<li>参照 <code>sdk/android/jni/vp9codec.cc</code> 实现 H.264 的 native 代码</li>
+<li><code>sdk/android/BUILD.gn</code> 中分别添加 <code>generate_jni </code> 和 <code>rtc_static_library</code> 任务，并添加对应的 java 和 cpp 文件</li>
+<li>在 <code>sdk/android/api/org/webrtc/SoftwareVideoDecoderFacoty.java</code> 和 <code>sdk/android/api/org/webrtc/SoftwareVideoEncoderFacoty.java</code> 中分别注册 H.264 并添加创建 codec 的代码</li>
 </ol>
-
 <p>注：WebRTC Android JNI 接口的 C 层函数定义，都是通过 Python 脚本 <code>base/android/jni_generator/jni_generator.py</code> 生成的，生成的代码在 <code>out/{destination}/gen/sdk/android/generated_xxx_jni/jni</code> 目录下。我们需要通过第3步生成 H.264 的 JNI 函数，并在第四步中引用生成的头文件。</p>
-
 <p>另注：我们在将 H.264 的软编(解)码添加到工厂类里时，需要传入一个 <code>Map</code> 作为参数。<code>sdk/android/src/java/org/webrtc/H264Utils.java</code> 提供了这些生成参数的方法。这里的参数会影响协商时生成的 SDP，要根据业务实现。</p>
-
-<h2 id="收个尾">收个尾</h2>
-
+<h2 id="heading-1">收个尾</h2>
 <p>编译时，我们需要将 <code>rtc_use_h264</code> 设置为 true。可以在 <code>webrtc.gni</code> 中修改，也可以通过 <code>gn gen</code> 在生成 gn  项目的时候通过 <code>--args</code> 设置。</p>
 
     </div>
 
-    
     <div class="post-copyright">
   <p class="copyright-item">
     <span class="item-title">文章作者</span>
@@ -240,33 +192,32 @@ op1-&gt;op2-&gt;op3-&gt;op4-&gt;op5
   </p>
   <p class="copyright-item">
     <span class="item-title">上次更新</span>
-    <span class="item-content">2019-02-18</span>
+    <span class="item-content">
+        2019-02-18
+        
+    </span>
   </p>
   
   
 </div>
-
-    
-    
-
-    <footer class="post-footer">
-      
-
+<footer class="post-footer">
       
       <nav class="post-nav">
-        
-        
-          <a class="next" href="/post/git-flow-based-on-phabricator/">
+        <a class="prev" href="/post/tips-for-golang-proxy-for-android/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">用 Golang 在 Android 上实现代理的几个问题</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/git-flow-based-on-phabricator/">
             <span class="next-text nav-default">基于 Phabricator 的 Git Flow 最佳实践</span>
-            <span class="prev-text nav-mobile">下一篇</span>
+            <span class="next-text nav-mobile">下一篇</span>
             <i class="iconfont icon-right"></i>
           </a>
       </nav>
     </footer>
   </article>
         </div>
-        
-  <div id="disqus_thread"></div>
+        <div id="disqus_thread"></div>
     <script type="text/javascript">
     (function() {
       
@@ -280,6 +231,11 @@ op1-&gt;op2-&gt;op3-&gt;op4-&gt;op5
     })();
     </script>
     <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+  
+
       </div>
     </main>
 
@@ -306,8 +262,7 @@ op1-&gt;op2-&gt;op3-&gt;op4-&gt;op5
 
   <span class="copyright-year">
     &copy; 
-    
-      2016 - 
+    2016 - 
     2019
     <span class="heart">
       <i class="iconfont icon-heart"></i>
@@ -321,14 +276,12 @@ op1-&gt;op2-&gt;op3-&gt;op4-&gt;op5
       <i class="iconfont icon-up"></i>
     </div>
   </div>
-  
-<script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
+  <script src="/lib/highlight/highlight.pack.js?v=20171001"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script>
-<script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="/dist/even.min.js?v=3.1.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script><script></script><script src="https://cdn.jsdelivr.net/npm/raphael@2.2.7/raphael.min.js" integrity="sha256-67By+NpOtm9ka1R6xpUefeGOY8kWWHHRAKlvaTJ7ONI=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.8.0/release/flowchart.min.js" integrity="sha256-zNGWjubXoY6rb5MnmpBNefO0RgoVYfle9p0tvOQM+6k=" crossorigin="anonymous"></script><script>window.sequenceDiagramsOptions = simple;</script><script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/snapsvg@0.5.1/dist/snap.svg-min.js" integrity="sha256-oI+elz+sIm+jpn8F/qEspKoKveTc5uKeFHNNVexe6d8=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/npm/underscore@1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script> <script src="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.js" integrity="sha384-8748Vn52gHJYJI0XEuPB2QlPVNUkJlJn9tHqKec6J3q2r9l8fvRxrgn/E5ZHV0sP" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bramp/js-sequence-diagrams@2.0.1/dist/sequence-diagram-min.css" integrity="sha384-6QbLKJMz5dS3adWSeINZe74uSydBGFbnzaAYmp+tKyq60S7H2p6V7g1TysM5lAaF" crossorigin="anonymous">
+<script type="text/javascript" src="/dist/even.26188efa.min.js"></script>
 
 
 <script type="application/javascript">
@@ -336,7 +289,7 @@ var doNotTrack = false;
 if (!doNotTrack) {
 	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
 	ga('create', 'UA-106569198-1', 'auto');
-	
+	ga('set', 'anonymizeIp', true);
 	ga('send', 'pageview');
 }
 </script>
